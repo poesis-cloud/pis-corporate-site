@@ -103,7 +103,7 @@ test('pilot exports support value-only, pain-only, partial and unsupported scope
   const brief = serializeBrief(catalog, { ...empty, values: [unsupported.slug] }, { criteria: '<script>alert("literal")</script>', timing: 'My own window' });
   assert.match(brief, /Constituent: Accept a service responsibility baseline \| No registered support/);
   assert.match(brief, /Gap: no registered platform support/);
-  assert.match(brief, /ITIP \+ SIE SaaS/);
+  assert.match(brief, /OIP \+ SIE SaaS/);
   assert.match(brief, /<script>alert\("literal"\)<\/script>/);
   assert.match(brief, /My own window/);
   assert.match(brief, /commercial terms/);
@@ -124,7 +124,7 @@ test('pilot exports support value-only, pain-only, partial and unsupported scope
 
 test('usage is separate from platform and covers its stable identity ledger', () => {
   assert.deepEqual(Object.keys(poesisUsage).sort(), ['actorTypes', 'pains', 'useCases']);
-  assert.equal(poesisPlatform.solutions.length, 4);
+  assert.equal(poesisPlatform.solutions.length, 5);
   assert.doesNotThrow(() => validateUsage());
   const coverage = usageCoverage();
   assert.deepEqual(coverage, { features: 67, capabilities: 25, affordances: 6 });
@@ -136,8 +136,8 @@ test('usage is separate from platform and covers its stable identity ledger', ()
   assert.equal(poesisUsage.actorTypes.length, 26);
   assert.equal(poesisUsage.useCases.length, 115);
   assert.equal(poesisUsage.useCases.filter((useCase) => useCaseStatus(useCase) === 'delivered').length, 26);
-  assert.equal(poesisUsage.useCases.filter((useCase) => useCaseStatus(useCase) === 'partial').length, 33);
-  assert.equal(poesisUsage.useCases.filter((useCase) => useCaseStatus(useCase) === 'planned').length, 40);
+  assert.equal(poesisUsage.useCases.filter((useCase) => useCaseStatus(useCase) === 'partial').length, 34);
+  assert.equal(poesisUsage.useCases.filter((useCase) => useCaseStatus(useCase) === 'planned').length, 39);
   assert.equal(poesisUsage.useCases.filter((useCase) => useCaseStatus(useCase) === undefined).length, 16);
   assert.equal(valueStatus('value:service-accountability'), undefined);
 });
@@ -157,9 +157,9 @@ test('constitutive compositions retain distinct function and whole-level use cas
     }
   }
   for (const [slug, key, reference] of [
-    ['review-scoped-appraisal', 'features', 'itip/web-application/it-compliance-evaluation'],
+    ['review-scoped-appraisal', 'features', 'oip/web-application/it-compliance-evaluation'],
     ['validate-mediated-write', 'features', 'saf/agentic-harness/artifact-validation'],
-    ['propose-appraisal-remediation', 'capabilities', 'itip/continuous-it-compliance-evaluation'],
+    ['propose-appraisal-remediation', 'capabilities', 'oip/continuous-it-compliance-evaluation'],
     ['reuse-delivery-evidence', 'capabilities', 'saf/delivery-history-as-governed-context'],
     ['reconcile-code-evidence', 'affordances', 'truth-sourcing'],
     ['deliver-reviewed-artifact', 'affordances', 'generative-delivery'],
@@ -233,8 +233,8 @@ test('value ownership preserves placement while support follows constituent use 
   assert.throws(() => validateUsage(wrongGraph, wrong), /Invalid value identity/);
   const mixedCase = structuredClone(usageValues);
   const mixedGraph = structuredClone(poesisUsage);
-  for (const useCase of mixedGraph.useCases) useCase.values = useCase.values.map((slug) => slug === mixedCase[0].slug ? 'value:Itip/01' : slug);
-  mixedCase[0] = { ...mixedCase[0], slug: 'value:Itip/01' };
+  for (const useCase of mixedGraph.useCases) useCase.values = useCase.values.map((slug) => slug === mixedCase[0].slug ? 'value:Oip/01' : slug);
+  mixedCase[0] = { ...mixedCase[0], slug: 'value:Oip/01' };
   assert.throws(() => validateUsage(mixedGraph, mixedCase), /Invalid value identity/);
 });
 
@@ -346,7 +346,7 @@ test('mockup and platform tasks reuse scope with only two distinct new features'
     assert.ok(valuesForUseCase(slug).length, slug);
   }
   for (const slug of ['identity-provider-synchronization', 'governance-review-sessions']) {
-    const entry = usageFeatures.find((item) => item.slug === `itip/web-application/${slug}`);
+    const entry = usageFeatures.find((item) => item.slug === `oip/web-application/${slug}`);
     assert.equal(entry.feature.delivery.state, 'planned');
     assert.equal(entry.feature.milestone.version, '1.x');
     assert.equal(entry.feature.milestone.shipped, undefined);
@@ -515,15 +515,15 @@ test('catalog navigation exposes only qualified direct relations in the declared
     assert.deepEqual(group.previews.map((preview) => preview.label).length, catalogSnapshot.sources['actor:it-architect'].targets[new URL(group.href, 'https://poesis.cloud').pathname.split('/').at(-1)].length);
     assert.ok(group.previews.every((preview) => !preview.href.includes('?source=')));
   }
-  const source = 'capability:itip/automatic-it-truth-sourcing';
-  assert.equal(catalogHref('values', source), '/catalog/values?source=capability%3Aitip%2Fautomatic-it-truth-sourcing');
+  const source = 'capability:sis/automatic-it-truth-sourcing';
+  assert.equal(catalogHref('values', source), '/catalog/values?source=capability%3Asis%2Fautomatic-it-truth-sourcing');
   const capability = usageCapabilities.find((entry) => `capability:${entry.slug}` === source);
   assert.deepEqual(catalogSnapshot.sources[source].targets.features, capability.capability.relations.features.map((reference) => `${capability.solution.slug}/${reference}`));
   for (const feature of catalogSnapshot.sources[source].targets.features) assert.equal(catalogSnapshot.sources[`feature:${feature}`].targets.capabilities.length, 0);
 });
 
 test('catalog filters intersect source actor and pain, reject unknowns, and restore from URLs', () => {
-  const source = 'feature:itip/web-application/definitions-truth-sourcing-management';
+  const source = 'feature:oip/web-application/definitions-truth-sourcing-management';
   const query = new URLSearchParams({ source, actor: 'it-platform', pain: 'it-acquisition-blind-spots' });
   const expected = ['configure-collection-boundaries', 'recover-incomplete-collection', 'review-evidence-refresh'];
   assert.deepEqual(filterCatalog(catalogSnapshot, 'usage', query).slugs, expected);
@@ -556,11 +556,11 @@ test('homepage groups retain exactly the six editorial child sets without requir
 
 test('anchors and hrefs keep the published shape', () => {
   assert.equal(valueAnchor({ slug: 'value:platform/analysis-power' }), 'value-platform-analysis-power');
-  assert.equal(valueAnchor({ slug: 'value:itip/01' }), 'value-itip-01');
-  assert.equal(valueAnchor({ slug: 'value:itip/web-application/01' }), 'value-itip-web-application-01');
+  assert.equal(valueAnchor({ slug: 'value:oip/01' }), 'value-oip-01');
+  assert.equal(valueAnchor({ slug: 'value:oip/web-application/01' }), 'value-oip-web-application-01');
   assert.equal(valueHref({ slug: 'value:platform/analysis-power' }), '/#value-platform-analysis-power');
-  assert.equal(valueHref({ slug: 'value:itip/01' }), '/solutions/itip#value-itip-01');
-  assert.equal(valueHref({ slug: 'value:itip/web-application/01' }), '/solutions/itip/products/web-application#value-itip-web-application-01');
+  assert.equal(valueHref({ slug: 'value:oip/01' }), '/solutions/oip#value-oip-01');
+  assert.equal(valueHref({ slug: 'value:oip/web-application/01' }), '/solutions/oip/products/web-application#value-oip-web-application-01');
   for (const solution of poesisPlatform.solutions) assert.equal(solutionHref(solution), `/solutions/${solution.slug}`);
 });
 

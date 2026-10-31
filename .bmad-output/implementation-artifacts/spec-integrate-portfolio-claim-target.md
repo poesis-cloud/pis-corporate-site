@@ -77,7 +77,7 @@ context:
 2026-09-15: Binary commitment presentation verified after owner correction. Public labels are
 Implemented (check badge) and Planned (clock); internal partial progress maps to Planned.
 Values carry dependency-derived commitment status, not speculative "potential" wording.
-Roadmaps synchronized; 22 workspace checks passed. Browser checks on homepage, ITIP solution,
+Roadmaps synchronized; 22 workspace checks passed. Browser checks on homepage, OIP solution,
 GSM Specifications and Harness passed at 1440px and 390px: no horizontal overflow or retired
 public labels. Mobile value icons inspected visually. Jekyll rendering remains unverified
 without Ruby; no commits or pushes performed.
@@ -113,7 +113,7 @@ The existing Pagefind redirect warning and pre-existing Markdown diagnostics rem
 - `CHECK_BUILT_PORTFOLIO=1 npm run test:portfolio:workspace`: after the build, also validate retained anchors, semantic service/partnership listings and backlinks, and recorded/planned roadmap labels across all products.
 - `git diff --check`: no whitespace errors.
 
-**Browser checks:** Start the local Astro server on a free port. Check homepage, all four solution pages and twelve product routes for rendering and broken anchors; capture desktop/mobile screenshots of the homepage, ITIP solution, Web Application and Harness. Verify explicit status text, preserved planned promises, valid navigation and absence of overflow. Return the local URL for visual review. No production deployment is part of this task.
+**Browser checks:** Start the local Astro server on a free port. Check homepage, all four solution pages and twelve product routes for rendering and broken anchors; capture desktop/mobile screenshots of the homepage, OIP solution, Web Application and Harness. Verify explicit status text, preserved planned promises, valid navigation and absence of overflow. Return the local URL for visual review. No production deployment is part of this task.
 
 ### Implementation Handoff
 
@@ -128,11 +128,11 @@ The existing Pagefind redirect warning and pre-existing Markdown diagnostics rem
   for the complete review suite, including semantic listings and recorded/planned labels, not anchor existence alone.
 - `git diff --check`: passed for corporate, touched strategy files and documentation.
   `python3 -m json.tool ../documentation/_data/roadmap.json`: passed (`python` is not installed).
-- Pagefind retains the pre-existing warning for `/insights/itip-compliance-proof/`, whose
+- Pagefind retains the pre-existing warning for `/insights/oip-compliance-proof/`, whose
   output lacks an outer HTML element; 50 other pages indexed. This unrelated article was not changed.
 - Browser acceptance completed: all 17 core routes passed at 1440px and 390px widths
   (34 checks), with HTTP 200, one main H1, no horizontal overflow and no missing images.
-  Desktop/mobile screenshots inspected for homepage, ITIP solution, Web Application and Harness;
+  Desktop/mobile screenshots inspected for homepage, OIP solution, Web Application and Harness;
   mobile menu opening/closing passed. Documentation Jekyll rendering remains unverified because
   Ruby is unavailable. No production checks are claimed.
   The full evidence-vector/predicate system and product acceptance proposed by the design

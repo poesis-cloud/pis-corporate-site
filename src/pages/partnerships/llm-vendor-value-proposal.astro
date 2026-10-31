@@ -23,7 +23,7 @@ function adherencePills(ids: string[]) {
 ---
 <BaseLayout
   title="LLM Vendor Partnership — Value Proposal"
-  description="What the Poesis stack brings to LLM capabilities — and what LLMs bring to Poesis. Models propose; humans dispose through ITIP; SIE evaluates constraints and executes governed Mechanisms."
+  description="What the Poesis stack brings to LLM capabilities — and what LLMs bring to Poesis. Models propose; humans dispose through OIP; SIE evaluates constraints and executes governed Mechanisms."
 >
   <section class="hero">
     <div class="container">
@@ -153,7 +153,7 @@ function adherencePills(ids: string[]) {
       <div id="vf">
         <div class="vf-notices" role="region" aria-label="How to read the value map">
           <p class="vf-notice vf-notice-info"><strong>Explore the map.</strong> Click a flow to see its mutual value. Click an organisation, LLM, or Poesis component to see every adherence it holds. Expand a Poesis box for internal detail. Solid wires are partnership adherences; dotted orange wires are the organisation’s own governance loop.</p>
-          <p class="vf-notice vf-notice-invariant"><strong>Core invariant:</strong> models <strong>PROPOSE</strong> (inferred, confidence &lt; 1.0) · accountable humans dispose through ITIP · SIE evaluates constraints and executes governed Mechanisms — <strong>PROPOSE / DISPOSE</strong>.</p>
+          <p class="vf-notice vf-notice-invariant"><strong>Core invariant:</strong> models <strong>PROPOSE</strong> (inferred, confidence &lt; 1.0) · accountable humans dispose through OIP · SIE evaluates constraints and executes governed Mechanisms — <strong>PROPOSE / DISPOSE</strong>.</p>
         </div>
 
         <div class="vf-diagram" id="vf-diagram">
@@ -230,27 +230,37 @@ function adherencePills(ids: string[]) {
                   <button class="vf-fold-btn" type="button" data-fold="f-sie" aria-controls="f-sie" aria-expanded="false">▸ components</button>
                   <div class="vf-fold" id="f-sie" hidden>
                     <div class="vf-comp"><b>sie-definition-manager</b> — hosts GSM, Ascription lifecycle, generative governance grammar</div>
-                    <div class="vf-comp"><b>sie-definition-blackboard-manager</b> — contribution registry and Blackboard-seal lifecycle</div>
                     <div class="vf-comp"><b>sie-operator</b> — executes in-effect Mechanisms and validates typed inputs and effects; automatic Norm preflight remains to be built</div>
                   </div>
                 </div>
 
-                <div class="vf-card vf-gate" id="n-itip" data-component="ITIP — domain platform (IT)">
+                <div class="vf-card" id="n-sis" data-component="SIS — Systemic Intelligence Sourcing">
                   <button class="vf-card-select" type="button" aria-pressed="false" aria-controls="vf-detail">
-                    <span class="vf-ctitle">ITIP — domain platform (IT)</span>
-                    <span class="vf-csub">target domain surface for the <b>PROPOSE / DISPOSE gate to humans</b> — intent, approval, audit, and simulation</span>
+                    <span class="vf-ctitle">SIS — Systemic Intelligence Sourcing</span>
+                    <span class="vf-csub">sources candidate GSM Definitions from external artifacts through a collaborative Blackboard before SIE governs them</span>
                   </button>
-                  <button class="vf-fold-btn" type="button" data-fold="f-itip" aria-controls="f-itip" aria-expanded="false">▸ components</button>
-                  <div class="vf-fold" id="f-itip" hidden>
-                    <div class="vf-comp"><b>itip-web-application</b> — planned human gate for intent, approval, simulation, appraisal, and audit</div>
-                    <div class="vf-comp"><b>gsm-ontology</b> — selected GDPR/NIS2 templates and TOGAF/ISO vocabulary; broader frameworks and operational binding remain planned</div>
-                    <div class="vf-comp"><b>itip-definition-blackboard-*-sourcer</b> — designed to wrap LLMs / agents as KnowledgeSources over code repositories; other source classes require adapters</div>
+                  <button class="vf-fold-btn" type="button" data-fold="f-sis" aria-controls="f-sis" aria-expanded="false">▸ components</button>
+                  <div class="vf-fold" id="f-sis" hidden>
+                    <div class="vf-comp"><b>sis-blackboard-manager</b> — contribution registry and Blackboard-seal lifecycle</div>
+                    <div class="vf-comp"><b>sis-code-sourcer</b> — designed to wrap LLMs / agents as KnowledgeSources over code repositories; other source classes require adapters</div>
                   </div>
                 </div>
 
-                <div class="vf-card" id="n-saf" data-component="SAFe Agentic Framework">
+                <div class="vf-card vf-gate" id="n-oip" data-component="OIP — domain platform (IT)">
                   <button class="vf-card-select" type="button" aria-pressed="false" aria-controls="vf-detail">
-                    <span class="vf-ctitle">SAFe Agentic Framework</span>
+                    <span class="vf-ctitle">OIP — domain platform (IT)</span>
+                    <span class="vf-csub">target domain surface for the <b>PROPOSE / DISPOSE gate to humans</b> — intent, approval, audit, and simulation</span>
+                  </button>
+                  <button class="vf-fold-btn" type="button" data-fold="f-oip" aria-controls="f-oip" aria-expanded="false">▸ components</button>
+                  <div class="vf-fold" id="f-oip" hidden>
+                    <div class="vf-comp"><b>oip-web-application</b> — planned human gate for intent, approval, simulation, appraisal, and audit</div>
+                    <div class="vf-comp"><b>gsm-ontology</b> — selected GDPR/NIS2 templates and TOGAF/ISO vocabulary; broader frameworks and operational binding remain planned</div>
+                  </div>
+                </div>
+
+                <div class="vf-card" id="n-saf" data-component="SAF — Systemic Agentic Framework">
+                  <button class="vf-card-select" type="button" aria-pressed="false" aria-controls="vf-detail">
+                    <span class="vf-ctitle">SAF — Systemic Agentic Framework</span>
                     <span class="vf-csub">declarative agent content and partial local harness controls on supported hosts</span>
                   </button>
                   <button class="vf-fold-btn" type="button" data-fold="f-saf" aria-controls="f-saf" aria-expanded="false">▸ components</button>
@@ -343,7 +353,7 @@ function adherencePills(ids: string[]) {
           <article>
             <span class="maturity-flow">Governed inference deployment</span>
             <strong class="maturity-status"><DeliveryStatus state="planned" /> · Execution kernel exists; human gate remains</strong>
-            <p><strong>Partnership work:</strong> assemble and validate the ITIP human gate, Norm and provenance evaluation, disposition audit, and regulated-estate proof.</p>
+            <p><strong>Partnership work:</strong> assemble and validate the OIP human gate, Norm and provenance evaluation, disposition audit, and regulated-estate proof.</p>
           </article>
           <article>
             <span class="maturity-flow">Model specialisation</span>
@@ -626,17 +636,17 @@ function adherencePills(ids: string[]) {
   const plannedCommitment = document.getElementById('planned-commitment')?.innerHTML ?? '';
   const FLOWS = [
     {
-      id: 'A', hex: '#38bdf8', from: 'n-infer', to: 'n-sie', lane: 32,
+      id: 'A', hex: '#38bdf8', from: 'n-infer', to: 'n-sis', lane: 32,
       label: 'LLM-backed sourcing of GSM',
       title: 'A — Context sourcing: LLMs feed GSM (LLM → Poesis)',
       maturity: '<strong>Current maturity:</strong> the generic Blackboard REST substrate, schema validation, seal lifecycle, immutability, and deterministic stream ordering are implemented. <strong>Partnership work:</strong> implement the repository KnowledgeSources, LLM client, reduction, provenance transfer, and registration path.',
-      sub: 'The repository sourcer is designed to wrap partner models as KnowledgeSources over code repositories. Additional source classes require explicit adapters. ITIP contribution schemas require confidence below 1.0, evidence, and provenance; the generic Blackboard validates whichever client-declared slot schema applies, freezes accepted contributions on seal, and returns them in deterministic order. A client reducer then prepares candidate Ascription proposals for human disposition.',
+      sub: 'The repository sourcer is designed to wrap partner models as KnowledgeSources over code repositories. Additional source classes require explicit adapters. Code Sourcer contribution schemas require confidence below 1.0, evidence, and provenance; the generic Blackboard validates whichever client-declared slot schema applies, freezes accepted contributions on seal, and returns them in deterministic order. A client reducer then prepares candidate Ascription proposals for human disposition.',
       schema: [
         { n: 'Repository artifacts', side: 'material' },
-        { n: 'itip-definition-blackboard-*-sourcer', todo: true, via: 'indexes code, configuration, documentation' },
+        { n: 'sis-code-sourcer', todo: true, via: 'indexes code, configuration, documentation' },
         { n: 'Grounded inference', side: 'llm', via: 'extraction task + tool contracts' },
-        { n: 'sie-definition-blackboard-manager', via: 'typed contributions — evidence, provenance, confidence &lt; 1.0' },
-        { n: 'itip-definition-blackboard-*-sourcer', todo: true, via: 'sealed, deterministically ordered stream' },
+        { n: 'sis-blackboard-manager', via: 'typed contributions — evidence, provenance, confidence &lt; 1.0' },
+        { n: 'sis-code-sourcer', todo: true, via: 'sealed, deterministically ordered stream' },
         { n: 'Supervision', side: 'human', via: 'reduced candidate Ascription proposals' },
         { n: 'sie-definition-manager', via: 'approved Definitions placed in effect' },
       ],
@@ -644,14 +654,14 @@ function adherencePills(ids: string[]) {
       partner: ['Applied-AI evidence for extracting typed Definitions and relationships from repository artifacts', 'Measured feedback on extraction accuracy, evidence use, tool calling, and confidence calibration'],
       poesis: ['Broader sourcing coverage without granting models authority over governed truth', 'A model-agnostic sourcing substrate that widens with each connected KnowledgeSource rather than with any single model generation'],
       shared: ['Repository knowledge surfaced as typed, attributable Definitions instead of remaining tacit', 'Every accepted contribution schema-validated, provenance-bearing, and replayable for audit'],
-      comps: 'Implemented in <b>sie-definition-blackboard-manager</b>; designed through <b>itip-definition-blackboard-*-sourcer</b> → client reduction and human disposition → <b>sie-definition-manager</b>.',
+      comps: 'Implemented in <b>sis-blackboard-manager</b>; designed through <b>sis-code-sourcer</b> → client reduction and human disposition → <b>sie-definition-manager</b>.',
     },
     {
       id: 'B', hex: '#34d399', from: 'n-sie', to: 'n-infer', lane: -32,
       label: 'governed causal context + tools',
       title: 'B — Governed inference grounding (Poesis → LLM)',
       maturity: '<strong>Current maturity:</strong> implemented foundations. <strong>Partnership work:</strong> build the model-facing context and tool surface, then measure it against document-retrieval baselines.',
-      sub: 'Definition Manager and Operator provide the semantic and execution foundations for serving selected in-effect Definitions, Norms, and explicitly modeled dependencies. A model-facing context and tool facade is not yet implemented. Once built, it can let models inspect types, trace Interactions, retrieve applicable constraints, and submit outputs for explicit evaluation. This changes available evidence and operations; it does not change model weights or prove causal reasoning.',
+      sub: 'Definition Manager and Definition Operator provide the semantic and execution foundations for serving selected in-effect Definitions, Norms, and explicitly modeled dependencies. A model-facing context and tool facade is not yet implemented. Once built, it can let models inspect types, trace Interactions, retrieve applicable constraints, and submit outputs for explicit evaluation. This changes available evidence and operations; it does not change model weights or prove causal reasoning.',
       schema: [
         { n: 'gsm-ontology' },
         { n: 'sie-definition-manager', via: 'sourced obligation and domain vocabulary' },
@@ -666,24 +676,24 @@ function adherencePills(ids: string[]) {
       comps: 'Foundations implemented in <b>sie-definition-manager</b> and <b>sie-operator</b>; model-facing context selection, provenance projection, and tool contracts remain to be built.',
     },
     {
-      id: 'C', hex: '#34d399', from: 'n-infer', to: 'n-itip', lane: 0,
+      id: 'C', hex: '#34d399', from: 'n-infer', to: 'n-oip', lane: 0,
       label: 'proposals → human disposition',
       title: 'C — Governed inference deployment (LLM → Poesis)',
-      maturity: '<strong>Current maturity:</strong> partial foundation. <strong>Partnership work:</strong> assemble and validate the ITIP human gate, Norm and provenance evaluation, disposition audit, and regulated-estate proof.',
-      sub: 'Every model output entering a governed action path remains a proposal. The target ITIP gate presents evidence, provenance, and evaluations to an accountable human for disposition; that gate is not yet implemented. Operator already executes only in-effect executable Mechanisms (ACTIVE or DEPRECATED) and performs deterministic schema and rule checks. It does not yet perform automatic Norm preflight. These checks establish conformance to explicit contracts, not the truth of an inference.',
+      maturity: '<strong>Current maturity:</strong> partial foundation. <strong>Partnership work:</strong> assemble and validate the OIP human gate, Norm and provenance evaluation, disposition audit, and regulated-estate proof.',
+      sub: 'Every model output entering a governed action path remains a proposal. The target OIP gate presents evidence, provenance, and evaluations to an accountable human for disposition; that gate is not yet implemented. Definition Operator already executes only in-effect executable Mechanisms (ACTIVE or DEPRECATED) and performs deterministic schema and rule checks. It does not yet perform automatic Norm preflight. These checks establish conformance to explicit contracts, not the truth of an inference.',
       schema: [
         { n: 'Grounded inference', side: 'llm' },
         { n: 'sie-operator', via: 'a proposal, never an action' },
-        { n: 'itip-web-application', todo: true, via: 'schema and rule conformance checked' },
+        { n: 'oip-web-application', todo: true, via: 'schema and rule conformance checked' },
         { n: 'Supervision', side: 'human', via: 'evidence, provenance, evaluations presented' },
         { n: 'sie-operator', via: 'approved — dispatch to in-effect Mechanisms' },
         { n: 'sie-definition-manager', via: 'execution effects and lifecycle transition' },
-        { n: 'itip-web-application', todo: true, via: 'decision, evidence, and execution composed into audit' },
+        { n: 'oip-web-application', todo: true, via: 'decision, evidence, and execution composed into audit' },
       ],
       partner: ['A deployable control pattern for supervised model action in regulated environments', 'An assurance case grounded in traceable proposals, deterministic checks, human decisions, and execution evidence'],
       poesis: ['A governed disposition gate as the single controlled entry point for model-proposed action', 'Disposition and outcome records can support later evaluation, but become learning labels only under defined tasks, measures, and rights controls'],
       shared: ['AI-assisted action constrained by the customer organisation’s governed Definitions and explicit human authority', 'An accountable human decision, with the evidence it rested on, recorded for every model-proposed change'],
-      comps: 'Execution kernel implemented in <b>sie-operator</b> with lifecycle APIs in <b>sie-definition-manager</b>; the <b>itip-web-application</b> human gate, composed audit, and automatic Norm preflight remain to be built.',
+      comps: 'Execution kernel implemented in <b>sie-operator</b> with lifecycle APIs in <b>sie-definition-manager</b>; the <b>oip-web-application</b> human gate, composed audit, and automatic Norm preflight remain to be built.',
     },
     {
       id: 'D', hex: '#a78bfa', from: 'n-sie', to: 'n-train', lane: 0,
@@ -728,13 +738,13 @@ function adherencePills(ids: string[]) {
       id: 'E', hex: '#f59e0b', from: 'n-sie', to: 'n-eval', lane: 28,
       label: 'governed tests → comparable model evidence',
       title: 'E — Model evaluation and assurance (Poesis ↔ LLM)',
-      maturity: '<strong>Current maturity:</strong> partial schema, execution and history foundations; no complete ITIP appraisal or model-assurance route is established. <strong>Partnership work:</strong> define evaluation envelopes, datasets, baselines, traces and acceptance criteria.',
+      maturity: '<strong>Current maturity:</strong> partial schema, execution and history foundations; no complete OIP appraisal or model-assurance route is established. <strong>Partnership work:</strong> define evaluation envelopes, datasets, baselines, traces and acceptance criteria.',
       sub: 'A vendor submits versioned model outputs and inference configurations against defined enterprise tasks. GSM schemas and SIE Mechanisms can evaluate only properties made explicit by those contracts, producing reproducible findings and traces. This can reveal capability, failure boundaries, and regressions without changing model weights; it does not turn every governance rule into ground truth or establish inference truth beyond the evaluated contract.',
       schema: [
         { n: 'sie-definition-manager' },
         { n: 'Model evaluation &amp; qualification', side: 'llm', via: 'enterprise task envelopes — GSM schemas, Mechanisms, expected outcomes' },
         { n: 'sie-operator', via: 'versioned model outputs and inference configuration' },
-        { n: 'itip-web-application', todo: true, via: 'deterministic evaluation of contracted properties' },
+        { n: 'oip-web-application', todo: true, via: 'deterministic evaluation of contracted properties' },
         { n: 'Governance', side: 'human', via: 'reproducible findings and traces — capability, failure boundaries, regressions' },
       ],
       feedback: 'Findings return to the vendor as workload-specific evidence rather than general benchmark claims.',
@@ -766,7 +776,7 @@ function adherencePills(ids: string[]) {
       id: 'reg', loop: true, rail: -9, hex: '#fb923c', from: 'n-org-reg', to: 'n-sie', lane: -66,
       label: 'constraints set on the governed system',
       title: 'Governance loop · Regulation — the organisation bounds what the system may do (Organisation → Poesis)',
-      maturity: '<strong>Current maturity:</strong> the generative governance grammar, Directive and Norm schemas, and the Ascription lifecycle that places constraints in effect are implemented; framework sourcing produces typed vocabulary. <strong>Remaining work:</strong> automatic Norm preflight in the Operator, and appraisal-driven revision of constraints.',
+      maturity: '<strong>Current maturity:</strong> the generative governance grammar, Directive and Norm schemas, and the Ascription lifecycle that places constraints in effect are implemented; framework sourcing produces typed vocabulary. <strong>Remaining work:</strong> automatic Norm preflight in the Definition Operator, and appraisal-driven revision of constraints.',
       sub: 'Directives and Norms are how the organisation states, explicitly and in a single grammar, what it and its models may do. Framework sourcing turns external obligation — GDPR, NIS2, DORA, AI Act, TOGAF, ISO — into the same typed vocabulary as internal policy, so regulatory constraint and internal intent are not two disconnected registers. Nothing in this flow reaches a model directly: constraints bound the LLM adherences from inside the perimeter.',
       schema: [
         { n: 'gsm-ontology' },
@@ -782,42 +792,42 @@ function adherencePills(ids: string[]) {
       comps: 'Implemented in <b>sie-definition-manager</b> with vocabulary sourced through <b>gsm-ontology</b>; enforcement in <b>sie-operator</b>, where automatic Norm preflight remains to be built.',
     },
     {
-      id: 'dis', loop: true, rail: 0, hex: '#fb923c', from: 'n-org-sup', to: 'n-itip', lane: -6,
+      id: 'dis', loop: true, rail: 0, hex: '#fb923c', from: 'n-org-sup', to: 'n-oip', lane: -6,
       label: 'AI proposals approved or rejected',
       title: 'Governance loop · Disposition — nothing AI-proposed enters effect without an accountable decision (Organisation → Poesis)',
-      maturity: '<strong>Current maturity:</strong> the Ascription lifecycle and its transitions are implemented, and the Blackboard produces sealed, replayable candidate contributions. <strong>Remaining work:</strong> the ITIP disposition surface that presents evidence, provenance, and evaluations to an accountable human.',
+      maturity: '<strong>Current maturity:</strong> the Ascription lifecycle and its transitions are implemented, and the Blackboard produces sealed, replayable candidate contributions. <strong>Remaining work:</strong> the OIP disposition surface that presents evidence, provenance, and evaluations to an accountable human.',
       sub: 'This is the DISPOSE half of PROPOSE / DISPOSE, and it is the single controlled entry point through which model work becomes governed truth. A proposal carries confidence below 1.0 together with its evidence and provenance; a named human decides. The decision is recorded with the evidence it rested on, which is what makes supervision auditable rather than merely asserted.',
       schema: [
         { n: 'Grounded inference', side: 'llm' },
-        { n: 'sie-definition-blackboard-manager', via: 'proposals — confidence &lt; 1.0, evidence, provenance' },
-        { n: 'itip-web-application', todo: true, via: 'sealed, replayable contributions' },
+        { n: 'sis-blackboard-manager', via: 'proposals — confidence &lt; 1.0, evidence, provenance' },
+        { n: 'oip-web-application', todo: true, via: 'sealed, replayable contributions' },
         { n: 'Supervision', side: 'human', via: 'evidence, provenance, evaluations presented' },
         { n: 'sie-definition-manager', via: 'approve or reject' },
-        { n: 'itip-web-application', todo: true, via: 'Ascription transition recorded with its evidence' },
+        { n: 'oip-web-application', todo: true, via: 'Ascription transition recorded with its evidence' },
       ],
       feedback: 'Rejection rates and rejection reasons are the organisation’s sharpest signal about model fitness.',
       organisation: ['A single controlled entry point for model-proposed change, rather than model output leaking into systems through many uncontrolled paths', 'Supervision that produces evidence — every decision recorded with what it rested on'],
       poesis: ['A disposition gate that keeps model authority bounded without slowing the sourcing surface', 'Disposition records that can later support evaluation, under defined tasks, measures, and rights controls'],
-      comps: 'Lifecycle transitions implemented in <b>sie-definition-manager</b>, sealed candidates in <b>sie-definition-blackboard-manager</b>; the <b>itip-web-application</b> disposition surface remains to be built.',
+      comps: 'Lifecycle transitions implemented in <b>sie-definition-manager</b>, sealed candidates in <b>sis-blackboard-manager</b>; the <b>oip-web-application</b> disposition surface remains to be built.',
     },
     {
-      id: 'acc', loop: true, both: true, rail: 9, hex: '#fb923c', from: 'n-org-gov', to: 'n-itip', lane: 54,
+      id: 'acc', loop: true, both: true, rail: 9, hex: '#fb923c', from: 'n-org-gov', to: 'n-oip', lane: 54,
       label: 'intent declared, evidence returned',
       title: 'Governance loop · Intent and accountability — the organisation defines itself and answers for the result (Organisation ↔ Poesis)',
-      maturity: '<strong>Current maturity:</strong> Definition and Ascription authoring, lifecycle history, and typed Mechanism execution are implemented, with an ITIP appraisal integration proof. <strong>Remaining work:</strong> the appraisal, simulation, and audit surfaces that return this evidence to the organisation.',
+      maturity: '<strong>Current maturity:</strong> Definition and Ascription authoring, lifecycle history, and typed Mechanism execution are implemented, with an OIP appraisal integration proof. <strong>Remaining work:</strong> the appraisal, simulation, and audit surfaces that return this evidence to the organisation.',
       sub: 'This is the flow that closes the map. Intent becomes typed Definitions and Ascriptions; those govern operation; operation produces appraisal, simulation, and audit evidence; that evidence returns to the intent that produced it. Without this return path, regulation and disposition would be open-loop — constraint and action with no corrective signal. Systemic viability depends on the return, not on the outbound half.',
       schema: [
         { n: 'Governance', side: 'human' },
-        { n: 'itip-web-application', todo: true, via: 'intent — what the organisation means to be and to do' },
+        { n: 'oip-web-application', todo: true, via: 'intent — what the organisation means to be and to do' },
         { n: 'sie-definition-manager', via: 'Definitions and Ascriptions authored' },
         { n: 'sie-operator', via: 'in-effect constraints and Mechanisms' },
-        { n: 'itip-web-application', todo: true, via: 'execution history, appraisal measures and findings' },
+        { n: 'oip-web-application', todo: true, via: 'execution history, appraisal measures and findings' },
         { n: 'Governance', side: 'human', via: 'compliance, impact, and audit evidence' },
       ],
       feedback: 'Evidence returns to intent — this is the corrective path that makes regulation and disposition a loop rather than two one-way declarations.',
       organisation: ['A definition of itself that is typed, attributable, and current, rather than tacit and dispersed across documents and people', 'Accountability discharged with evidence — appraisal, simulation, and audit of both AI and human action'],
       poesis: ['The closing return path that makes the governance loop corrective rather than declarative', 'Appraisal and audit assets that stay meaningful as models and workloads change'],
-      comps: 'Authoring, lifecycle history, and appraisal Mechanisms in <b>sie-definition-manager</b> and <b>sie-operator</b>; the <b>itip-web-application</b> appraisal, simulation, and audit surfaces remain to be built.',
+      comps: 'Authoring, lifecycle history, and appraisal Mechanisms in <b>sie-definition-manager</b> and <b>sie-operator</b>; the <b>oip-web-application</b> appraisal, simulation, and audit surfaces remain to be built.',
     },
   ];
 

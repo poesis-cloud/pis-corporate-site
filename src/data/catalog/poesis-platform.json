@@ -2,14 +2,14 @@
   "$schema": "./schemas/poesis-platform.schema.json",
   "solutions": [
     {
-      "slug": "itip",
-      "name": "ITIP",
-      "fullName": "IT Intelligence Platform",
+      "slug": "oip",
+      "name": "OIP",
+      "fullName": "Organizational Intelligence Platform",
       "tags": [
         "Domain Intelligence Platform"
       ],
       "excerpt": "A planned IT workspace for shared definitions, evidence review, scoped appraisal and generation.",
-      "tagline": "The IT Intelligence Platform: a shared, governed account of the IT landscape, with planned analysis, appraisal, sourcing and generation.",
+      "tagline": "The Organizational Intelligence Platform: a shared, governed account of the IT landscape, with planned analysis, appraisal, sourcing and generation.",
       "description": "An authenticated shell and account foundations exist. Domain workflows, scoped policy enforcement and integrated SIE access remain planned; hosted availability is not established.",
       "qualities": [
         "accepted-intent",
@@ -27,7 +27,8 @@
             "web-application/definitions-management",
             "web-application/rbac-abac",
             "web-application/identity-provider-synchronization",
-            "web-application/governance-review-sessions"
+            "web-application/governance-review-sessions",
+            "web-application/definitions-truth-sourcing-management"
           ]
         },
         {
@@ -40,17 +41,6 @@
             "web-application/ontology-management",
             "web-application/definitions-management",
             "web-application/governance-review-sessions"
-          ]
-        },
-        {
-          "slug": "automatic-it-truth-sourcing",
-          "name": "Evidence-backed IT definition sourcing",
-          "blurb": "Reconcile evidence-backed candidates from selected code revisions into reviewable IT definition drafts, with collection coverage, source age and recoverable runs visible throughout. Analysis and client-owned draft registration are planned; inspected source is not deployed reality.",
-          "state": "planned",
-          "kind": "implementation",
-          "features": [
-            "definition-blackboard-code-sourcer/automatic-sourcing-from-code-repos",
-            "web-application/definitions-truth-sourcing-management"
           ]
         },
         {
@@ -101,7 +91,7 @@
             "role-and-attribute-access"
           ],
           "repos": [
-            "itip-web-frontend"
+            "oip-web-frontend"
           ],
           "features": [
             {
@@ -221,30 +211,6 @@
               }
             }
           ]
-        },
-        {
-          "slug": "definition-blackboard-code-sourcer",
-          "name": "Definition Blackboard Code Sourcer",
-          "currentVersion": "0.0",
-          "tagline": "Turn inspected code revisions into evidence-backed definition proposals.",
-          "description": "The planned sourcer will analyze pinned repository revisions, initially for JVM projects, and prepare candidates for expert review. Source evidence describes the inspected revision; draft promotion and confirmation of deployed behavior are separate steps.",
-          "repos": [
-            "itip-definition-blackboard-repository-sourcer"
-          ],
-          "features": [
-            {
-              "slug": "automatic-sourcing-from-code-repos",
-              "name": "GSM Definitions candidate sourcing from code repos",
-              "blurb": "Prepare typed, evidence-backed candidates from staged repository analysis, initially for JVM projects. Each language, API-contract, SBOM and infrastructure adapter declares its coverage; candidates pass through review before draft promotion.",
-              "state": "planned",
-              "kind": "implementation",
-              "milestone": {
-                "version": "1.0",
-                "label": "MVP/GA — GSM Definitions automatic sourcing from code repos",
-                "ga": true
-              }
-            }
-          ]
         }
       ]
     },
@@ -255,9 +221,9 @@
       "tags": [
         "Engine"
       ],
-      "excerpt": "Definition, lifecycle, execution and intake foundations, with scoped integration work remaining.",
+      "excerpt": "Definition, lifecycle and execution foundations, with scoped integration work remaining.",
       "tagline": "The Systemic Intelligence Engine: a GSM reference implementation for governed definitions and bounded execution.",
-      "description": "Retained definitions, transition controls, execution source and contribution intake exist. A regulator additionally needs identified observations, accepted evaluation, authorized action and feedback.",
+      "description": "Retained definitions, transition controls and execution source exist. A regulator additionally needs identified observations, accepted evaluation, authorized action and feedback.",
       "qualities": [
         "pure-verdicts",
         "bounded-execution",
@@ -278,27 +244,15 @@
         {
           "slug": "governance-lifecycle-enforcement",
           "name": "Governance lifecycle controls",
-          "blurb": "Control the progression from closed evidence collection to reviewed and activated definition revisions, keeping board sealing separate from approval. Existing transition controls need acceptance for identity-bound decisions, graded validation and concurrent intake integrity; committed-change notifications are a planned extension.",
+          "blurb": "Control the progression from closed evidence collection to reviewed and activated definition revisions, keeping board sealing separate from approval. Existing transition controls need acceptance for identity-bound decisions and graded validation; committed-change notifications are a planned extension.",
           "state": "partial",
           "kind": "implementation",
           "features": [
             "definition-manager/definitions-lifecycle-enforcement",
-            "definition-manager/lifecycle-events-mediation",
-            "definition-blackboard-manager/ks-contributions-lifecycle-enforcement"
+            "definition-manager/lifecycle-events-mediation"
           ],
           "optional": [
             "definition-manager/lifecycle-events-mediation"
-          ]
-        },
-        {
-          "slug": "collaborative-definition-sourcing",
-          "name": "Collaborative contribution intake",
-          "blurb": "Give collaborating sources a shared intake and retained evidence history so clients can compare contributions and revisit the basis for candidate selection. Panels and storage exist; end-to-end validation, complete auditing, client reconciliation and authorized draft promotion remain integration boundaries.",
-          "state": "partial",
-          "kind": "implementation",
-          "features": [
-            "definition-blackboard-manager/ks-contributions-management-api",
-            "definition-blackboard-manager/ks-contributions-retention"
           ]
         },
         {
@@ -421,7 +375,7 @@
         },
         {
           "slug": "operator",
-          "name": "Operator",
+          "name": "Definition Operator",
           "currentVersion": "0.1",
           "tagline": "Connect governed definitions to execution and planned Norm evaluation.",
           "description": "The execution implementation resolves eligible definitions and dispatches through selected adapters. Caller authority, execution budgets and failure handling remain integration boundaries. Planned pure Norm evaluation will return verdicts over pinned inputs without dispatching effects.",
@@ -464,15 +418,77 @@
               }
             }
           ]
+        }
+      ]
+    },
+    {
+      "slug": "sis",
+      "name": "SIS",
+      "fullName": "Systemic Intelligence Sourcing",
+      "tags": [
+        "Definition Sourcing"
+      ],
+      "excerpt": "Contribution intake foundations, with planned evidence-backed sourcing from code repositories.",
+      "tagline": "Systemic Intelligence Sourcing: evidence-backed GSM definition candidates from external artifacts, reviewed on a collaborative blackboard before SIE governs them.",
+      "description": "Blackboard panels, contribution intake, retention and sealing exist. Code repository sourcing, client reconciliation and draft promotion into the SIE Definition Manager remain planned.",
+      "capabilities": [
+        {
+          "slug": "automatic-it-truth-sourcing",
+          "name": "Evidence-backed IT definition sourcing",
+          "blurb": "Reconcile evidence-backed candidates from selected code revisions into reviewable IT definition drafts, with collection coverage, source age and recoverable runs visible throughout. Analysis and client-owned draft registration are planned; inspected source is not deployed reality.",
+          "state": "planned",
+          "kind": "implementation",
+          "features": [
+            "code-sourcer/automatic-sourcing-from-code-repos",
+            "blackboard-manager/ks-contributions-management-api"
+          ]
         },
         {
-          "slug": "definition-blackboard-manager",
-          "name": "Definition Blackboard Manager",
+          "slug": "collaborative-definition-sourcing",
+          "name": "Collaborative contribution intake",
+          "blurb": "Give collaborating sources a shared intake and retained evidence history so clients can compare contributions and revisit the basis for candidate selection. Panels and storage exist; end-to-end validation, complete auditing, client reconciliation and authorized draft promotion remain integration boundaries.",
+          "state": "partial",
+          "kind": "implementation",
+          "features": [
+            "blackboard-manager/ks-contributions-management-api",
+            "blackboard-manager/ks-contributions-lifecycle-enforcement",
+            "blackboard-manager/ks-contributions-retention"
+          ]
+        }
+      ],
+      "products": [
+        {
+          "slug": "code-sourcer",
+          "name": "Code Sourcer",
+          "currentVersion": "0.0",
+          "tagline": "Turn inspected code revisions into evidence-backed definition proposals.",
+          "description": "The planned sourcer will analyze pinned repository revisions, initially for JVM projects, and prepare candidates for expert review. Source evidence describes the inspected revision; draft promotion and confirmation of deployed behavior are separate steps.",
+          "repos": [
+            "sis-code-sourcer"
+          ],
+          "features": [
+            {
+              "slug": "automatic-sourcing-from-code-repos",
+              "name": "GSM Definitions candidate sourcing from code repos",
+              "blurb": "Prepare typed, evidence-backed candidates from staged repository analysis, initially for JVM projects. Each language, API-contract, SBOM and infrastructure adapter declares its coverage; candidates pass through review before draft promotion.",
+              "state": "planned",
+              "kind": "implementation",
+              "milestone": {
+                "version": "1.0",
+                "label": "MVP/GA — GSM Definitions automatic sourcing from code repos",
+                "ga": true
+              }
+            }
+          ]
+        },
+        {
+          "slug": "blackboard-manager",
+          "name": "Blackboard Manager",
           "currentVersion": "1.0",
           "tagline": "Bring evidence and competing proposals into a shared review space.",
           "description": "Panels, contribution intake, retention and sequential sealing are implemented. Concurrent intake integrity and client integration remain in scope for completion. Clients reconcile candidates and promote drafts; sealing closes collection rather than approving a definition.",
           "repos": [
-            "sie-definition-blackboard-manager"
+            "sis-blackboard-manager"
           ],
           "features": [
             {
@@ -1357,7 +1373,7 @@
         },
         {
           "slug": "saf-sie-bridge",
-          "name": "SAF SIE Bridge",
+          "name": "SIE Bridge",
           "currentVersion": "0.0",
           "tagline": "Turn captured delivery history into proposals for governed context.",
           "description": "The planned bridge will derive typed candidates from pinned SAF artifacts and journals, retaining provenance and uncertainty for review. Client-owned reconciliation and draft promotion connect those proposals to SIE; sourcing itself does not approve or deploy them.",
@@ -1373,7 +1389,7 @@
               "kind": "implementation",
               "milestone": {
                 "version": "1.0",
-                "label": "MVP/GA — harness history sourcing into GSM contributions on the Definition Blackboard Manager",
+                "label": "MVP/GA — harness history sourcing into GSM contributions on the Blackboard Manager",
                 "ga": true
               }
             }
@@ -1771,8 +1787,8 @@
       "state": "partial",
       "scope": "Definition and specification foundations; integrated authorized use remains incomplete.",
       "capabilities": [
-        "itip/governed-it-inventory",
-        "itip/model-grounded-it-reasoning",
+        "oip/governed-it-inventory",
+        "oip/model-grounded-it-reasoning",
         "sie/authoritative-definition-store",
         "sie/governed-context-for-ai",
         "gsm/systemic-primitive-vocabulary",
@@ -1789,7 +1805,7 @@
       "state": "partial",
       "scope": "Content exists; integrated composition and enforcement are planned.",
       "capabilities": [
-        "itip/it-governance-fabric-composition",
+        "oip/it-governance-fabric-composition",
         "gsm/framework-and-regulation-sourcing"
       ]
     },
@@ -1815,8 +1831,8 @@
       "state": "planned",
       "scope": "Acquisition and end-to-end review/promotion are planned.",
       "capabilities": [
-        "itip/automatic-it-truth-sourcing",
-        "sie/collaborative-definition-sourcing",
+        "sis/automatic-it-truth-sourcing",
+        "sis/collaborative-definition-sourcing",
         "saf/delivery-history-as-governed-context"
       ]
     },
@@ -1828,7 +1844,7 @@
       "state": "planned",
       "scope": "Complete pure verdicts and continuous appraisal are planned.",
       "capabilities": [
-        "itip/continuous-it-compliance-evaluation",
+        "oip/continuous-it-compliance-evaluation",
         "sie/deterministic-norm-evaluation"
       ]
     },
@@ -1840,7 +1856,7 @@
       "state": "partial",
       "scope": "Local controls exist; integrated generation/effects need acceptance.",
       "capabilities": [
-        "itip/it-artifact-generation",
+        "oip/it-artifact-generation",
         "sie/governed-mechanism-execution",
         "saf/deterministic-agentic-execution",
         "saf/enforced-artifact-contracts",
@@ -2016,7 +2032,7 @@
       "requires": {
         "all": [
           {
-            "ref": "itip/it-governance-fabric-composition"
+            "ref": "oip/it-governance-fabric-composition"
           },
           {
             "ref": "gsm/framework-and-regulation-sourcing"
@@ -2044,7 +2060,7 @@
           {
             "any": [
               {
-                "ref": "itip/automatic-it-truth-sourcing"
+                "ref": "sis/automatic-it-truth-sourcing"
               },
               {
                 "ref": "saf/delivery-history-as-governed-context"
@@ -2052,7 +2068,7 @@
             ]
           },
           {
-            "ref": "sie/collaborative-definition-sourcing"
+            "ref": "sis/collaborative-definition-sourcing"
           }
         ]
       }

@@ -80,7 +80,7 @@ export function serializeBrief(catalog: PilotCatalog, input: PilotSelection, det
   const absolute = (href: string) => new URL(href, 'https://poesis.cloud').href;
   const lines = [
     '# Poesis pilot discussion brief', '',
-    'Evaluation environment assumed: ITIP + SIE SaaS. Selected scope and operating readiness require confirmation before kickoff.',
+    'Evaluation environment assumed: OIP + SIE SaaS. Selected scope and operating readiness require confirmation before kickoff.',
     'This draft does not book a pilot, provision SaaS or confirm scope, acceptance or commercial terms.', '',
   ];
   for (const [heading, records] of [['Desired values', selectedValues], ['Pain points', selectedPains]] as const) {
@@ -106,7 +106,7 @@ export function serializeBrief(catalog: PilotCatalog, input: PilotSelection, det
     lines.push(`- ${useCase.name}`, `  Goal: ${useCase.description}`, `  Registered support: ${useCase.stateLabel ?? 'No registered support (not a planned-delivery claim)'}`, `  ${absolute(useCase.href)}`);
     if ((selection.values.length || selection.pains.length) && !matchesNeeds(useCase, selection)) lines.push('  Independently selected: no registered link to the currently selected needs.');
   }
-  lines.push('', '## Registered supporting scope - confirmation required', 'These items may belong to other solutions. Their catalog states do not establish ITIP/SIE SaaS availability or implementation of the whole pilot.');
+  lines.push('', '## Registered supporting scope - confirmation required', 'These items may belong to other solutions. Their catalog states do not establish OIP/SIE SaaS availability or implementation of the whole pilot.');
   const supportKeys = new Set([...selectedValues, ...selectedPains, ...selectedCases].flatMap((record) => record.supports));
   const supports = catalog.supports.filter((support) => supportKeys.has(support.key));
   if (!supports.length) lines.push('No registered platform support for the selected scope. This is a gap, not an implied delivery plan.');
@@ -121,7 +121,7 @@ export function emailHandoff(brief: string): { href: string; shortened: boolean 
   const prefix = `mailto:${pilotEmail}?subject=${encodeURIComponent(subject)}&body=`;
   const full = prefix + encodeURIComponent(brief);
   const shortened = full.length > 1800;
-  return { href: shortened ? prefix + encodeURIComponent('I would like to discuss an ITIP + SIE SaaS pilot. I will attach or paste my downloaded pilot brief before sending. Scope and terms remain to agree.') : full, shortened };
+  return { href: shortened ? prefix + encodeURIComponent('I would like to discuss an OIP + SIE SaaS pilot. I will attach or paste my downloaded pilot brief before sending. Scope and terms remain to agree.') : full, shortened };
 }
 export function safePilotJson(catalog: PilotCatalog): string {
   return JSON.stringify(catalog).replace(/</g, '\\u003c').replace(/>/g, '\\u003e').replace(/&/g, '\\u0026').replace(/\u2028/g, '\\u2028').replace(/\u2029/g, '\\u2029');

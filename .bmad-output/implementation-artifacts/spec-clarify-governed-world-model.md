@@ -19,11 +19,11 @@ context:
 
 ## Boundaries & Constraints
 
-**Always:** Preserve the article's concise research-essay form and its core proposition that institutional authority cannot arise from predictive accuracy. Attribute responsibilities precisely: GSM supplies the ontology and governance grammar; Definition Manager holds and governs definitions; Operator evaluates and effects active typed mechanisms; Definition Blackboard admits qualified proposals; ITIP supplies domain and human interaction surfaces. Describe the governed model as authoritative but revisable through evidence, never infallible.
+**Always:** Preserve the article's concise research-essay form and its core proposition that institutional authority cannot arise from predictive accuracy. Attribute responsibilities precisely: GSM supplies the ontology and governance grammar; Definition Manager holds and governs definitions; Definition Operator evaluates and effects active typed mechanisms; SIS Blackboard Manager admits qualified proposals; OIP supplies domain and human interaction surfaces. Describe the governed model as authoritative but revisable through evidence, never infallible.
 
 **Ask First:** Any title change, new product capability claim, or edit outside the article source.
 
-**Never:** Claim that learned models inherently lack provenance, versions, causal representations, or access to authoritative records. Claim that GSM or Operator natively predicts, simulates, or owns empirical truth. Imply that the model artifact alone disposes without Definition Manager, Operator, ITIP/human authority, and enforcement. Present planned observation or derivation capabilities as shipped.
+**Never:** Claim that learned models inherently lack provenance, versions, causal representations, or access to authoritative records. Claim that GSM or Operator natively predicts, simulates, or owns empirical truth. Imply that the model artifact alone disposes without Definition Manager, Operator, OIP/human authority, and enforcement. Present planned observation or derivation capabilities as shipped.
 
 </frozen-after-approval>
 
@@ -53,7 +53,7 @@ context:
 
 The durable distinction is not explicit versus learned representation. It is **epistemic capability versus institutional force**. A learned world model owns the predictive account of how the environment behaves; the governed world model owns neither prediction nor reality, but the explicit institutional account against which action is authorized and evaluated.
 
-Use a concrete registry example: a model can query an active policy and cite its provenance, but neither retrieval nor confidence activates that policy. In Poesis, Definition Manager and the Ascription lifecycle establish standing; Operator executes active typed mechanisms; ITIP and accountable humans supply domain disposition; the Blackboard is the membrane through which learned proposals may become candidates without silently becoming authority.
+Use a concrete registry example: a model can query an active policy and cite its provenance, but neither retrieval nor confidence activates that policy. In Poesis, Definition Manager and the Ascription lifecycle establish standing; Operator executes active typed mechanisms; OIP and accountable humans supply domain disposition; the Blackboard is the membrane through which learned proposals may become candidates without silently becoming authority.
 
 ## Verification
 
