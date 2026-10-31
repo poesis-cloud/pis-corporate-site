@@ -127,23 +127,28 @@ test('usage is separate from platform and covers its stable identity ledger', ()
   assert.equal(poesisPlatform.solutions.length, 6);
   assert.doesNotThrow(() => validateUsage());
   const coverage = usageCoverage();
-  assert.deepEqual(coverage, { features: 67, capabilities: 25, affordances: 6 });
-  assert.equal(usageFeatures.length, 67);
-  assert.equal(usageCapabilities.length, 25);
+  assert.deepEqual(coverage, { features: 73, capabilities: 26, affordances: 6 });
+  assert.equal(usageFeatures.length, 73);
+  assert.equal(usageCapabilities.length, 26);
   assert.equal(usageAffordances.length, 6);
   assert.equal(usageValues.length, 84);
-  assert.equal(poesisUsage.pains.length, 32);
+  assert.equal(poesisUsage.pains.length, 33);
   assert.equal(poesisUsage.actorTypes.length, 26);
-  assert.equal(poesisUsage.useCases.length, 115);
+  assert.equal(poesisUsage.useCases.length, 122);
   assert.equal(poesisUsage.useCases.filter((useCase) => useCaseStatus(useCase) === 'delivered').length, 26);
   assert.equal(poesisUsage.useCases.filter((useCase) => useCaseStatus(useCase) === 'partial').length, 34);
-  assert.equal(poesisUsage.useCases.filter((useCase) => useCaseStatus(useCase) === 'planned').length, 39);
+  assert.equal(poesisUsage.useCases.filter((useCase) => useCaseStatus(useCase) === 'planned').length, 46);
   assert.equal(poesisUsage.useCases.filter((useCase) => useCaseStatus(useCase) === undefined).length, 16);
   assert.equal(valueStatus('value:service-accountability'), undefined);
 });
 
 test('constitutive compositions retain distinct function and whole-level use cases', () => {
-  for (const entry of usageCapabilities) assert.ok(entry.capability.relations.features.length >= 2, entry.slug);
+  // SIM LM has a single GitHub roadmap feature, so its sole capability is the one intended single-feature composition.
+  const singleFeatureCapabilities = ['sim/governed-context-grounded-models'];
+  for (const entry of usageCapabilities) {
+    if (singleFeatureCapabilities.includes(entry.slug)) assert.deepEqual(entry.capability.relations.features, ['lm/gsm-sie-grounded-training'], entry.slug);
+    else assert.ok(entry.capability.relations.features.length >= 2, entry.slug);
+  }
   for (const entry of usageAffordances) assert.ok(entry.affordance.relations.capabilities.length >= 2, entry.slug);
   for (const [key, entries, member] of [
     ['features', usageFeatures, 'feature'],
@@ -351,8 +356,36 @@ test('mockup and platform tasks reuse scope with only two distinct new features'
     assert.equal(entry.feature.milestone.version, '1.x');
     assert.equal(entry.feature.milestone.shipped, undefined);
   }
-  assert.equal(usageCapabilities.length, 25);
+  assert.equal(usageCapabilities.length, 26);
   assert.equal(usageAffordances.length, 6);
+});
+
+test('GitHub roadmap features stay planned, unshipped and served by their own use cases', () => {
+  const roadmapFeatures = {
+    'oip/web-application/oidc-sso': ['1.1', 'sign-in-with-organization-identity'],
+    'sie/definition-manager/graduate-data-quality-conformance': ['1.1', 'correct-nonconformant-draft'],
+    'sie/definition-manager/enhanced-dna-model': ['1.2', 'govern-any-primitive-with-obligations'],
+    'sie/definition-manager/otel-signals': ['1.3', 'observe-definition-manager-operations'],
+    'gsm/specifications/graduate-data-quality-conformance': ['1.1', 'specify-graded-draft-conformance'],
+    'sim/lm/gsm-sie-grounded-training': ['1.0', 'compare-grounded-language-models'],
+  };
+  for (const [slug, [version, useCase]] of Object.entries(roadmapFeatures)) {
+    const entry = usageFeatures.find((item) => item.slug === slug);
+    assert.ok(entry, slug);
+    assert.equal(entry.feature.delivery.state, 'planned', slug);
+    assert.equal(entry.feature.milestone.version, version, slug);
+    assert.equal(entry.feature.milestone.shipped, undefined, slug);
+    assert.deepEqual(useCasesForFeature(slug).map((item) => item.slug), [useCase], slug);
+    assert.equal(useCaseStatus({ slug: useCase }), 'planned', useCase);
+    assert.ok(painsForUseCase(useCase).length, useCase);
+    assert.ok(valuesForUseCase(useCase).length, useCase);
+  }
+  assert.equal(usageFeatures.find((item) => item.slug === 'sim/lm/gsm-sie-grounded-training').feature.milestone.ga, true);
+  const grounded = usageCapabilities.find((item) => item.slug === 'sim/governed-context-grounded-models');
+  assert.equal(capabilityStatus(grounded.solution, grounded.capability), 'planned');
+  assert.deepEqual(useCasesForItem(grounded.capability).map((item) => item.slug), ['review-grounded-model-evidence']);
+  const events = usageFeatures.find((item) => item.slug === 'sie/definition-manager/lifecycle-events-mediation').feature;
+  assert.deepEqual(events.milestone, usageFeatures.find((item) => item.slug === 'sie/definition-manager/otel-signals').feature.milestone);
 });
 
 test('incident response reaches business processes and owners without claiming causality or platform scope', () => {
@@ -888,7 +921,7 @@ test('built usage pages retain identity, derived badges, contextual links and SE
   assert.equal(options.length, poesisUsage.actorTypes.length + 1);
   for (const option of options) assert.ok(attr(option, 'value') === '' || poesisUsage.actorTypes.some((actor) => actor.slug === attr(option, 'value')));
   for (const solution of poesisPlatform.solutions) {
-    // An early-stage solution without use cases (SIM) has no usage section to render.
+    // A solution without use cases would have no usage section to render.
     if (useCasesForSolution(solution.slug).length) assert.ok(elements(built(solutionHref(solution)), (node) => attr(node, 'data-usage-case')).length, solution.slug);
     for (const product of solution.products) {
       const document = built(`${solutionHref(solution)}/products/${product.slug}`);

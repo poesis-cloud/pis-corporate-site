@@ -20,7 +20,7 @@
         {
           "slug": "governed-it-inventory",
           "name": "Governed IT definition inventory",
-          "blurb": "Maintain a shared IT inventory whose typed definitions, review decisions and access responsibilities stay connected across framework views. Browser authoring, tenant/object policy and identity synchronization remain planned beyond the existing authentication foundations.",
+          "blurb": "Maintain a shared IT inventory whose typed definitions, review decisions and access responsibilities stay connected across framework views. Browser authoring, tenant/object policy, single sign-on and identity synchronization remain planned beyond the existing authentication foundations.",
           "state": "planned",
           "kind": "implementation",
           "features": [
@@ -28,7 +28,8 @@
             "web-application/rbac-abac",
             "web-application/identity-provider-synchronization",
             "web-application/governance-review-sessions",
-            "web-application/definitions-truth-sourcing-management"
+            "web-application/definitions-truth-sourcing-management",
+            "web-application/oidc-sso"
           ]
         },
         {
@@ -102,7 +103,7 @@
               "state": "planned",
               "kind": "implementation",
               "milestone": {
-                "version": "1.1",
+                "version": "1.6",
                 "label": "IT artifact factory"
               }
             },
@@ -113,7 +114,7 @@
               "state": "planned",
               "kind": "implementation",
               "milestone": {
-                "version": "1.3",
+                "version": "1.5",
                 "label": "IT compliance evaluation"
               }
             },
@@ -124,7 +125,7 @@
               "state": "planned",
               "kind": "implementation",
               "milestone": {
-                "version": "1.4",
+                "version": "1.2",
                 "label": "IT Copilot"
               }
             },
@@ -135,7 +136,7 @@
               "state": "planned",
               "kind": "implementation",
               "milestone": {
-                "version": "1.5",
+                "version": "1.4",
                 "label": "IT impact simulation"
               }
             },
@@ -146,7 +147,7 @@
               "state": "planned",
               "kind": "implementation",
               "milestone": {
-                "version": "1.2",
+                "version": "1.3",
                 "label": "Truth sourcing management"
               }
             },
@@ -210,6 +211,17 @@
                 "version": "1.x",
                 "label": "Identity synchronization and governance review sessions (unordered)"
               }
+            },
+            {
+              "slug": "oidc-sso",
+              "name": "OIDC / SSO",
+              "blurb": "Sign in through a configured external OIDC identity provider with single sign-on instead of separate local credentials. Privileges still come from reviewed role and attribute assignments, not from identity-provider claims alone.",
+              "state": "planned",
+              "kind": "implementation",
+              "milestone": {
+                "version": "1.1",
+                "label": "OIDC / SSO"
+              }
             }
           ]
         }
@@ -245,15 +257,19 @@
         {
           "slug": "governance-lifecycle-enforcement",
           "name": "Governance lifecycle controls",
-          "blurb": "Control the progression from closed evidence collection to reviewed and activated definition revisions, keeping board sealing separate from approval. Existing transition controls need acceptance for identity-bound decisions and graded validation; committed-change notifications are a planned extension.",
+          "blurb": "Control the progression from closed evidence collection to reviewed and activated definition revisions, keeping board sealing separate from approval. Existing transition controls need acceptance for identity-bound decisions and graded validation; client-selected draft conformance, committed-change notifications and operational telemetry are planned extensions.",
           "state": "partial",
           "kind": "implementation",
           "features": [
             "definition-manager/definitions-lifecycle-enforcement",
-            "definition-manager/lifecycle-events-mediation"
+            "definition-manager/lifecycle-events-mediation",
+            "definition-manager/graduate-data-quality-conformance",
+            "definition-manager/otel-signals"
           ],
           "optional": [
-            "definition-manager/lifecycle-events-mediation"
+            "definition-manager/lifecycle-events-mediation",
+            "definition-manager/graduate-data-quality-conformance",
+            "definition-manager/otel-signals"
           ]
         },
         {
@@ -264,7 +280,11 @@
           "kind": "implementation",
           "features": [
             "operator/norms-evaluation-api",
-            "definition-manager/definitions-management-api"
+            "definition-manager/definitions-management-api",
+            "definition-manager/enhanced-dna-model"
+          ],
+          "optional": [
+            "definition-manager/enhanced-dna-model"
           ]
         },
         {
@@ -302,7 +322,7 @@
           "name": "Definition Manager",
           "currentVersion": "1.0",
           "tagline": "Keep system definitions versioned, accessible and governed through change.",
-          "description": "REST APIs, retained snapshots and transition controls provide the current implementation scope. Tenant/object authorization, current graded validation and revision-bound decisions are being completed; committed change notifications are planned.",
+          "description": "REST APIs, retained snapshots and transition controls provide the current implementation scope. Tenant/object authorization, current graded validation and revision-bound decisions are being completed; client-selected draft conformance, an enhanced DNA model, committed change notifications and OpenTelemetry signals are planned.",
           "qualities": [
             "tenant-scoped-storage",
             "revision-bound-decisions"
@@ -355,12 +375,45 @@
             {
               "slug": "lifecycle-events-mediation",
               "name": "GSM Definitions lifecycle events mediation",
-              "blurb": "Notify authorized consumers of committed changes, with ordering, replay, deduplication and crash recovery in a dedicated lifecycle event stream.",
+              "blurb": "Notify authorized consumers of committed changes over the Kafka protocol with a configurable broker, with ordering, replay, deduplication and crash recovery in a dedicated lifecycle event stream.",
+              "state": "planned",
+              "kind": "implementation",
+              "milestone": {
+                "version": "1.3",
+                "label": "GSM Definitions lifecycle events mediation · OTel signals"
+              }
+            },
+            {
+              "slug": "graduate-data-quality-conformance",
+              "name": "Graduate data-quality conformance",
+              "blurb": "Choose when posting a draft whether a Definition that does not conform to its Archetype is rejected (strict) or accepted as a nonconformant draft. Responses identify each nonconformant property and why, so corrections can precede review.",
               "state": "planned",
               "kind": "implementation",
               "milestone": {
                 "version": "1.1",
-                "label": "GSM Definitions lifecycle events mediation"
+                "label": "Graduate data-quality conformance"
+              }
+            },
+            {
+              "slug": "enhanced-dna-model",
+              "name": "Enhanced DNA model",
+              "blurb": "Store and validate Directives and Norms that apply to any GSM primitive, not only Structures, following the enhanced DNA model of the GSM Specifications and its compatibility decisions.",
+              "state": "planned",
+              "kind": "implementation",
+              "milestone": {
+                "version": "1.2",
+                "label": "Enhanced DNA model"
+              }
+            },
+            {
+              "slug": "otel-signals",
+              "name": "OTel signals",
+              "blurb": "Emit OpenTelemetry traces, metrics and logs from the Definition Manager through the SIE OTel Collector, so operators can inspect requests and failures in their configured backend. Existing trace and log export is a foundation, not accepted signal coverage.",
+              "state": "planned",
+              "kind": "implementation",
+              "milestone": {
+                "version": "1.3",
+                "label": "GSM Definitions lifecycle events mediation · OTel signals"
               }
             }
           ]
@@ -604,16 +657,18 @@
         {
           "slug": "governance-grammar-and-lifecycle",
           "name": "Governance grammar and lifecycle",
-          "blurb": "Connect governance scope and evaluable constraints to immutable snapshots that progress through review, activation, suspension and retirement. Current DNA grammar and lifecycle content exist in source, with publication pending; enforcement belongs to processors, and future grammar extensions require accepted Change Proposals.",
+          "blurb": "Connect governance scope and evaluable constraints to immutable snapshots that progress through review, activation, suspension and retirement. Current DNA grammar and lifecycle content exist in source, with publication pending; enforcement belongs to processors, and graded draft conformance and future grammar extensions require accepted Change Proposals.",
           "state": "delivered",
           "kind": "specification",
           "features": [
             "specifications/dna-grammar",
             "specifications/systemic-lifecycle-management",
-            "specifications/enhanced-directives-norms-model"
+            "specifications/enhanced-directives-norms-model",
+            "specifications/graduate-data-quality-conformance"
           ],
           "optional": [
-            "specifications/enhanced-directives-norms-model"
+            "specifications/enhanced-directives-norms-model",
+            "specifications/graduate-data-quality-conformance"
           ]
         },
         {
@@ -762,13 +817,24 @@
             },
             {
               "slug": "enhanced-directives-norms-model",
-              "name": "Enhanced Directives and Norms model",
-              "blurb": "Extend governance expression through tested cases and accepted Change Proposals, with explicit compatibility decisions for each grammar change.",
+              "name": "Enhanced DNA model",
+              "blurb": "Extend Directives and Norms so they can apply to any GSM primitive, not only Structures, through tested cases and accepted Change Proposals with explicit compatibility decisions for each grammar change.",
+              "state": "planned",
+              "kind": "specification",
+              "milestone": {
+                "version": "1.2",
+                "label": "Enhanced DNA model"
+              }
+            },
+            {
+              "slug": "graduate-data-quality-conformance",
+              "name": "Graduate data-quality conformance",
+              "blurb": "Specify graded conformance of Definitions against their Archetype, distinguishing strict rejection from accepted nonconformant drafts and requiring each nonconformant property to be reported with its reason. Normative content requires an accepted Change Proposal.",
               "state": "planned",
               "kind": "specification",
               "milestone": {
                 "version": "1.1",
-                "label": "Enhanced Directives and Norms model"
+                "label": "Graduate data-quality conformance"
               }
             }
           ],
@@ -1437,19 +1503,43 @@
       ],
       "excerpt": "An early-stage language model effort grounded in GSM and SIE context.",
       "tagline": "The Systemic Intelligence Model: an early-stage effort toward a language model grounded in GSM definitions and SIE context.",
-      "description": "SIM is at an early stage. Its first product, LM, explores whether language models perform better when trained against GSM and SIE governed context than against other context. No model, capability or feature is released yet.",
-      "capabilities": [],
+      "description": "SIM is at an early stage. Its first product, LM, plans to train language models on GSM and SIE governed context and test whether they outperform the same models given any other context. No model is released; its capability and feature are planned.",
+      "capabilities": [
+        {
+          "slug": "governed-context-grounded-models",
+          "name": "Governed-context-grounded language models",
+          "blurb": "Ground language models in GSM definitions and SIE governed context, and evaluate them against the same models given other context under a shared, reviewable protocol. Planned research: any advantage remains to be demonstrated before it is claimed.",
+          "state": "planned",
+          "kind": "research",
+          "features": [
+            "lm/gsm-sie-grounded-training"
+          ]
+        }
+      ],
       "products": [
         {
           "slug": "lm",
           "name": "LM",
           "currentVersion": "0.0",
           "tagline": "Explore a language model trained against governed GSM and SIE context.",
-          "description": "The SIM language model is at an early stage. Training against GSM and SIE governed context is being explored; no model is released and no capability is claimed yet.",
+          "description": "The SIM language model is at an early stage. Its planned 1.0 trains language models on GSM and SIE governed context and compares them with the same models given other context; no model is released and no advantage is claimed yet.",
           "repos": [
             "sim-lm"
           ],
-          "features": []
+          "features": [
+            {
+              "slug": "gsm-sie-grounded-training",
+              "name": "GSM/SIE-grounded language models",
+              "blurb": "Train language models on GSM definitions and SIE governed context and compare them with the same models given any other context, to establish whether governed grounding improves their results. Planned research: no model is released and no advantage is claimed yet.",
+              "state": "planned",
+              "kind": "research",
+              "milestone": {
+                "version": "1.0",
+                "label": "MVP/GA — GSM/SIE-grounded language models",
+                "ga": true
+              }
+            }
+          ]
         }
       ]
     }
@@ -1850,7 +1940,8 @@
         "gsm/systemic-primitive-vocabulary",
         "gsm/open-domain-typing",
         "gsm/protocol-and-domain-semantics-sourcing",
-        "gsm/portable-conformance-testable-definitions"
+        "gsm/portable-conformance-testable-definitions",
+        "sim/governed-context-grounded-models"
       ]
     },
     {

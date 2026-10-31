@@ -1,7 +1,10 @@
 ---
 import BaseLayout from '../../../layouts/BaseLayout.astro';
+import UsageCases from '../../../components/UsageCases.astro';
+import { useCasesForSolution } from '../../../data/usage.ts';
 import Icon from '../../../components/Icon.astro';
 import ProductCards from '../../../components/ProductCards.astro';
+import SolutionCapabilityCards from '../../../components/SolutionCapabilityCards.astro';
 import { platformSolutions } from '../../../data/poesis-platform.ts';
 
 const sim = platformSolutions.find((s) => s.slug === 'sim')!;
@@ -25,6 +28,16 @@ const sim = platformSolutions.find((s) => s.slug === 'sim')!;
     </div>
   </section>
 
+  <section class="section">
+    <div class="container">
+      <div class="section-head">
+        <p class="eyebrow">Capabilities</p>
+        <h2>Grounded language models, planned as research.</h2>
+      </div>
+      <SolutionCapabilityCards solution={sim} />
+    </div>
+  </section>
+
   <section class="section section--soft">
     <div class="container">
       <div class="section-head">
@@ -34,4 +47,6 @@ const sim = platformSolutions.find((s) => s.slug === 'sim')!;
       <ProductCards solution={sim} />
     </div>
   </section>
+
+  <UsageCases cases={useCasesForSolution('sim')} title="Grounded language model use cases" />
 </BaseLayout>
