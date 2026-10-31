@@ -31,7 +31,7 @@ const isHomepage = Astro.url.pathname === '/';
 const homepageDescription = 'Poesis is an Organizational Intelligence Platform in development: shared definition foundations, local agentic controls and planned IT governance, appraisal and analysis workflows.';
 const resolvedDescription = description ?? (isHomepage
   ? homepageDescription
-  : 'Poesis develops GSM specification content, SIE definition foundations, local SAF controls and planned OIP workflows. Availability and integration are stated per scope.');
+  : 'Poesis develops GSM specification content, SIE definition foundations, SIS contribution intake, local SAF controls, planned OIP workflows and early-stage SIM model work. Availability and integration are stated per scope.');
 const fullTitle = `${title} · Poesis`;
 const ogImage = new URL('/og-default.png', site).href;
 const socialImageAlt = isHomepage

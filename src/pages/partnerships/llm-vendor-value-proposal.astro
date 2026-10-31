@@ -230,7 +230,9 @@ function adherencePills(ids: string[]) {
                   <button class="vf-fold-btn" type="button" data-fold="f-sie" aria-controls="f-sie" aria-expanded="false">▸ components</button>
                   <div class="vf-fold" id="f-sie" hidden>
                     <div class="vf-comp"><b>sie-definition-manager</b> — hosts GSM, Ascription lifecycle, generative governance grammar</div>
-                    <div class="vf-comp"><b>sie-operator</b> — executes in-effect Mechanisms and validates typed inputs and effects; automatic Norm preflight remains to be built</div>
+                    <div class="vf-comp"><b>sie-definition-operator</b> — executes in-effect Mechanisms and validates typed inputs and effects; automatic Norm preflight remains to be built</div>
+                    <div class="vf-comp"><b>sie-otel-collector</b> — shared OpenTelemetry collector receiving traces and logs from SIE services</div>
+                    <div class="vf-comp"><b>sie-mcp</b> — Model Context Protocol server for governed agent context; early stage, planned</div>
                   </div>
                 </div>
 
@@ -254,7 +256,7 @@ function adherencePills(ids: string[]) {
                   <button class="vf-fold-btn" type="button" data-fold="f-oip" aria-controls="f-oip" aria-expanded="false">▸ components</button>
                   <div class="vf-fold" id="f-oip" hidden>
                     <div class="vf-comp"><b>oip-web-application</b> — planned human gate for intent, approval, simulation, appraisal, and audit</div>
-                    <div class="vf-comp"><b>gsm-ontology</b> — selected GDPR/NIS2 templates and TOGAF/ISO vocabulary; broader frameworks and operational binding remain planned</div>
+                    <div class="vf-comp"><b>gsm-ontology</b> (GSM product, consumed by OIP) — selected GDPR/NIS2 templates and TOGAF/ISO vocabulary; broader frameworks and operational binding remain planned</div>
                   </div>
                 </div>
 
@@ -268,6 +270,17 @@ function adherencePills(ids: string[]) {
                     <div class="vf-comp"><b>orchestrator-agent</b> — portfolio / program / team</div>
                     <div class="vf-comp"><b>specialist-agent</b> — architecture, dev, QA, security, docs agents</div>
                     <div class="vf-comp"><b>harness</b> — resolution, injection, routing, validation, agent authorization and journals exist in source; human authority, transaction and host compatibility need acceptance</div>
+                  </div>
+                </div>
+
+                <div class="vf-card" id="n-sim" data-component="SIM — Systemic Intelligence Model">
+                  <button class="vf-card-select" type="button" aria-pressed="false" aria-controls="vf-detail">
+                    <span class="vf-ctitle">SIM — Systemic Intelligence Model</span>
+                    <span class="vf-csub">early-stage language model work exploring training against GSM / SIE governed context; nothing released</span>
+                  </button>
+                  <button class="vf-fold-btn" type="button" data-fold="f-sim" aria-controls="f-sim" aria-expanded="false">▸ components</button>
+                  <div class="vf-fold" id="f-sim" hidden>
+                    <div class="vf-comp"><b>sim-lm</b> — SIM language model; early stage, no model released</div>
                   </div>
                 </div>
               </div>
@@ -665,7 +678,7 @@ function adherencePills(ids: string[]) {
       schema: [
         { n: 'gsm-ontology' },
         { n: 'sie-definition-manager', via: 'sourced obligation and domain vocabulary' },
-        { n: 'sie-operator', via: 'in-effect Definitions, Norms, modeled Interactions' },
+        { n: 'sie-definition-operator', via: 'in-effect Definitions, Norms, modeled Interactions' },
         { n: 'Grounded inference', side: 'llm', via: 'context selection, provenance projection, tool contracts — facade not implemented' },
         { n: 'Grounded answer', side: 'material', via: 'inspects types, traces Interactions, retrieves constraints' },
       ],
@@ -673,7 +686,7 @@ function adherencePills(ids: string[]) {
       partner: ['Runtime specialisation through governed context and tools without retraining the model', 'Evaluation target: fewer unsupported claims and more accurate dependency traces than document-retrieval baselines'],
       poesis: ['A model-neutral context and tool contract that can be tested across conforming models', 'Grounding value that accrues to the governed Definition base rather than to any single model generation'],
       shared: ['Answers grounded in the customer organisation’s current, governed Definitions rather than an undifferentiated document corpus', 'Grounding scope bounded by the customer organisation’s own definition base, keeping context inside its governance perimeter'],
-      comps: 'Foundations implemented in <b>sie-definition-manager</b> and <b>sie-operator</b>; model-facing context selection, provenance projection, and tool contracts remain to be built.',
+      comps: 'Foundations implemented in <b>sie-definition-manager</b> and <b>sie-definition-operator</b>; model-facing context selection, provenance projection, and tool contracts remain to be built.',
     },
     {
       id: 'C', hex: '#34d399', from: 'n-infer', to: 'n-oip', lane: 0,
@@ -683,17 +696,17 @@ function adherencePills(ids: string[]) {
       sub: 'Every model output entering a governed action path remains a proposal. The target OIP gate presents evidence, provenance, and evaluations to an accountable human for disposition; that gate is not yet implemented. Definition Operator already executes only in-effect executable Mechanisms (ACTIVE or DEPRECATED) and performs deterministic schema and rule checks. It does not yet perform automatic Norm preflight. These checks establish conformance to explicit contracts, not the truth of an inference.',
       schema: [
         { n: 'Grounded inference', side: 'llm' },
-        { n: 'sie-operator', via: 'a proposal, never an action' },
+        { n: 'sie-definition-operator', via: 'a proposal, never an action' },
         { n: 'oip-web-application', todo: true, via: 'schema and rule conformance checked' },
         { n: 'Supervision', side: 'human', via: 'evidence, provenance, evaluations presented' },
-        { n: 'sie-operator', via: 'approved — dispatch to in-effect Mechanisms' },
+        { n: 'sie-definition-operator', via: 'approved — dispatch to in-effect Mechanisms' },
         { n: 'sie-definition-manager', via: 'execution effects and lifecycle transition' },
         { n: 'oip-web-application', todo: true, via: 'decision, evidence, and execution composed into audit' },
       ],
       partner: ['A deployable control pattern for supervised model action in regulated environments', 'An assurance case grounded in traceable proposals, deterministic checks, human decisions, and execution evidence'],
       poesis: ['A governed disposition gate as the single controlled entry point for model-proposed action', 'Disposition and outcome records can support later evaluation, but become learning labels only under defined tasks, measures, and rights controls'],
       shared: ['AI-assisted action constrained by the customer organisation’s governed Definitions and explicit human authority', 'An accountable human decision, with the evidence it rested on, recorded for every model-proposed change'],
-      comps: 'Execution kernel implemented in <b>sie-operator</b> with lifecycle APIs in <b>sie-definition-manager</b>; the <b>oip-web-application</b> human gate, composed audit, and automatic Norm preflight remain to be built.',
+      comps: 'Execution kernel implemented in <b>sie-definition-operator</b> with lifecycle APIs in <b>sie-definition-manager</b>; the <b>oip-web-application</b> human gate, composed audit, and automatic Norm preflight remain to be built.',
     },
     {
       id: 'D', hex: '#a78bfa', from: 'n-sie', to: 'n-train', lane: 0,
@@ -706,7 +719,7 @@ function adherencePills(ids: string[]) {
         { n: 'Regulation', side: 'human', via: 'candidate corpus — typed identities, relations, Ascription history' },
         { n: 'Model adaptation &amp; specialisation', side: 'llm', via: 'rights-bounded corpus export — not implemented' },
         { n: 'Model evaluation &amp; qualification', side: 'llm', via: 'adapted weights' },
-        { n: 'sie-operator', via: 'controlled evaluation against runtime grounding alone' },
+        { n: 'sie-definition-operator', via: 'controlled evaluation against runtime grounding alone' },
       ],
       feedback: 'The result decides whether governed material should leave the runtime boundary at all, and the decision stays revocable.',
       partner: ['A potential adaptation corpus containing typed identities, modeled relationships, and lifecycle state', 'Controlled experiments comparing weight adaptation with runtime grounding alone'],
@@ -743,7 +756,7 @@ function adherencePills(ids: string[]) {
       schema: [
         { n: 'sie-definition-manager' },
         { n: 'Model evaluation &amp; qualification', side: 'llm', via: 'enterprise task envelopes — GSM schemas, Mechanisms, expected outcomes' },
-        { n: 'sie-operator', via: 'versioned model outputs and inference configuration' },
+        { n: 'sie-definition-operator', via: 'versioned model outputs and inference configuration' },
         { n: 'oip-web-application', todo: true, via: 'deterministic evaluation of contracted properties' },
         { n: 'Governance', side: 'human', via: 'reproducible findings and traces — capability, failure boundaries, regressions' },
       ],
@@ -751,7 +764,7 @@ function adherencePills(ids: string[]) {
       partner: ['Workload-specific evidence about model strengths, regressions, and failure boundaries', 'A governed assurance case grounded in reproducible tests rather than general benchmark claims'],
       poesis: ['Reusable evaluation assets derived from explicit enterprise schemas, Mechanisms, and expected outcomes', 'An evaluation surface that stays meaningful as models change, because it is anchored in enterprise contracts rather than vendor benchmarks'],
       shared: ['Comparable evidence for selecting models and validating upgrades before governed deployment', 'Regressions detected against the customer organisation’s own workloads rather than against general benchmarks'],
-      comps: 'Builds on <b>sie-operator</b> typed execution and appraisal Mechanisms + <b>sie-definition-manager</b> schemas and lifecycle history; generic model-evaluation APIs and trace contracts remain to be designed.',
+      comps: 'Builds on <b>sie-definition-operator</b> typed execution and appraisal Mechanisms + <b>sie-definition-manager</b> schemas and lifecycle history; generic model-evaluation APIs and trace contracts remain to be designed.',
     },
     {
       id: 'F', hex: '#fb7185', from: 'n-saf', to: 'n-infer', lane: -28,
@@ -783,13 +796,13 @@ function adherencePills(ids: string[]) {
         { n: 'Regulation', side: 'human', via: 'GDPR, NIS2, DORA, AI Act, TOGAF, ISO vocabulary' },
         { n: 'sie-definition-manager', via: 'Directives and Norms authored' },
         { n: 'Governance', side: 'human', via: 'lifecycle transition proposed' },
-        { n: 'sie-operator', via: 'constraints placed in effect' },
+        { n: 'sie-definition-operator', via: 'constraints placed in effect' },
         { n: 'Grounded inference', side: 'llm', via: 'typed checks — automatic Norm preflight planned' },
       ],
       feedback: 'Appraisal of outcomes against Norms is what tells the organisation when its own constraints need to change.',
       organisation: ['Regulatory obligation and internal policy expressed in one enforceable grammar rather than in documents no system reads', 'Constraints that bound model behaviour without depending on any model’s cooperation'],
       poesis: ['A single constraint grammar that every adherence in this map is evaluated against', 'Governed vocabulary that widens through framework sourcing without changing the runtime'],
-      comps: 'Implemented in <b>sie-definition-manager</b> with vocabulary sourced through <b>gsm-ontology</b>; enforcement in <b>sie-operator</b>, where automatic Norm preflight remains to be built.',
+      comps: 'Implemented in <b>sie-definition-manager</b> with vocabulary sourced through <b>gsm-ontology</b>; enforcement in <b>sie-definition-operator</b>, where automatic Norm preflight remains to be built.',
     },
     {
       id: 'dis', loop: true, rail: 0, hex: '#fb923c', from: 'n-org-sup', to: 'n-oip', lane: -6,
@@ -820,14 +833,14 @@ function adherencePills(ids: string[]) {
         { n: 'Governance', side: 'human' },
         { n: 'oip-web-application', todo: true, via: 'intent — what the organisation means to be and to do' },
         { n: 'sie-definition-manager', via: 'Definitions and Ascriptions authored' },
-        { n: 'sie-operator', via: 'in-effect constraints and Mechanisms' },
+        { n: 'sie-definition-operator', via: 'in-effect constraints and Mechanisms' },
         { n: 'oip-web-application', todo: true, via: 'execution history, appraisal measures and findings' },
         { n: 'Governance', side: 'human', via: 'compliance, impact, and audit evidence' },
       ],
       feedback: 'Evidence returns to intent — this is the corrective path that makes regulation and disposition a loop rather than two one-way declarations.',
       organisation: ['A definition of itself that is typed, attributable, and current, rather than tacit and dispersed across documents and people', 'Accountability discharged with evidence — appraisal, simulation, and audit of both AI and human action'],
       poesis: ['The closing return path that makes the governance loop corrective rather than declarative', 'Appraisal and audit assets that stay meaningful as models and workloads change'],
-      comps: 'Authoring, lifecycle history, and appraisal Mechanisms in <b>sie-definition-manager</b> and <b>sie-operator</b>; the <b>oip-web-application</b> appraisal, simulation, and audit surfaces remain to be built.',
+      comps: 'Authoring, lifecycle history, and appraisal Mechanisms in <b>sie-definition-manager</b> and <b>sie-definition-operator</b>; the <b>oip-web-application</b> appraisal, simulation, and audit surfaces remain to be built.',
     },
   ];
 

@@ -1792,7 +1792,7 @@
         "value:sie/definition-manager/02"
       ],
       "features": [
-        "sie/definition-manager/mcp"
+        "sie/mcp/mcp"
       ]
     },
     {

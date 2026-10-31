@@ -54,7 +54,7 @@ const frameworkHref = solutionHref(framework);
         <div class="arch-grid">
           <div class="arch-stack">
         {stack.map((s, i) => (
-          <>            {i > 0 && <div class="arch-joint" aria-hidden="true"><span>{s.slug === 'gsm' ? 'specification contract' : 'planned integration'}</span></div>}
+          <>            {i > 0 && <div class="arch-joint" aria-hidden="true"><span>{s.slug === 'gsm' ? 'specification contract' : s.slug === 'sim' ? 'research exploration' : 'planned integration'}</span></div>}
             <article class="arch-scope arch-scope--standard" aria-labelledby={`arch-solution-${s.slug}`}>
               <div class="arch-scope-meta">
                 <span class="arch-icon"><Icon name={typeIcons.solution} size={16} /></span>
@@ -62,14 +62,16 @@ const frameworkHref = solutionHref(framework);
               </div>
               <h3 id={`arch-solution-${s.slug}`}><a href={solutionHref(s)}>{s.name}</a></h3>
               <p>{s.excerpt}</p>
-              <details class="arch-group">
-                <summary>Capabilities</summary>
-                <nav class="arch-comps" aria-label={`${s.name} capabilities`}>
-                  {s.capabilities.map((c) => (
-                    <a class:list={['arch-comp', plannedClass(capabilityStatus(s, c))]} href={`${solutionHref(s)}#${c.slug}`}>{c.name} <DeliveryStatus state={capabilityStatus(s, c)} /></a>
-                  ))}
-                </nav>
-              </details>
+              {s.capabilities.length > 0 && (
+                <details class="arch-group">
+                  <summary>Capabilities</summary>
+                  <nav class="arch-comps" aria-label={`${s.name} capabilities`}>
+                    {s.capabilities.map((c) => (
+                      <a class:list={['arch-comp', plannedClass(capabilityStatus(s, c))]} href={`${solutionHref(s)}#${c.slug}`}>{c.name} <DeliveryStatus state={capabilityStatus(s, c)} /></a>
+                    ))}
+                  </nav>
+                </details>
+              )}
               {solutionQualities(s.slug).length > 0 && (
                 <details class="arch-group">
                   <summary>Qualities</summary>
@@ -92,22 +94,24 @@ const frameworkHref = solutionHref(framework);
                       </h4>
                       <p class="arch-product-tagline">{p.excerpt}</p>
                       <ProductRoadmapMini product={p.name} features={p.features} milestones={productTimeline(p)} />
-                      <details class="arch-group arch-group--features">
-                        <summary>Features</summary>
-                        <nav class="arch-comps" aria-label={`${p.name} features`}>
-                          {p.features.map((f) => {
-                            const status = featureStatus(f);
-                            return (
-                              <a class:list={['arch-comp', plannedClass(status.state)]} href={`${solutionHref(s)}/products/${p.slug}#${f.slug}`}>
-                                {f.name}
-                                <span class="arch-comp-version" title={`Historical milestone v${status.version}`}>
-                                  <DeliveryStatus state={status.state} />
-                                </span>
-                              </a>
-                            );
-                          })}
-                        </nav>
-                      </details>
+                      {p.features.length > 0 && (
+                        <details class="arch-group arch-group--features">
+                          <summary>Features</summary>
+                          <nav class="arch-comps" aria-label={`${p.name} features`}>
+                            {p.features.map((f) => {
+                              const status = featureStatus(f);
+                              return (
+                                <a class:list={['arch-comp', plannedClass(status.state)]} href={`${solutionHref(s)}/products/${p.slug}#${f.slug}`}>
+                                  {f.name}
+                                  <span class="arch-comp-version" title={`Historical milestone v${status.version}`}>
+                                    <DeliveryStatus state={status.state} />
+                                  </span>
+                                </a>
+                              );
+                            })}
+                          </nav>
+                        </details>
+                      )}
                       {productQualities(s.slug, p.slug).length > 0 && (
                         <details class="arch-group">
                           <summary>Qualities</summary>

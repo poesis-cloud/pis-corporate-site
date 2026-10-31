@@ -30,6 +30,7 @@ export function getStaticPaths() {
 const { solution, product } = Astro.props;
 const state = productStatus(product);
 const qualities = productQualities(solution.slug, product.slug);
+const values = productValues(solution.slug, product.slug);
 const productFeatureCards = usageFeatures
   .filter((entry) => entry.solution.slug === solution.slug && entry.product.slug === product.slug)
   // On its owning product page a feature anchors under its own slug; the
@@ -60,22 +61,24 @@ const productFeatureCards = usageFeatures
       </div>
       <div class="hero-cta">
         {product.docs?.map((d, i) => <a class={`btn ${i === 0 ? 'btn-primary' : 'btn-ghost'}`} href={d.href}><Icon name="docs" /> {i === 0 ? 'Read the docs' : d.label}</a>)}
-        {product.repos?.map((r) => <a class="btn btn-ghost" href={r.href}><Icon name="github" /> Browse the repo</a>)}
+        {product.repos?.map((r) => <a class="btn btn-ghost" href={r.href}><Icon name="github" /> {product.repos.length > 1 ? `Browse ${r.label}` : 'Browse the repo'}</a>)}
       </div>
     </div>
   </section>
 
-  <section class="section section--soft">
-    <div class="container">
-      <div class="section-head">
-        <p class="eyebrow">Values</p>
-        <h2>{product.valuesHeadline}</h2>
+  {values.length > 0 && (
+    <section class="section section--soft">
+      <div class="container">
+        <div class="section-head">
+          <p class="eyebrow">Values</p>
+          <h2>{product.valuesHeadline}</h2>
+        </div>
+        <ul class="think-consequence-list catalog-grid portfolio-values">
+          {values.map((value) => <CatalogCard card={valueCard(value)} />)}
+        </ul>
       </div>
-      <ul class="think-consequence-list catalog-grid portfolio-values">
-        {productValues(solution.slug, product.slug).map((value) => <CatalogCard card={valueCard(value)} />)}
-      </ul>
-    </div>
-  </section>
+    </section>
+  )}
 
   <section class="section">
     <div class="container">
@@ -83,9 +86,13 @@ const productFeatureCards = usageFeatures
         <p class="eyebrow">Features</p>
         <h2>{product.featuresHeadline}</h2>
       </div>
-      <ul class="think-therapy__grid catalog-grid portfolio-features">
-        {productFeatureCards.map((card) => <CatalogCard card={card} variant="platform" />)}
-      </ul>
+      {productFeatureCards.length > 0 ? (
+        <ul class="think-therapy__grid catalog-grid portfolio-features">
+          {productFeatureCards.map((card) => <CatalogCard card={card} variant="platform" />)}
+        </ul>
+      ) : (
+        <p>No feature of {product.name} is catalogued yet.</p>
+      )}
     </div>
   </section>
 

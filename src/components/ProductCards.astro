@@ -30,20 +30,22 @@ const base = solutionHref(solution);
         </span>
         <strong><a class="card-cover" href={`${base}/products/${p.slug}`}>{p.name}</a></strong>
         <p>{p.tagline}</p>
-        <div class="proof-line">
-          <span>{relationQualifiers.productFeatures()}</span>
-          <ul class="portfolio-product-features">
-            {p.features.map((f, i) => (
-              <li class={plannedClass(statuses[i].state)}>
-                <span class="think-consequence__step">
-                  Feature · milestone v{statuses[i].version}
-                </span>
-                <DeliveryStatus state={statuses[i].state} />
-                <a href={`${base}/products/${p.slug}#${f.slug}`}>{f.name}</a>
-              </li>
-            ))}
-          </ul>
-        </div>
+        {p.features.length > 0 && (
+          <div class="proof-line">
+            <span>{relationQualifiers.productFeatures()}</span>
+            <ul class="portfolio-product-features">
+              {p.features.map((f, i) => (
+                <li class={plannedClass(statuses[i].state)}>
+                  <span class="think-consequence__step">
+                    Feature · milestone v{statuses[i].version}
+                  </span>
+                  <DeliveryStatus state={statuses[i].state} />
+                  <a href={`${base}/products/${p.slug}#${f.slug}`}>{f.name}</a>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
       </li>
     );
   })}

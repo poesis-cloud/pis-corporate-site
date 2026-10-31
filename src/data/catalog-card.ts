@@ -80,6 +80,11 @@ function rankThemes(tags: string[]): string[] {
   return [...counts].sort((left, right) => right[1] - left[1] || left[0].localeCompare(right[0])).slice(0, 4).map(([tag]) => tag);
 }
 
+// An early-stage solution or product without use cases falls back to its solution's own themes.
+function themesOr(themes: string[], fallback: string[]): string[] {
+  return themes.length ? themes : fallback;
+}
+
 function useCaseTags(entries: UseCase[]): string[] {
   return entries.flatMap((entry) => painsForUseCase(entry.slug).flatMap((pain) => pain.tags));
 }
@@ -198,7 +203,7 @@ export function solutionCard(solution: Solution): CatalogCard {
     hook: solution.tagline,
     body: solution.description,
     status: solutionStatus(solution),
-    tags: rankThemes(useCaseTags(useCasesForSolution(solution.slug))),
+    tags: themesOr(rankThemes(useCaseTags(useCasesForSolution(solution.slug))), solution.tags),
     relations: catalogRelations(`solution:${solution.slug}`),
   };
 }
@@ -214,7 +219,7 @@ export function productCard(entry: { solution: Solution; product: Product }): Ca
     hook: product.tagline,
     body: product.description,
     status: productStatus(product),
-    tags: rankThemes(useCaseTags(useCasesForProduct(solution.slug, product.slug))),
+    tags: themesOr(rankThemes(useCaseTags(useCasesForProduct(solution.slug, product.slug))), solution.tags),
     relations: catalogRelations(`product:${solution.slug}/${product.slug}`),
   };
 }

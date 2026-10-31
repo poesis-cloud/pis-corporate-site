@@ -237,7 +237,7 @@ test('validator accepts direct authoring API without MCP or sourcing but retains
     realizations[0].acceptance = 'delivered';
     assert.equal(realizationRequirements.sourcing, 'planned');
     assert.equal(realizationRequirements.mcp, 'planned');
-    assert.equal(graph[1].products[0].features.find((feature) => feature.slug === 'mcp').delivery.state, 'planned');
+    assert.equal(graph[1].products.find((product) => product.slug === 'mcp').features.find((feature) => feature.slug === 'mcp').delivery.state, 'planned');
     assert.doesNotThrow(() => validatePortfolio(graph));
     api.delivery.state = 'partial';
     assert.throws(() => validatePortfolio(graph), /Contradictory delivered capability/);
