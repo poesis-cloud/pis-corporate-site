@@ -104,6 +104,25 @@ test('current version cannot manufacture a shipped milestone', () => {
   assert.deepEqual(productTimeline({ currentVersion: '9.9', features: [] }), []);
 });
 
+// GitHub product roadmaps are the source of truth for feature identities and milestones.
+// Features re-sequenced or added since the frozen inventory are enumerated here explicitly.
+const roadmapMilestoneChanges = {
+  'oip/web-application/it-copilot': { version: '1.2', label: 'IT Copilot' },
+  'oip/web-application/definitions-truth-sourcing-management': { version: '1.3', label: 'Truth sourcing management' },
+  'oip/web-application/it-impact-simulation': { version: '1.4', label: 'IT impact simulation' },
+  'oip/web-application/it-compliance-evaluation': { version: '1.5', label: 'IT compliance evaluation' },
+  'oip/web-application/it-artifact-factory': { version: '1.6', label: 'IT artifact factory' },
+  'sie/definition-manager/lifecycle-events-mediation': { version: '1.3', label: 'GSM Definitions lifecycle events mediation · OTel signals' },
+  'gsm/specifications/enhanced-directives-norms-model': { version: '1.2', label: 'Enhanced DNA model' },
+};
+const roadmapAdditionalFeatures = {
+  'oip/web-application': ['identity-provider-synchronization', 'governance-review-sessions', 'oidc-sso'],
+  'sie/definition-manager': ['graduate-data-quality-conformance', 'enhanced-dna-model', 'otel-signals'],
+  'gsm/specifications': ['graduate-data-quality-conformance'],
+  'sim/lm': ['gsm-sie-grounded-training'],
+};
+const roadmapAdditionalCapabilities = { sim: ['governed-context-grounded-models'] };
+
 workspaceTest('all 188 frozen identities map once, including 65 stable values', () => {
   const source = readWorkspace('../../strategy/portfolio-audit/inventory.json');
   const inventory = JSON.parse(source);
@@ -117,8 +136,10 @@ workspaceTest('all 188 frozen identities map once, including 65 stable values', 
     const solution = platformSolutions.find((solution) => solution.slug === original.slug);
     record(`solution:${solution.slug}`);
     assert.equal(solutionHref(solution), original.href);
-    assert.deepEqual(solution.capabilities.map((capability) => capability.slug), original.capabilities.map((capability) => capability.slug));
-    for (const capability of solution.capabilities) { record(`capability:${solution.slug}/${capability.slug}`); assert.ok(capability.delivery.scope); }
+    const originalCapabilities = solution.capabilities.filter((capability) => original.capabilities.some((candidate) => candidate.slug === capability.slug));
+    assert.deepEqual(originalCapabilities.map((capability) => capability.slug), original.capabilities.map((capability) => capability.slug));
+    assert.deepEqual(solution.capabilities.filter((capability) => !originalCapabilities.includes(capability)).map((capability) => capability.slug), roadmapAdditionalCapabilities[solution.slug] ?? []);
+    for (const capability of originalCapabilities) { record(`capability:${solution.slug}/${capability.slug}`); assert.ok(capability.delivery.scope); }
     for (const [index, value] of solutionValues(solution.slug).entries()) {
       record(value.slug); valueCount++;
       assert.equal(value.slug, `value:${solution.slug}/${String(index + 1).padStart(2, '0')}`);
@@ -134,10 +155,15 @@ workspaceTest('all 188 frozen identities map once, including 65 stable values', 
       const originalFeatures = product.features.filter((feature) => oldProduct.features.some((original) => original.slug === feature.slug));
       assert.deepEqual(originalFeatures.map((feature) => feature.slug), oldProduct.features.map((feature) => feature.slug));
       const additionalFeatures = product.features.filter((feature) => !oldProduct.features.some((original) => original.slug === feature.slug));
-      assert.deepEqual(additionalFeatures.map((feature) => feature.slug), solution.slug === 'oip' && product.slug === 'web-application' ? ['identity-provider-synchronization', 'governance-review-sessions'] : []);
+      assert.deepEqual(additionalFeatures.map((feature) => feature.slug), roadmapAdditionalFeatures[`${solution.slug}/${product.slug}`] ?? []);
+      for (const feature of additionalFeatures) { assert.equal(feature.delivery.state, 'planned'); assert.equal(feature.milestone.shipped, undefined); }
       for (const [featureIndex, feature] of originalFeatures.entries()) {
-        record(`feature:${solution.slug}/${product.slug}/${feature.slug}`);
-        assert.deepEqual(feature.milestone, oldProduct.features[featureIndex].milestone);
+        const id = `${solution.slug}/${product.slug}/${feature.slug}`;
+        record(`feature:${id}`);
+        if (Object.hasOwn(roadmapMilestoneChanges, id)) {
+          assert.notDeepEqual(oldProduct.features[featureIndex].milestone, roadmapMilestoneChanges[id], id);
+          assert.deepEqual(feature.milestone, roadmapMilestoneChanges[id], id);
+        } else assert.deepEqual(feature.milestone, oldProduct.features[featureIndex].milestone, id);
         assert.ok(feature.delivery.scope);
       }
       const ownValues = productValues(solution.slug, product.slug);
@@ -158,7 +184,7 @@ workspaceTest('all 188 frozen identities map once, including 65 stable values', 
   for (const pain of originalPains) record(`pain:${pain.slug}`);
   assert.equal(count, 188);
   assert.equal(valueCount, 65);
-  assert.equal(features.length, 67);
+  assert.equal(features.length, 73);
 });
 
 workspaceTest('deferred promises stay planned', () => {
@@ -341,7 +367,7 @@ workspaceTest('documentation timeline labels follow shipped metadata, not claim 
 workspaceTest('generated roadmap and normative scope table agree feature by feature', () => {
   const roadmap = JSON.parse(readWorkspace('../../documentation/_data/roadmap.json'));
   const exported = roadmap.flatMap((solution) => solution.products.flatMap((product) => product.features));
-  assert.equal(exported.length, 67);
+  assert.equal(exported.length, 73);
   const register = readWorkspace('../../strategy/roadmap.md');
   for (const feature of features) {
     const actual = exported.find((item) => item.id === feature.id);

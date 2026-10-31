@@ -616,6 +616,15 @@
       ],
       "pain": "The reason for a decision stays in an email thread instead of reaching the next reviewer.",
       "cost": "In a manual handoff, the next reviewer repeats interviews to recover assumptions and unresolved objections."
+    },
+    {
+      "slug": "it-opaque-service-operations",
+      "tags": [
+        "Observability",
+        "Operations"
+      ],
+      "pain": "Failed or slow governance-service requests can only be investigated by reproducing them.",
+      "cost": "Diagnosis takes longer, recurring faults stay unexplained and operators work from incomplete evidence."
     }
   ],
   "painGroups": [
@@ -2974,6 +2983,131 @@
       ],
       "affordances": [
         "generative-delivery"
+      ]
+    },
+    {
+      "slug": "sign-in-with-organization-identity",
+      "name": "Sign in with the organization identity provider",
+      "goal": "Reach the workspace through the organization OIDC identity provider with single sign-on, while privileges still follow reviewed role and attribute assignments.",
+      "actorTypes": [
+        "it-platform",
+        "it-ciso"
+      ],
+      "addressedPains": [
+        "it-access-assignment-drift"
+      ],
+      "values": [
+        "value:least-privilege-collaboration"
+      ],
+      "features": [
+        "oip/web-application/oidc-sso"
+      ]
+    },
+    {
+      "slug": "correct-nonconformant-draft",
+      "name": "Correct a nonconformant draft definition",
+      "goal": "Choose strict rejection or acceptance when posting a draft that does not conform to its Archetype, then correct each reported property before review.",
+      "actorTypes": [
+        "integration-client",
+        "it-architect"
+      ],
+      "addressedPains": [
+        "it-unactionable-governance-findings"
+      ],
+      "values": [
+        "value:actionable-governance-findings"
+      ],
+      "features": [
+        "sie/definition-manager/graduate-data-quality-conformance"
+      ]
+    },
+    {
+      "slug": "specify-graded-draft-conformance",
+      "name": "Specify graded draft conformance",
+      "goal": "Determine from normative requirements how a processor rejects or accepts Definitions that do not conform to their Archetype and how it reports each nonconformant property.",
+      "actorTypes": [
+        "specification-reader",
+        "integration-client"
+      ],
+      "addressedPains": [
+        "it-unactionable-governance-findings"
+      ],
+      "values": [
+        "value:actionable-governance-findings"
+      ],
+      "features": [
+        "gsm/specifications/graduate-data-quality-conformance"
+      ]
+    },
+    {
+      "slug": "govern-any-primitive-with-obligations",
+      "name": "Attach obligations to any governed primitive",
+      "goal": "Record Directives and Norms against Mechanisms, Interactions and other GSM primitives, not only Structures, and retrieve them with the governed definitions they constrain.",
+      "actorTypes": [
+        "it-architect",
+        "integration-client"
+      ],
+      "addressedPains": [
+        "it-assumed-governance-coverage"
+      ],
+      "values": [
+        "value:explicit-obligation-applicability"
+      ],
+      "features": [
+        "sie/definition-manager/enhanced-dna-model"
+      ]
+    },
+    {
+      "slug": "observe-definition-manager-operations",
+      "name": "Observe Definition Manager operations",
+      "goal": "Inspect traces, metrics and logs of Definition Manager requests in a configured OpenTelemetry backend to locate failed or slow operations without reproducing them.",
+      "actorTypes": [
+        "it-platform"
+      ],
+      "addressedPains": [
+        "it-opaque-service-operations"
+      ],
+      "values": [
+        "value:platform/resource-economy"
+      ],
+      "features": [
+        "sie/definition-manager/otel-signals"
+      ]
+    },
+    {
+      "slug": "compare-grounded-language-models",
+      "name": "Compare governed-context-grounded language models",
+      "goal": "Compare language models trained on GSM and SIE governed context with the same models given other context, under one evaluation protocol, before relying on either.",
+      "actorTypes": [
+        "it-head-of-ai",
+        "research-reviewer"
+      ],
+      "addressedPains": [
+        "it-ai-blindness"
+      ],
+      "values": [
+        "value:gsm/research-lab/01"
+      ],
+      "features": [
+        "sim/lm/gsm-sie-grounded-training"
+      ]
+    },
+    {
+      "slug": "review-grounded-model-evidence",
+      "name": "Review grounded-model evaluation evidence",
+      "goal": "Review the training context, comparison protocol and results behind a grounded-model claim, keeping unproven advantages separate from demonstrated ones.",
+      "actorTypes": [
+        "research-reviewer",
+        "it-head-of-ai"
+      ],
+      "addressedPains": [
+        "it-ai-blindness"
+      ],
+      "values": [
+        "value:gsm/research-lab/02"
+      ],
+      "capabilities": [
+        "sim/governed-context-grounded-models"
       ]
     }
   ],

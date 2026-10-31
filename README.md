@@ -27,7 +27,7 @@ Requires Node 22+ for the TypeScript data checks and roadmap exporter.
 ## Platform And Usage
 
 [src/data/poesis-platform.ts](src/data/poesis-platform.ts) owns the single `poesisPlatform` root:
-solutions, products, features, capabilities, affordances and values. Its 65 feature identities
+solutions, products, features, capabilities, affordances and values. Its 73 feature identities
 and milestones feed both the site and the generated documentation roadmap.
 
 [src/data/usage.ts](src/data/usage.ts) owns the sibling `poesisUsage`: 10 actor types, 13 independent
