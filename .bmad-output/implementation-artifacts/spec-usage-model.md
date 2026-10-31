@@ -107,7 +107,7 @@ Initial implementation verification:
 - `CHECK_WORKSPACE_PORTFOLIO=1 CHECK_BUILT_USAGE=1 npm run test:usage`: all nine checks passed, zero skipped; coverage, acceptance, SEO, page/feature links and legacy anchors verified.
 - `npm run sync-roadmap` and `npm run build`: succeeded; 70 pages built/indexed.
 - JSON parsing, editor diagnostics and corporate/strategy/documentation whitespace checks passed.
-- Existing Pagefind warning: the `/insights/itip-compliance-proof/` redirect has no outer HTML element and is not indexed. Unrelated to usage and left unchanged.
+- Existing Pagefind warning: the `/insights/oip-compliance-proof/` redirect has no outer HTML element and is not indexed. Unrelated to usage and left unchanged.
 
 Preview: `http://localhost:4331/usage`. No installation, commit or push was performed. The parent explicitly owns independent content/browser review, so the spec remains `in-review`; no review agents were spawned. Website assertions are not product runtime acceptance. The new manual handoff and modeling-evidence pains are grounded scenarios, not customer-research claims.
 

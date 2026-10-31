@@ -79,7 +79,7 @@ test('service and partnership navigation retains the matching detail destination
 
 test('services publish exactly the seven ordered offers with only the Pilot available', () => {
   validateServices();
-  const labels = ['Poesis Pilot', 'Autonomous Enterprise Transformation', 'Agentic Transformation', 'Organizational Context Engineering', 'ITIP SaaS', 'SIE SaaS', 'GSM Certification'];
+  const labels = ['Poesis Pilot', 'Autonomous Enterprise Transformation', 'Agentic Transformation', 'Organizational Context Engineering', 'OIP SaaS', 'SIE SaaS', 'GSM Certification'];
   assert.deepEqual(services.map((service) => service.label), labels);
   assert.deepEqual(services.map((service) => service.availability), ['By agreement', ...Array(6).fill('Planned')]);
   assert.deepEqual(siteNavigation.find((group) => group.label === 'Services').sections.flatMap((section) => section.items.map((item) => item.label)), labels);
@@ -134,7 +134,7 @@ workspaceTest('all 188 frozen identities map once, including 65 stable values', 
       const originalFeatures = product.features.filter((feature) => oldProduct.features.some((original) => original.slug === feature.slug));
       assert.deepEqual(originalFeatures.map((feature) => feature.slug), oldProduct.features.map((feature) => feature.slug));
       const additionalFeatures = product.features.filter((feature) => !oldProduct.features.some((original) => original.slug === feature.slug));
-      assert.deepEqual(additionalFeatures.map((feature) => feature.slug), solution.slug === 'itip' && product.slug === 'web-application' ? ['identity-provider-synchronization', 'governance-review-sessions'] : []);
+      assert.deepEqual(additionalFeatures.map((feature) => feature.slug), solution.slug === 'oip' && product.slug === 'web-application' ? ['identity-provider-synchronization', 'governance-review-sessions'] : []);
       for (const [featureIndex, feature] of originalFeatures.entries()) {
         record(`feature:${solution.slug}/${product.slug}/${feature.slug}`);
         assert.deepEqual(feature.milestone, oldProduct.features[featureIndex].milestone);
@@ -173,10 +173,10 @@ test('shipped flags cannot inflate scope', () => {
   const inventoryFeature = web.features.find((feature) => feature.slug === 'definitions-management');
   assert.equal(inventoryFeature.milestone.shipped, true);
   assert.equal(featureStatus(inventoryFeature).state, 'planned');
-  const human = platformSolutions[3].capabilities.find((capability) => capability.slug === 'human-gated-advancement');
-  assert.equal(capabilityShipped(platformSolutions[3], human), false);
-  const grammar = platformSolutions[2].capabilities.find((capability) => capability.slug === 'governance-grammar-and-lifecycle');
-  assert.equal(capabilityStatus(platformSolutions[2], grammar), 'partial');
+  const human = platformSolutions[4].capabilities.find((capability) => capability.slug === 'human-gated-advancement');
+  assert.equal(capabilityShipped(platformSolutions[4], human), false);
+  const grammar = platformSolutions[3].capabilities.find((capability) => capability.slug === 'governance-grammar-and-lifecycle');
+  assert.equal(capabilityStatus(platformSolutions[3], grammar), 'partial');
 });
 
 test('scoped alternatives do not require optional future or hosted routes', () => {
@@ -312,12 +312,12 @@ test('delivery states and requirement members must be primitive strings and own 
 test('features need capability support while many-to-many and research informing remain valid', () => {
   const graph = structuredClone(platformSolutions);
   const reference = 'specifications/primitives';
-  const supporters = graph[2].capabilities.filter((capability) => capability.relations.features.includes(reference));
+  const supporters = graph[3].capabilities.filter((capability) => capability.relations.features.includes(reference));
   assert.ok(supporters.length > 1);
   supporters[0].relations.features = supporters[0].relations.features.filter((feature) => feature !== reference);
   assert.ok(supporters[0].relations.features.length);
   assert.doesNotThrow(() => validatePortfolio(graph));
-  for (const capability of graph[2].capabilities) capability.relations.features = capability.relations.features.filter((feature) => feature !== reference);
+  for (const capability of graph[3].capabilities) capability.relations.features = capability.relations.features.filter((feature) => feature !== reference);
   assert.throws(() => validatePortfolio(graph), /Orphan feature: gsm\/specifications\/primitives/);
   assert.ok(semanticEdges.some((edge) => edge.source === 'feature:gsm/research-lab/causal-model' && edge.kind === 'informs'));
   assert.ok(semanticEdges.some((edge) => edge.source === 'capability:gsm/research-tested-model-evolution' && edge.kind === 'informs'));

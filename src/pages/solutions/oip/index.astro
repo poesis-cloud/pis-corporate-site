@@ -10,26 +10,26 @@ import QualityList from '../../../components/QualityList.astro';
 import { solutionQualities } from '../../../data/qualities.ts';
 import { platformSolutions } from '../../../data/poesis-platform.ts';
 
-const itip = platformSolutions.find((s) => s.slug === 'itip')!;
+const oip = platformSolutions.find((s) => s.slug === 'oip')!;
 ---
 <BaseLayout
-  title="The IT Intelligence Platform — AI governance for IT"
-  description={itip.description}
+  title="The Organizational Intelligence Platform — AI governance for IT"
+  description={oip.description}
   pageType="Solution"
 >
   <section class="hero hero--split">
     <div class="container">
-      <p class="eyebrow"><a href="/#portfolio">{itip.tags.join(' · ')} · Solution</a></p>
-      <h1>The IT Intelligence Platform — AI governance for IT.</h1>
-      <p class="lead">{itip.tagline}</p>
+      <p class="eyebrow"><a href="/#portfolio">{oip.tags.join(' · ')} · Solution</a></p>
+      <h1>The Organizational Intelligence Platform — AI governance for IT.</h1>
+      <p class="lead">{oip.tagline}</p>
       <div class="hero-promise">
-        <p>{itip.description}</p>
+        <p>{oip.description}</p>
         <p>The digital-twin ambition distinguishes accepted intent, inspected source revisions and fresh deployed observations.</p>
       </div>
       <div class="hero-cta">
         <span class="btn btn-primary" aria-disabled="true"><Icon name="azure" /> SaaS Demo Instance <span class="tag tag--muted">coming soon</span></span>
         <span class="btn btn-ghost" aria-disabled="true"><Icon name="store" /> SaaS on Azure Marketplace <span class="tag tag--muted">coming soon</span></span>
-        <a class="btn btn-ghost" href="https://docs.poesis.cloud/itip/"><Icon name="docs" /> Read the docs</a>
+        <a class="btn btn-ghost" href="https://docs.poesis.cloud/oip/"><Icon name="docs" /> Read the docs</a>
       </div>
       <p class="hero-note"><a href="/insights/digital-twin-of-an-organization/">Insights · why the twin pattern works here →</a></p>
     </div>
@@ -41,7 +41,7 @@ const itip = platformSolutions.find((s) => s.slug === 'itip')!;
         <p class="eyebrow">Values</p>
         <h2>Shared definitions and reviewable evidence for IT decisions.</h2>
       </div>
-      <SolutionValueCards solution={itip} />
+      <SolutionValueCards solution={oip} />
     </div>
   </section>
 
@@ -49,9 +49,9 @@ const itip = platformSolutions.find((s) => s.slug === 'itip')!;
     <div class="container">
       <div class="section-head">
         <p class="eyebrow">Capabilities</p>
-        <h2>Planned inventory, composition, sourcing, appraisal, reasoning and generation.</h2>
+        <h2>Planned inventory, composition, appraisal, reasoning and generation.</h2>
       </div>
-      <SolutionCapabilityCards solution={itip} />
+      <SolutionCapabilityCards solution={oip} />
     </div>
   </section>
 
@@ -59,9 +59,9 @@ const itip = platformSolutions.find((s) => s.slug === 'itip')!;
     <div class="container">
       <div class="section-head">
         <p class="eyebrow">Products</p>
-        <h2>Two products for the IT governance workflow.</h2>
+        <h2>One product for the IT governance workflow.</h2>
       </div>
-      <ProductCards solution={itip} />
+      <ProductCards solution={oip} />
     </div>
   </section>
 
@@ -69,11 +69,11 @@ const itip = platformSolutions.find((s) => s.slug === 'itip')!;
     <div class="container">
       <div class="section-head">
         <p class="eyebrow">Qualities</p>
-        <h2>What ITIP asserts, and what it declines to assert.</h2>
+        <h2>What OIP asserts, and what it declines to assert.</h2>
       </div>
-      <QualityList qualities={solutionQualities('itip')} />
+      <QualityList qualities={solutionQualities('oip')} />
     </div>
   </section>
 
-  <UsageCases cases={useCasesForSolution('itip')} title="IT decision and review use cases" />
+  <UsageCases cases={useCasesForSolution('oip')} title="IT decision and review use cases" />
 </BaseLayout>

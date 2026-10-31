@@ -10,7 +10,7 @@
             "title": "Prove the value in your own context.",
             "summary": "Evaluate Poesis against a real organizational problem, with an agreed scope, a baseline and evidence that supports your next investment decision.",
             "lead": "Before committing to a transformation, establish what Poesis can change in the work that matters to you. Start with the value you seek, the pain you face and a result you can judge.",
-            "proposition": "A guided ITIP + SIE evaluation connects your chosen needs to a feasible product scope. Together we agree the evidence, responsibilities and decision criteria, then distinguish demonstrated value from work that remains ahead.",
+            "proposition": "A guided OIP + SIE evaluation connects your chosen needs to a feasible product scope. Together we agree the evidence, responsibilities and decision criteria, then distinguish demonstrated value from work that remains ahead.",
             "outcomes": [
                 {
                     "title": "A decision-ready brief",
@@ -140,15 +140,15 @@
             ]
         },
         {
-            "slug": "itip-saas",
+            "slug": "oip-saas",
             "availability": "Planned",
             "availabilityNote": "Planned managed application; no self-service subscription is available. Hosting, tenancy, integrations, supported features and service commitments require acceptance before launch.",
-            "label": "ITIP SaaS",
+            "label": "OIP SaaS",
             "category": "Managed IT application",
             "title": "Turn IT knowledge into better-governed decisions.",
-            "summary": "A planned managed IT Intelligence Platform for application and service context, dependency analysis, governance review and evidence-led IT decisions.",
+            "summary": "A planned managed Organizational Intelligence Platform for application and service context, dependency analysis, governance review and evidence-led IT decisions.",
             "lead": "IT leaders and architects need to understand what they operate, how it supports the business and where change creates exposure. That understanding is hard to maintain when inventories, architecture models and compliance evidence evolve separately.",
-            "proposition": "ITIP is the IT-domain application over SIE: a shared workspace designed to connect IT definitions, relationships, governance and appraisal in the language of IT work. The SaaS offer is intended to provide that application without requiring customers to assemble and operate the underlying platform. It differs from SIE SaaS by delivering the IT-facing experience, not just engine APIs.",
+            "proposition": "OIP is the IT-domain application over SIE: a shared workspace designed to connect IT definitions, relationships, governance and appraisal in the language of IT work. The SaaS offer is intended to provide that application without requiring customers to assemble and operate the underlying platform. It differs from SIE SaaS by delivering the IT-facing experience, not just engine APIs.",
             "outcomes": [
                 { "title": "Shared IT context", "description": "A planned governed view of applications, services, responsibilities and dependencies, with source coverage and unresolved gaps visible." },
                 { "title": "Evidence-led change decisions", "description": "Designed support for dependency and impact analysis, architecture reviews and prioritization against business concerns." },
@@ -169,7 +169,7 @@
             "title": "Build on governed definitions, not another isolated knowledge store.",
             "summary": "A planned managed Systemic Intelligence Engine for builders integrating GSM definitions, lifecycle governance and controlled execution into their own applications.",
             "lead": "Application and AI platform builders need more than storage: they need a consistent way to type organizational knowledge, control its evolution and distinguish accepted definitions from tentative contributions.",
-            "proposition": "SIE provides the engine layer behind Poesis. Its architecture combines definition management, lifecycle governance, collaborative sourcing and governed mechanism execution. The SaaS offer is intended to expose an agreed set of these services through managed interfaces, so customers can build domain applications and integrations without operating the full engine stack. Unlike ITIP SaaS, it does not supply an IT-domain user workspace.",
+            "proposition": "SIE provides the engine layer behind Poesis. Its architecture combines definition management, lifecycle governance and governed mechanism execution. The SaaS offer is intended to expose an agreed set of these services through managed interfaces, so customers can build domain applications and integrations without operating the full engine stack. Unlike OIP SaaS, it does not supply an IT-domain user workspace.",
             "outcomes": [
                 { "title": "A governed definition foundation", "description": "Planned managed access to typed, versioned definitions and lifecycle controls for your application domain." },
                 { "title": "Controlled integration contracts", "description": "Explicit APIs, identities, authorization boundaries and provenance requirements for applications and agent tooling." },

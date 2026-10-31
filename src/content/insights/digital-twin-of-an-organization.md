@@ -26,7 +26,7 @@ Working on this for the IT domain, we converged on four properties the organizat
 - **Governed** — here the organizational twin genuinely differs from the physical one. A jet engine's twin only has to be *accurate*; an institution's twin also has to be *authoritative* — versioned, owned, moved through an explicit lifecycle — because part of what it mirrors is decisions. This is the [governed world model](/insights/the-governed-world-model/) argument, applied to twins: standing cannot be sensed, it must be conferred.
 - **Operable** — the point of the pattern, preserved: simulate a change before committing it, evaluate compliance continuously against the twin, generate deliverables from it. What is digitalized becomes operable.
 
-[ITIP](/solutions/itip) is this construction for the IT landscape — the twin, its sourcing bench, and the governed model underneath, in one platform.
+[OIP](/solutions/oip) is this construction for the IT landscape — the twin, its sourcing bench, and the governed model underneath, in one platform.
 
 ## Why IT first
 

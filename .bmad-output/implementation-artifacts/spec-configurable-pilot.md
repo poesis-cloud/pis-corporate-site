@@ -13,11 +13,11 @@ context: []
 
 **Problem:** The homepage pilot section presents three manually authored examples and sends visitors to generic contact. It does not let a prospect assemble an evaluation around registered usage, distinguish implemented support from future scope, or bring a concrete brief to the first conversation.
 
-**Approach:** Add `/pilot` as a lightweight, interactive pilot-brief builder led by registered values and/or pain points, with complementary use cases suggested through existing graph relationships. Replace the homepage pilot block with a concise explanation and invitation to configure a pilot. Visitors tailor their evaluation context and leave with a useful brief for discussion. Assume both ITIP and SIE SaaS in the pilot; keep scope flexible rather than selling fixed packages or prescribing a duration.
+**Approach:** Add `/pilot` as a lightweight, interactive pilot-brief builder led by registered values and/or pain points, with complementary use cases suggested through existing graph relationships. Replace the homepage pilot block with a concise explanation and invitation to configure a pilot. Visitors tailor their evaluation context and leave with a useful brief for discussion. Assume both OIP and SIE SaaS in the pilot; keep scope flexible rather than selling fixed packages or prescribing a duration.
 
 ## Boundaries & Constraints
 
-**Always:** Reuse existing actors, use cases, goals, pains, values and platform relations. Keep the canonical usage schema unchanged. Derive support and delivery states through existing helpers. Assume an ITIP + SIE SaaS evaluation environment while preserving current feature status and confirming selected scope before kickoff. User-entered evaluation details are private draft content, not additions to the platform catalog. Retain existing site typography, icons, colors and layout conventions. Preserve `#pilot` and CTA tracking attributes.
+**Always:** Reuse existing actors, use cases, goals, pains, values and platform relations. Keep the canonical usage schema unchanged. Derive support and delivery states through existing helpers. Assume an OIP + SIE SaaS evaluation environment while preserving current feature status and confirming selected scope before kickoff. User-entered evaluation details are private draft content, not additions to the platform catalog. Retain existing site typography, icons, colors and layout conventions. Preserve `#pilot` and CTA tracking attributes.
 
 **Ask First:** New commercial terms, fixed pilot offers, promised availability, additional catalog records, new canonical attributes, external form services, analytics collection or persistent storage of prospect details.
 
@@ -55,7 +55,7 @@ context: []
 
 - [x] `src/pages/pilot.astro` and `src/scripts/pilot.ts`: responsive needs-first picker, optional cases, tailoring and live brief with copy, Markdown download and explicit email handoff.
 - [x] `src/data/pilot.ts` and `src/data/pilot-catalog.ts`: pure client helpers and server-side projection over canonical graph; shared public delivery labels without client graph duplication.
-- [x] `src/pages/index.astro` and `src/components/Nav.astro`: concise value/pain-led invitation, ITIP + SIE SaaS context and `/pilot` CTAs with existing tracking identity.
+- [x] `src/pages/index.astro` and `src/components/Nav.astro`: concise value/pain-led invitation, OIP + SIE SaaS context and `/pilot` CTAs with existing tracking identity.
 - [x] `scripts/usage.test.mjs`: normalization, support fidelity, serialization, empty/partial/unmapped cases, built identity and homepage links.
 - [x] `../strategy/saas-acquisition-and-conversion.md`: reviewed; unchanged. User-approved SaaS assumption is recorded here; no new commercial terms or catalog semantics need a strategy rewrite.
 
@@ -69,7 +69,7 @@ context: []
 
 ## Spec Change Log
 
-- 2026-09-16: User approved implementation with values/pains before or complementary to use cases, a simple explanatory homepage entry, and both ITIP + SIE SaaS assumed. Preserve flexible criteria, evidence, timing and constraints; no new offer data or canonical relationships.
+- 2026-09-16: User approved implementation with values/pains before or complementary to use cases, a simple explanatory homepage entry, and both OIP + SIE SaaS assumed. Preserve flexible criteria, evidence, timing and constraints; no new offer data or canonical relationships.
 - 2026-09-16: Independent acceptance, blind and edge-case reviews completed. Fixed the existing anchor-only CTA listener to recognize the new email button, preserving consent handling and excluding brief contents from analytics.
 
 ## Design Notes

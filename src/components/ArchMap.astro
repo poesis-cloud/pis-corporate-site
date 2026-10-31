@@ -54,7 +54,7 @@ const frameworkHref = solutionHref(framework);
         <div class="arch-grid">
           <div class="arch-stack">
         {stack.map((s, i) => (
-          <>            {i > 0 && <div class="arch-joint" aria-hidden="true"><span>{i === 1 ? 'planned integration' : 'specification contract'}</span></div>}
+          <>            {i > 0 && <div class="arch-joint" aria-hidden="true"><span>{s.slug === 'gsm' ? 'specification contract' : 'planned integration'}</span></div>}
             <article class="arch-scope arch-scope--standard" aria-labelledby={`arch-solution-${s.slug}`}>
               <div class="arch-scope-meta">
                 <span class="arch-icon"><Icon name={typeIcons.solution} size={16} /></span>

@@ -1,0 +1,53 @@
+---
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import UsageCases from '../../../components/UsageCases.astro';
+import { useCasesForSolution } from '../../../data/usage.ts';
+import Icon from '../../../components/Icon.astro';
+import ProductCards from '../../../components/ProductCards.astro';
+import SolutionCapabilityCards from '../../../components/SolutionCapabilityCards.astro';
+import { platformSolutions } from '../../../data/poesis-platform.ts';
+
+const sis = platformSolutions.find((s) => s.slug === 'sis')!;
+---
+<BaseLayout
+  title="Systemic Intelligence Sourcing — evidence-backed definition sourcing"
+  description={sis.description}
+  pageType="Solution"
+>
+  <section class="hero hero--split">
+    <div class="container">
+      <p class="eyebrow"><a href="/#portfolio">{sis.tags.join(' · ')} · Solution</a></p>
+      <h1>Systemic Intelligence Sourcing — evidence-backed definition sourcing.</h1>
+      <p class="lead">{sis.tagline}</p>
+      <div class="hero-promise">
+        <p>{sis.description}</p>
+        <p>Sourced candidates are proposals: sealing a blackboard is not approval, and inspected source is not deployed reality.</p>
+      </div>
+      <div class="hero-cta">
+        <a class="btn btn-ghost" href="https://docs.poesis.cloud/sis/"><Icon name="docs" /> Read the docs</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <div class="section-head">
+        <p class="eyebrow">Capabilities</p>
+        <h2>Contribution intake today, code repository sourcing planned.</h2>
+      </div>
+      <SolutionCapabilityCards solution={sis} />
+    </div>
+  </section>
+
+  <section class="section section--soft">
+    <div class="container">
+      <div class="section-head">
+        <p class="eyebrow">Products</p>
+        <h2>Two products, one sourcing pipeline.</h2>
+      </div>
+      <ProductCards solution={sis} />
+    </div>
+  </section>
+
+  <UsageCases cases={useCasesForSolution('sis')} title="Definition sourcing use cases" />
+</BaseLayout>

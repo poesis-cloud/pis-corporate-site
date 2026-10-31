@@ -692,10 +692,10 @@
       ],
       "values": [
         "value:inspectable-acquisition-coverage",
-        "value:itip/definition-blackboard-code-sourcer/04"
+        "value:sis/code-sourcer/04"
       ],
       "features": [
-        "itip/web-application/definitions-truth-sourcing-management"
+        "oip/web-application/definitions-truth-sourcing-management"
       ]
     },
     {
@@ -712,7 +712,7 @@
         "value:inspectable-acquisition-coverage"
       ],
       "features": [
-        "itip/web-application/definitions-truth-sourcing-management"
+        "oip/web-application/definitions-truth-sourcing-management"
       ]
     },
     {
@@ -729,10 +729,10 @@
       ],
       "values": [
         "value:inspectable-acquisition-coverage",
-        "value:itip/definition-blackboard-code-sourcer/02"
+        "value:sis/code-sourcer/02"
       ],
       "features": [
-        "itip/web-application/definitions-truth-sourcing-management"
+        "oip/web-application/definitions-truth-sourcing-management"
       ]
     },
     {
@@ -748,12 +748,12 @@
       ],
       "values": [
         "value:least-privilege-collaboration",
-        "value:itip/web-application/01",
+        "value:oip/web-application/01",
         "value:sie/02",
         "value:sie/operator/03"
       ],
       "features": [
-        "itip/web-application/rbac-abac"
+        "oip/web-application/rbac-abac"
       ]
     },
     {
@@ -771,7 +771,7 @@
         "value:least-privilege-collaboration"
       ],
       "features": [
-        "itip/web-application/identity-provider-synchronization"
+        "oip/web-application/identity-provider-synchronization"
       ]
     },
     {
@@ -790,7 +790,7 @@
         "value:coherent-review-sessions"
       ],
       "features": [
-        "itip/web-application/governance-review-sessions"
+        "oip/web-application/governance-review-sessions"
       ]
     },
     {
@@ -808,7 +808,7 @@
         "value:actionable-governance-findings"
       ],
       "features": [
-        "itip/web-application/definitions-management"
+        "oip/web-application/definitions-management"
       ]
     },
     {
@@ -828,7 +828,7 @@
         "value:platform/governed-authority",
         "value:platform/audit-readiness",
         "value:sie/definition-manager/03",
-        "value:sie/definition-blackboard-manager/03"
+        "value:sis/blackboard-manager/03"
       ],
       "features": [
         "sie/definition-manager/definitions-retention"
@@ -849,7 +849,7 @@
         "value:repeatable-review-boundaries"
       ],
       "features": [
-        "itip/web-application/definitions-management"
+        "oip/web-application/definitions-management"
       ]
     },
     {
@@ -869,7 +869,7 @@
         "value:repeatable-review-boundaries"
       ],
       "features": [
-        "itip/web-application/definitions-management"
+        "oip/web-application/definitions-management"
       ]
     },
     {
@@ -884,11 +884,11 @@
         "it-framework-collision"
       ],
       "values": [
-        "value:itip/04",
+        "value:oip/04",
         "value:gsm/ontology/03"
       ],
       "features": [
-        "itip/web-application/ontology-management"
+        "oip/web-application/ontology-management"
       ]
     },
     {
@@ -904,11 +904,11 @@
         "it-framework-collision"
       ],
       "values": [
-        "value:itip/04",
+        "value:oip/04",
         "value:gsm/ontology/03"
       ],
       "features": [
-        "itip/web-application/ontology-management"
+        "oip/web-application/ontology-management"
       ]
     },
     {
@@ -927,7 +927,7 @@
         "value:gsm/ontology/02"
       ],
       "features": [
-        "itip/web-application/ontology-management"
+        "oip/web-application/ontology-management"
       ]
     },
     {
@@ -943,10 +943,10 @@
         "it-unverified-generated-output"
       ],
       "values": [
-        "value:itip/web-application/03"
+        "value:oip/web-application/03"
       ],
       "features": [
-        "itip/web-application/it-artifact-factory"
+        "oip/web-application/it-artifact-factory"
       ]
     },
     {
@@ -964,7 +964,7 @@
         "value:inspectable-artifact-completion"
       ],
       "features": [
-        "itip/web-application/it-artifact-factory"
+        "oip/web-application/it-artifact-factory"
       ]
     },
     {
@@ -982,7 +982,7 @@
         "value:inspectable-artifact-completion"
       ],
       "features": [
-        "itip/web-application/it-artifact-factory"
+        "oip/web-application/it-artifact-factory"
       ]
     },
     {
@@ -1001,7 +1001,7 @@
         "value:inspectable-artifact-completion"
       ],
       "features": [
-        "itip/web-application/it-artifact-factory"
+        "oip/web-application/it-artifact-factory"
       ]
     },
     {
@@ -1019,7 +1019,7 @@
         "value:inspectable-artifact-completion"
       ],
       "features": [
-        "itip/web-application/it-artifact-factory"
+        "oip/web-application/it-artifact-factory"
       ]
     },
     {
@@ -1038,7 +1038,7 @@
         "value:actionable-governance-findings"
       ],
       "capabilities": [
-        "itip/continuous-it-compliance-evaluation"
+        "oip/continuous-it-compliance-evaluation"
       ]
     },
     {
@@ -1054,11 +1054,11 @@
       ],
       "values": [
         "value:explicit-obligation-applicability",
-        "value:itip/04",
+        "value:oip/04",
         "value:gsm/ontology/01"
       ],
       "features": [
-        "itip/web-application/ontology-management"
+        "oip/web-application/ontology-management"
       ]
     },
     {
@@ -1094,7 +1094,7 @@
       "values": [
         "value:proportionate-evidence-preservation",
         "value:platform/audit-readiness",
-        "value:itip/definition-blackboard-code-sourcer/04",
+        "value:sis/code-sourcer/04",
         "value:sie/definition-manager/03"
       ],
       "features": [
@@ -1202,7 +1202,7 @@
       ],
       "values": [
         "value:qualified-runtime-selection",
-        "value:itip/definition-blackboard-code-sourcer/04",
+        "value:sis/code-sourcer/04",
         "value:saf/04",
         "value:saf/agentic-workspace/01"
       ],
@@ -1260,10 +1260,10 @@
         "it-blind-change"
       ],
       "values": [
-        "value:itip/web-application/04"
+        "value:oip/web-application/04"
       ],
       "features": [
-        "itip/web-application/it-impact-simulation"
+        "oip/web-application/it-impact-simulation"
       ]
     },
     {
@@ -1736,16 +1736,16 @@
       ],
       "values": [
         "value:platform/governed-authority",
-        "value:itip/01",
-        "value:itip/02",
-        "value:itip/web-application/01",
+        "value:oip/01",
+        "value:oip/02",
+        "value:oip/web-application/01",
         "value:sie/01",
         "value:sie/04",
         "value:sie/definition-manager/01",
-        "value:sie/definition-blackboard-manager/02"
+        "value:sis/blackboard-manager/02"
       ],
       "capabilities": [
-        "itip/governed-it-inventory"
+        "oip/governed-it-inventory"
       ]
     },
     {
@@ -1762,15 +1762,15 @@
         "it-truth-drift"
       ],
       "values": [
-        "value:itip/01",
-        "value:itip/02",
-        "value:itip/definition-blackboard-code-sourcer/01",
-        "value:itip/definition-blackboard-code-sourcer/02",
-        "value:itip/definition-blackboard-code-sourcer/03",
+        "value:oip/01",
+        "value:oip/02",
+        "value:sis/code-sourcer/01",
+        "value:sis/code-sourcer/02",
+        "value:sis/code-sourcer/03",
         "value:sie/04",
-        "value:sie/definition-blackboard-manager/01",
-        "value:sie/definition-blackboard-manager/02",
-        "value:sie/definition-blackboard-manager/03"
+        "value:sis/blackboard-manager/01",
+        "value:sis/blackboard-manager/02",
+        "value:sis/blackboard-manager/03"
       ],
       "affordances": [
         "truth-sourcing"
@@ -1829,13 +1829,13 @@
       "values": [
         "value:platform/continuous-evaluation",
         "value:platform/audit-readiness",
-        "value:itip/03",
-        "value:itip/web-application/02",
+        "value:oip/03",
+        "value:oip/web-application/02",
         "value:sie/operator/02",
         "value:sie/operator/04"
       ],
       "features": [
-        "itip/web-application/it-compliance-evaluation"
+        "oip/web-application/it-compliance-evaluation"
       ]
     },
     {
@@ -1853,12 +1853,12 @@
       ],
       "values": [
         "value:platform/continuous-evaluation",
-        "value:itip/01",
-        "value:itip/web-application/02",
+        "value:oip/01",
+        "value:oip/web-application/02",
         "value:sie/03"
       ],
       "capabilities": [
-        "itip/continuous-it-compliance-evaluation"
+        "oip/continuous-it-compliance-evaluation"
       ]
     },
     {
@@ -1875,11 +1875,11 @@
       ],
       "values": [
         "value:platform/analysis-power",
-        "value:itip/03",
-        "value:itip/web-application/04"
+        "value:oip/03",
+        "value:oip/web-application/04"
       ],
       "features": [
-        "itip/web-application/it-impact-simulation"
+        "oip/web-application/it-impact-simulation"
       ]
     },
     {
@@ -1895,11 +1895,11 @@
       ],
       "values": [
         "value:platform/analysis-power",
-        "value:itip/02",
-        "value:itip/web-application/05"
+        "value:oip/02",
+        "value:oip/web-application/05"
       ],
       "features": [
-        "itip/web-application/it-copilot"
+        "oip/web-application/it-copilot"
       ]
     },
     {
@@ -1915,11 +1915,11 @@
       ],
       "values": [
         "value:platform/resource-economy",
-        "value:itip/03",
-        "value:itip/web-application/03"
+        "value:oip/03",
+        "value:oip/web-application/03"
       ],
       "features": [
-        "itip/web-application/it-artifact-factory"
+        "oip/web-application/it-artifact-factory"
       ]
     },
     {
@@ -2030,10 +2030,10 @@
       ],
       "values": [
         "value:inspectable-acquisition-coverage",
-        "value:itip/definition-blackboard-code-sourcer/01"
+        "value:sis/code-sourcer/01"
       ],
       "features": [
-        "itip/definition-blackboard-code-sourcer/automatic-sourcing-from-code-repos"
+        "sis/code-sourcer/automatic-sourcing-from-code-repos"
       ]
     },
     {
@@ -2085,10 +2085,10 @@
         "it-truth-drift"
       ],
       "values": [
-        "value:sie/definition-blackboard-manager/01"
+        "value:sis/blackboard-manager/01"
       ],
       "features": [
-        "sie/definition-blackboard-manager/ks-contributions-management-api"
+        "sis/blackboard-manager/ks-contributions-management-api"
       ]
     },
     {
@@ -2103,10 +2103,10 @@
         "it-truth-drift"
       ],
       "values": [
-        "value:sie/definition-blackboard-manager/02"
+        "value:sis/blackboard-manager/02"
       ],
       "features": [
-        "sie/definition-blackboard-manager/ks-contributions-lifecycle-enforcement"
+        "sis/blackboard-manager/ks-contributions-lifecycle-enforcement"
       ]
     },
     {
@@ -2121,10 +2121,10 @@
         "it-audit-reconstruction"
       ],
       "values": [
-        "value:sie/definition-blackboard-manager/03"
+        "value:sis/blackboard-manager/03"
       ],
       "features": [
-        "sie/definition-blackboard-manager/ks-contributions-retention"
+        "sis/blackboard-manager/ks-contributions-retention"
       ]
     },
     {
@@ -2340,11 +2340,11 @@
       "values": [
         "value:repeatable-review-boundaries",
         "value:platform/governed-authority",
-        "value:itip/01",
+        "value:oip/01",
         "value:coherent-review-sessions"
       ],
       "capabilities": [
-        "itip/governed-it-inventory"
+        "oip/governed-it-inventory"
       ]
     },
     {
@@ -2361,12 +2361,12 @@
         "it-assumed-governance-coverage"
       ],
       "values": [
-        "value:itip/04",
+        "value:oip/04",
         "value:explicit-obligation-applicability",
         "value:gsm/ontology/03"
       ],
       "capabilities": [
-        "itip/it-governance-fabric-composition"
+        "oip/it-governance-fabric-composition"
       ]
     },
     {
@@ -2383,12 +2383,12 @@
         "it-acquisition-blind-spots"
       ],
       "values": [
-        "value:itip/02",
+        "value:oip/02",
         "value:inspectable-acquisition-coverage",
-        "value:sie/definition-blackboard-manager/01"
+        "value:sis/blackboard-manager/01"
       ],
       "capabilities": [
-        "itip/automatic-it-truth-sourcing"
+        "sis/automatic-it-truth-sourcing"
       ]
     },
     {
@@ -2410,7 +2410,7 @@
         "value:platform/audit-readiness"
       ],
       "capabilities": [
-        "itip/continuous-it-compliance-evaluation"
+        "oip/continuous-it-compliance-evaluation"
       ]
     },
     {
@@ -2428,11 +2428,11 @@
       ],
       "values": [
         "value:platform/analysis-power",
-        "value:itip/03",
-        "value:itip/web-application/05"
+        "value:oip/03",
+        "value:oip/web-application/05"
       ],
       "capabilities": [
-        "itip/model-grounded-it-reasoning"
+        "oip/model-grounded-it-reasoning"
       ]
     },
     {
@@ -2449,12 +2449,12 @@
         "it-unverified-generated-output"
       ],
       "values": [
-        "value:itip/web-application/03",
+        "value:oip/web-application/03",
         "value:inspectable-artifact-completion",
         "value:platform/resource-economy"
       ],
       "capabilities": [
-        "itip/it-artifact-generation"
+        "oip/it-artifact-generation"
       ]
     },
     {
@@ -2515,12 +2515,12 @@
         "manual-decision-handoff"
       ],
       "values": [
-        "value:sie/definition-blackboard-manager/01",
-        "value:sie/definition-blackboard-manager/02",
-        "value:sie/definition-blackboard-manager/03"
+        "value:sis/blackboard-manager/01",
+        "value:sis/blackboard-manager/02",
+        "value:sis/blackboard-manager/03"
       ],
       "capabilities": [
-        "sie/collaborative-definition-sourcing"
+        "sis/collaborative-definition-sourcing"
       ]
     },
     {
@@ -2854,7 +2854,7 @@
       ],
       "values": [
         "value:platform/governed-authority",
-        "value:itip/01",
+        "value:oip/01",
         "value:sie/01",
         "value:gsm/01"
       ],
@@ -2876,7 +2876,7 @@
         "it-assumed-governance-coverage"
       ],
       "values": [
-        "value:itip/04",
+        "value:oip/04",
         "value:explicit-obligation-applicability",
         "value:gsm/04"
       ],
@@ -2922,9 +2922,9 @@
         "it-ea-drift"
       ],
       "values": [
-        "value:itip/02",
+        "value:oip/02",
         "value:inspectable-acquisition-coverage",
-        "value:sie/definition-blackboard-manager/02"
+        "value:sis/blackboard-manager/02"
       ],
       "affordances": [
         "truth-sourcing"
@@ -3129,79 +3129,79 @@
       "body": "Bring linked snapshots, decisions and provenance into a stated audit scope, with completeness assessed against that review rather than inferred from history alone."
     },
     {
-      "slug": "value:itip/01",
+      "slug": "value:oip/01",
       "originalTitle": "Governance that stops drifting.",
       "title": "Keep governance closer to its evidence.",
       "body": "Bring shared definitions, reviewed candidates and scoped appraisal together to simplify reconciliation. For running systems, keep observation coverage and freshness visible."
     },
     {
-      "slug": "value:itip/02",
+      "slug": "value:oip/02",
       "originalTitle": "A source of truth AI can act on.",
       "title": "Give AI attributable context.",
       "body": "Ground planned read-only answers in authorized, versioned definitions, with citations and abstention for review. Build that context through direct authoring or reviewed sourcing."
     },
     {
-      "slug": "value:itip/03",
+      "slug": "value:oip/03",
       "originalTitle": "Every profile, every deliverable, one model.",
       "title": "Coordinate IT work around shared definitions.",
       "body": "Reuse common inputs across appraisal, analysis and document generation so profiles can review decisions against the same definitions. Outputs and scenarios remain subject to review."
     },
     {
-      "slug": "value:itip/04",
+      "slug": "value:oip/04",
       "originalTitle": "Ontologies composed, not siloed.",
       "title": "Review obligations together.",
       "body": "Reuse selected packages in one scoped review, with applicability, conflicting obligations and missing evidence visible for resolution."
     },
     {
-      "slug": "value:itip/web-application/01",
+      "slug": "value:oip/web-application/01",
       "originalTitle": "One place every IT profile works.",
       "title": "A shared workspace for IT decisions.",
       "body": "Author and review a common inventory through planned integrated workflows and scoped permissions, reducing handoffs between separate representations."
     },
     {
-      "slug": "value:itip/web-application/02",
+      "slug": "value:oip/web-application/02",
       "originalTitle": "Compliance observed, not reconstructed.",
       "title": "Make scoped appraisal inspectable.",
       "body": "Prepare reviews from versioned findings with visible coverage, observation age and unknown results. Legal interpretation stays with the reviewer."
     },
     {
-      "slug": "value:itip/web-application/03",
+      "slug": "value:oip/web-application/03",
       "originalTitle": "Deliverables fall out of the model.",
       "title": "Reduce repeated document assembly.",
       "body": "Generate reviewable document families from reusable definitions and templates, then focus effort on review, correction and template upkeep."
     },
     {
-      "slug": "value:itip/web-application/04",
+      "slug": "value:oip/web-application/04",
       "originalTitle": "See the impact before you commit.",
       "title": "Inspect possible effects before deciding.",
       "body": "Follow dependency and obligation paths to affected definitions. Timing, probability and causal predictions belong to the further simulation scope."
     },
     {
-      "slug": "value:itip/web-application/05",
+      "slug": "value:oip/web-application/05",
       "originalTitle": "Ask the model, not the wiki.",
       "title": "Check answers against sources.",
       "body": "Use the planned copilot to find relevant definitions and inspect cited evidence, snapshot age and uncertainty alongside each answer."
     },
     {
-      "slug": "value:itip/definition-blackboard-code-sourcer/01",
+      "slug": "value:sis/code-sourcer/01",
       "originalTitle": "Definitions author themselves.",
       "title": "Reduce manual candidate authoring.",
       "body": "Prepare proposals through staged analysis and optional inference so experts can focus on reconciliation and acceptance."
     },
     {
-      "slug": "value:itip/definition-blackboard-code-sourcer/02",
+      "slug": "value:sis/code-sourcer/02",
       "originalTitle": "The model reflects what actually runs.",
       "title": "Relate definitions to inspected revisions.",
       "body": "Reconcile definitions against pinned source evidence. Relating them to running systems additionally requires deployed identity, configuration and fresh observations."
     },
     {
-      "slug": "value:itip/definition-blackboard-code-sourcer/03",
+      "slug": "value:sis/code-sourcer/03",
       "originalTitle": "Every definition is explainable.",
       "title": "Inspect the basis of proposals.",
       "body": "Review provenance and confidence alongside retained tool details, source revisions and competing evidence."
     },
     {
-      "slug": "value:itip/definition-blackboard-code-sourcer/04",
+      "slug": "value:sis/code-sourcer/04",
       "originalTitle": "Private by design.",
       "title": "Control sourcing data exposure.",
       "body": "Bound the planned sourcing workflow with explicit policies for tool/model egress, credentials, telemetry and retention, including any data leaving the local process."
@@ -3279,19 +3279,19 @@
       "body": "Trace execution to requested definition IDs. Coherent pinning will distinguish latest, historical and eligible snapshot policies explicitly."
     },
     {
-      "slug": "value:sie/definition-blackboard-manager/01",
+      "slug": "value:sis/blackboard-manager/01",
       "originalTitle": "The whole picture, from every partial view.",
       "title": "Compare contributed partial views.",
       "body": "Bring conflicting candidates into shared panels so reviewers can compare evidence and identify gaps in the collected views."
     },
     {
-      "slug": "value:sie/definition-blackboard-manager/02",
+      "slug": "value:sis/blackboard-manager/02",
       "originalTitle": "Thinking here, deciding there.",
       "title": "Separate exploration from acceptance.",
       "body": "Collect candidates on the board, reconcile them in a client and govern promoted drafts in the Definition Manager through an explicit integration handoff."
     },
     {
-      "slug": "value:sie/definition-blackboard-manager/03",
+      "slug": "value:sis/blackboard-manager/03",
       "originalTitle": "You can always answer “why is this in the model?”",
       "title": "Trace retained proposal evidence.",
       "body": "Revisit captured actors and sources, with reducer decisions and Ascription links extending the trail from proposal to accepted definition."

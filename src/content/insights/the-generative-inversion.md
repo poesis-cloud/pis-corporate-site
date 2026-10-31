@@ -22,4 +22,4 @@ Once definitions are generative, quality stops being a checklist applied afterwa
 
 The inversion concerns *primacy*, not elimination: description does not leave that loop, it stops being its foundation. Definition establishes what counts as a deviation; description supplies the evidence that one occurred. Why the two are facets of a single reflexive process rather than rivals is worked out in [Definition versus description](/insights/definition-versus-description/).
 
-This is the thesis behind SIE and ITIP — and the subject of the forthcoming foundational paper, *The Generative Inversion: from descriptive to definitional systemics*. For the case that such definitions must also be portable across tools, see [Standardizing the THINK layer of IT](/insights/standardizing-the-think-layer/).
+This is the thesis behind SIE and OIP — and the subject of the forthcoming foundational paper, *The Generative Inversion: from descriptive to definitional systemics*. For the case that such definitions must also be portable across tools, see [Standardizing the THINK layer of IT](/insights/standardizing-the-think-layer/).

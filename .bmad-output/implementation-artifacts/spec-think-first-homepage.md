@@ -24,7 +24,7 @@ context:
 
 **Ask First:** Navigation restructuring, new routes, changes to secondary pages, new dependencies, or claims that alter the canonical roadmap.
 
-**Never:** Claim deterministic perfection, zero failure, automatic truth, or that AI alone governs. Present Agentic Harness as a fifth platform peer. Present planned ITIP, Operator, SAF Organization, Workspace, or Bridge capabilities as shipped. Use the former philosophical hero above the fold.
+**Never:** Claim deterministic perfection, zero failure, automatic truth, or that AI alone governs. Present Agentic Harness as a fifth platform peer. Present planned OIP, Operator, SAF Organization, Workspace, or Bridge capabilities as shipped. Use the former philosophical hero above the fold.
 
 </frozen-after-approval>
 
@@ -52,7 +52,7 @@ context:
 
 **Acceptance Criteria:**
 
-- Given a first-time visitor sees only the hero and following section, when they scan the page, then they can identify the THINK bottleneck, its worsening under generative AI, and Poesis's role without knowing GSM, SIE, ITIP, or SAF.
+- Given a first-time visitor sees only the hero and following section, when they scan the page, then they can identify the THINK bottleneck, its worsening under generative AI, and Poesis's role without knowing GSM, SIE, OIP, or SAF.
 - Given a visitor reads the unified graphic, when they follow its three phases, then they understand that THINK historically constrained BUILD/RUN, downstream AI makes the gap unacceptable, and Poesis makes the gap tractable by applying people and AI to governed THINK.
 - Given a visitor interprets the historical phase, when they assess the constraint, then they understand that THINK constraining BUILD and RUN is necessary and the problem is its implicit, manual, repeated implementation.
 - Given a visitor reads the AI-in-BUILD/RUN phase, when they interpret harnessing, then they understand prompts, reviews, corrections, and controls as displaced THINK inside BUILD rather than the resolution of the THINK bottleneck.
@@ -60,9 +60,9 @@ context:
 - Given a visitor follows the consequence rail, when they scan beyond immediate throughput, then they see resource economy and AI governance by design alongside the executable twin, OaaS, and ProdaaS as three views of one compounding model.
 - Given a visitor reaches the digital twin vision, when they follow the graphic, then they understand that Poesis sources organizational DNA into an executable organizational twin; OaaS and ProdaaS are human-interface views of the same model; governed BUILD/RUN realizes it; RUN evidence returns to THINK; and the compounding horizon is a human-governed autonomous enterprise.
 - Given the graphic at desktop or 320px mobile width, when it renders, then all three phases remain ordered, legible, and free of overlap or horizontal scrolling.
-- Given the platform section, when product responsibilities are read, then GSM defines the model, SIE manages and executes definitions, ITIP is the IT organizational twin and human surface, and SAF organizes governed agentic work with Agentic Harness nested beneath it.
+- Given the platform section, when product responsibilities are read, then GSM defines the model, SIE manages and executes definitions, OIP is the IT organizational twin and human surface, and SAF organizes governed agentic work with Agentic Harness nested beneath it.
 - Given the interactive portfolio map loads, when a visitor scans or expands it, then all four solutions and twelve products use concise excerpts while feature groups, versions, and detail links remain available.
-- Given the proof section, when release claims are checked against the roadmap, then only Agentic Harness, Definition Manager, and Definition Blackboard Manager are labeled shipped at 1.0.
+- Given the proof section, when release claims are checked against the roadmap, then only Agentic Harness, Definition Manager, and Blackboard Manager are labeled shipped at 1.0.
 - Given a visitor chooses the primary commercial action, when they activate Run a Pilot, then they reach the existing contact route with demo CTA tracking.
 
 ## Design Notes

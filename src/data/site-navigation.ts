@@ -142,7 +142,7 @@ export const siteNavigation: SiteNavigationGroup[] = [
 ];
 
 const footerLabels: Record<string, string[]> = {
-  Platform: ['Platform Overview', 'Use Cases', 'IT Intelligence Platform', 'Systemic Intelligence Engine', 'Generative System Model', 'Systemic Agentic Framework'],
+  Platform: ['Platform Overview', 'Use Cases', 'Organizational Intelligence Platform', 'Systemic Intelligence Engine', 'Systemic Intelligence Sourcing', 'Generative System Model', 'Systemic Agentic Framework'],
   Services: services.map((service) => service.label),
   Partnerships: ['LLM Vendor Partnership'],
   Developers: ['Documentation', 'Community', 'Repositories', 'Projects', 'Organization'],

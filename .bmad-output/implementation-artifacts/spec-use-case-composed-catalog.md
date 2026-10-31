@@ -81,7 +81,7 @@ context: []
 
 ## Design Notes
 
-Use a typed canonical source, for example `capability:itip/automatic-it-truth-sourcing`, serialized with URLSearchParams as `source` on the target catalog URL. Query parameters must operate client-side because Astro generates static pages. Keep filters and counts accessible, preserve existing actor/pain selection behavior, and avoid prototype-key lookup hazards. Homepage groups may have stable local group identities; these describe editorial selections rather than pain phases. Curate memberships from actual goals and benefit descriptions; old platform mappings are clues, not automatic truth.
+Use a typed canonical source, for example `capability:oip/automatic-it-truth-sourcing`, serialized with URLSearchParams as `source` on the target catalog URL. Query parameters must operate client-side because Astro generates static pages. Keep filters and counts accessible, preserve existing actor/pain selection behavior, and avoid prototype-key lookup hazards. Homepage groups may have stable local group identities; these describe editorial selections rather than pain phases. Curate memberships from actual goals and benefit descriptions; old platform mappings are clues, not automatic truth.
 
 ## Verification
 

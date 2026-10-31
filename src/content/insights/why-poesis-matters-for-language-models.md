@@ -61,7 +61,7 @@ The conceptual pattern is simple:
 - reduction and review remain explicit processes rather than hidden prompt behavior;
 - accepted definitions enter a governed lifecycle, while rejected proposals remain evidence rather than truth.
 
-This pattern is the working contract of the Definition Blackboard, the collaborative definition-sourcing component currently in development. Confidence and provenance do not make a contribution correct — a source can be confidently wrong. They make it possible to challenge, reproduce, compare, and dispose of the contribution responsibly. This is the difference between using a language model as an oracle and using it as a participant in a governed knowledge process.
+This pattern is the working contract of the SIS Blackboard Manager, the collaborative definition-sourcing component currently in development. Confidence and provenance do not make a contribution correct — a source can be confidently wrong. They make it possible to challenge, reproduce, compare, and dispose of the contribution responsibly. This is the difference between using a language model as an oracle and using it as a participant in a governed knowledge process.
 
 ## Governed context is stronger than document similarity where authority matters
 

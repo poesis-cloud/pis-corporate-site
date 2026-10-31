@@ -37,7 +37,7 @@ The first two are the working pair. Asserted context makes observation intelligi
 
 These are not documents about the organization. They are typed, versioned definitions governed through [GSM](https://docs.poesis.cloud/gsm/), the specification underneath the stack. A definition has a stable identity, an explicit lifecycle, an owner, and a version history. Asking which policy is in effect is a query, not an inference.
 
-Today, asserted context is served by the [Definition Manager](https://github.com/poesis-cloud/sie-definition-manager), and the [Operator](https://github.com/poesis-cloud/sie-operator) evaluates typed rules deterministically over it. The Definition Blackboard, the observation and derivation planes, and the observability floor are in development. We separate what is implemented from what is designed because a piece arguing for inspectable context should be inspectable itself.
+Today, asserted context is served by the [Definition Manager](https://github.com/poesis-cloud/sie-definition-manager), and the [Definition Operator](https://github.com/poesis-cloud/sie-operator) evaluates typed rules deterministically over it. The SIS Blackboard Manager, the observation and derivation planes, and the observability floor are in development. We separate what is implemented from what is designed because a piece arguing for inspectable context should be inspectable itself.
 
 ## When governed context replaces retrieval
 
@@ -71,7 +71,7 @@ Three things make the cost tractable.
 
 **Ontologies are sourced once.** Regulatory and architectural corpora — NIS2, DORA, TOGAF, the ISO 25000 series — are expressed as reusable definitions rather than re-derived per organization. Most enterprises are not inventing their obligations; they are adopting and specializing them. [Continuous regulatory compliance](/insights/continuous-regulatory-compliance/) sets out how those models are sourced without flattening their differences, and how they compose over the same subject.
 
-**Sourcing is collaborative and assisted.** The Definition Blackboard, currently in development, is designed as a path for agentic and human sourcers to propose definitions with a confidence envelope and a provenance envelope attached, which deterministic reduction and governance review then accept or reject. Language models are well suited to proposing candidate definitions from existing documents; they are not suited to deciding unilaterally what becomes authoritative.
+**Sourcing is collaborative and assisted.** The SIS Blackboard Manager, currently in development, is designed as a path for agentic and human sourcers to propose definitions with a confidence envelope and a provenance envelope attached, which deterministic reduction and governance review then accept or reject. Language models are well suited to proposing candidate definitions from existing documents; they are not suited to deciding unilaterally what becomes authoritative.
 
 **Coverage can be partial.** Nothing requires modeling the entire organization before value appears. Model the domain where wrong answers are expensive — compliance obligations, architecture standards, approval boundaries — and leave the rest to retrieval.
 

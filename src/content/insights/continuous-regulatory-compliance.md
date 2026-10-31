@@ -18,7 +18,7 @@ The recurring problem is not specific to NIS2, DORA, GDPR, or any other framewor
 
 Poesis provides a common grammar for that work. It does not reduce frameworks to one universal checklist. Each model keeps its own taxonomy and meaning, while [GSM](https://docs.poesis.cloud/gsm/) connects its concepts to the same definitional governance loop — the loop set out in [Definition versus description](/insights/definition-versus-description/), where governing intent yields evaluable criteria, criteria constrain operative definitions, realization produces evidence, and evidence adapts the definitions.
 
-This article presents a **reference model**, not a customer deployment. Published content in `gsm-ontology` currently includes concrete regulatory Directives and Norms for NIS2 and GDPR, alongside TOGAF, the ISO 25000 quality models, SCAP security-identification vocabularies, HTTP semantics, and ITIP sourcing definitions. DORA and several other models are planned or reserved rather than fully sourced. The integrated compliance experience remains in development.
+This article presents a **reference model**, not a customer deployment. Published content in `gsm-ontology` currently includes concrete regulatory Directives and Norms for NIS2 and GDPR, alongside TOGAF, the ISO 25000 quality models, SCAP security-identification vocabularies, HTTP semantics, and OIP sourcing definitions. DORA and several other models are planned or reserved rather than fully sourced. The integrated compliance experience remains in development.
 
 ## The framework changes; the governance problem does not
 
@@ -45,7 +45,7 @@ The `gsm-ontology` catalog contains more than regulations because compliance doe
 | Quality vocabulary | ISO/IEC 25010, 25011, 25012 | Evaluable product, service, and data-quality dimensions |
 | Security identification | SCAP CPE and CCE | Stable identification of technology platforms and configuration settings |
 | Protocol and interaction semantics | HTTP; other protocol families reserved | Typed descriptions of how governed systems interact |
-| Sourcing governance | ITIP definitions | Provenance-bearing contributions and framework-sourcing processes |
+| Sourcing governance | OIP definitions | Provenance-bearing contributions and framework-sourcing processes |
 
 These models are not merged into a synthetic “Poesis framework.” Composition happens through GSM. A subject can carry several definition layers at once: its architectural role, applicable regulatory obligations, quality expectations, technical identity, and current operative definition.
 
@@ -69,7 +69,7 @@ Framework concepts are organized by the source model's own taxonomy and retain p
 
 This is where framework-specific interpretation belongs. NIS2 entity classification must not be replaced by GDPR controller/processor roles, and neither should be approximated by a generic `regulatedEntity` field.
 
-Sourcing is also the step where language models are most useful and least trustworthy. They are well suited to proposing candidate definitions from regulatory text; they are not suited to deciding what becomes authoritative. The Definition Blackboard, in development, is designed to accept such proposals only with a confidence envelope and a provenance envelope attached, for deterministic reduction and governance review to accept or reject — the contribution pattern described in [Better context beats bigger models](/insights/why-poesis-matters-for-language-models/).
+Sourcing is also the step where language models are most useful and least trustworthy. They are well suited to proposing candidate definitions from regulatory text; they are not suited to deciding what becomes authoritative. The SIS Blackboard Manager, in development, is designed to accept such proposals only with a confidence envelope and a provenance envelope attached, for deterministic reduction and governance review to accept or reject — the contribution pattern described in [Better context beats bigger models](/insights/why-poesis-matters-for-language-models/).
 
 ### 2. Determine applicability
 

@@ -44,7 +44,7 @@ export const alternatives: Alternative[] = [
             'Considering a LeanIX alternative? Compare your EA requirements with Poesis definition foundations and planned sourcing, appraisal and analysis.',
         h1: 'LeanIX Alternative — IT Governance Platform',
         lead:
-            'Evaluate an established EA offering against your requirements and the bounded Poesis roadmap. ITIP inventory, sourcing, appraisal and simulation are planned; inspectable foundations are not an operated replacement.',
+            'Evaluate an established EA offering against your requirements and the bounded Poesis roadmap. OIP inventory, sourcing, appraisal and simulation are planned; inspectable foundations are not an operated replacement.',
         strengths:
             'The EA-repository category — of which LeanIX is a leading example — excels at giving architects a curated inventory, portfolio reports, and a shared vocabulary for application landscapes. If your need is an architect-maintained catalog with strong reporting, the category serves it well.',
         differenceIntro:
