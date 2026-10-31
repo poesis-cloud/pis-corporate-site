@@ -91,7 +91,8 @@
             "role-and-attribute-access"
           ],
           "repos": [
-            "oip-web-frontend"
+            "oip-web-frontend",
+            "oip-web-backend"
           ],
           "features": [
             {
@@ -287,11 +288,11 @@
           "state": "partial",
           "kind": "implementation",
           "features": [
-            "definition-manager/mcp",
+            "mcp/mcp",
             "definition-manager/definitions-management-api"
           ],
           "optional": [
-            "definition-manager/mcp"
+            "mcp/mcp"
           ]
         }
       ],
@@ -301,13 +302,15 @@
           "name": "Definition Manager",
           "currentVersion": "1.0",
           "tagline": "Keep system definitions versioned, accessible and governed through change.",
-          "description": "REST APIs, retained snapshots and transition controls provide the current implementation scope. Tenant/object authorization, current graded validation and revision-bound decisions are being completed; committed change notifications and MCP access are planned.",
+          "description": "REST APIs, retained snapshots and transition controls provide the current implementation scope. Tenant/object authorization, current graded validation and revision-bound decisions are being completed; committed change notifications are planned.",
           "qualities": [
             "tenant-scoped-storage",
             "revision-bound-decisions"
           ],
           "repos": [
-            "sie-definition-manager"
+            "sie-definition-manager",
+            "sie-definition-database",
+            "sie-definition-graph-database"
           ],
           "features": [
             {
@@ -359,17 +362,6 @@
                 "version": "1.1",
                 "label": "GSM Definitions lifecycle events mediation"
               }
-            },
-            {
-              "slug": "mcp",
-              "name": "MCP",
-              "blurb": "Give AI tools MCP access to policy-filtered, pinned definitions and bounded operations, alongside direct API access and independently of sourcing.",
-              "state": "planned",
-              "kind": "implementation",
-              "milestone": {
-                "version": "1.2",
-                "label": "MCP"
-              }
             }
           ]
         },
@@ -380,7 +372,7 @@
           "tagline": "Connect governed definitions to execution and planned Norm evaluation.",
           "description": "The execution implementation resolves eligible definitions and dispatches through selected adapters. Caller authority, execution budgets and failure handling remain integration boundaries. Planned pure Norm evaluation will return verdicts over pinned inputs without dispatching effects.",
           "repos": [
-            "sie-operator"
+            "sie-definition-operator"
           ],
           "features": [
             {
@@ -415,6 +407,41 @@
               "milestone": {
                 "version": "1.x",
                 "label": "GSM Mechanism execution technos integrations (ongoing, unordered)"
+              }
+            }
+          ]
+        },
+        {
+          "slug": "otel-collector",
+          "name": "OTel Collector",
+          "currentVersion": "1.0",
+          "tagline": "Collect the traces and logs SIE services emit through one shared OpenTelemetry receiver.",
+          "description": "A stock OpenTelemetry Collector deployment shared by the SIE services of a deployment, receiving their OTLP traces and logs and forwarding them to a debug sink or one configured OTLP backend. Receiver authentication and production-tuned configurations remain out of scope.",
+          "repos": [
+            "sie-otel-collector"
+          ],
+          "features": []
+        },
+        {
+          "slug": "mcp",
+          "name": "MCP",
+          "currentVersion": "0.1",
+          "tagline": "Give AI agents governed definition context through the Model Context Protocol.",
+          "description": "The planned Model Context Protocol server for SIE. It is at an early stage: MCP access to policy-filtered, pinned definitions and bounded operations is on the roadmap and not yet implemented.",
+          "repos": [
+            "sie-mcp"
+          ],
+          "features": [
+            {
+              "slug": "mcp",
+              "name": "Governed AI context for agents via MCP",
+              "blurb": "Give AI tools MCP access to policy-filtered, pinned definitions and bounded operations, alongside direct API access and independently of sourcing.",
+              "state": "planned",
+              "kind": "implementation",
+              "milestone": {
+                "version": "1.0",
+                "label": "MVP/GA — Governed AI context for agents via MCP",
+                "ga": true
               }
             }
           ]
@@ -488,7 +515,8 @@
           "tagline": "Bring evidence and competing proposals into a shared review space.",
           "description": "Panels, contribution intake, retention and sequential sealing are implemented. Concurrent intake integrity and client integration remain in scope for completion. Clients reconcile candidates and promote drafts; sealing closes collection rather than approving a definition.",
           "repos": [
-            "sis-blackboard-manager"
+            "sis-blackboard-manager",
+            "sis-blackboard-database"
           ],
           "features": [
             {
@@ -743,6 +771,9 @@
                 "label": "Enhanced Directives and Norms model"
               }
             }
+          ],
+          "repos": [
+            "gsm-specifications"
           ]
         },
         {
@@ -1394,6 +1425,31 @@
               }
             }
           ]
+        }
+      ]
+    },
+    {
+      "slug": "sim",
+      "name": "SIM",
+      "fullName": "Systemic Intelligence Model",
+      "tags": [
+        "Language Model"
+      ],
+      "excerpt": "An early-stage language model effort grounded in GSM and SIE context.",
+      "tagline": "The Systemic Intelligence Model: an early-stage effort toward a language model grounded in GSM definitions and SIE context.",
+      "description": "SIM is at an early stage. Its first product, LM, explores whether language models perform better when trained against GSM and SIE governed context than against other context. No model, capability or feature is released yet.",
+      "capabilities": [],
+      "products": [
+        {
+          "slug": "lm",
+          "name": "LM",
+          "currentVersion": "0.0",
+          "tagline": "Explore a language model trained against governed GSM and SIE context.",
+          "description": "The SIM language model is at an early stage. Training against GSM and SIE governed context is being explored; no model is released and no capability is claimed yet.",
+          "repos": [
+            "sim-lm"
+          ],
+          "features": []
         }
       ]
     }

@@ -1,0 +1,37 @@
+---
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import Icon from '../../../components/Icon.astro';
+import ProductCards from '../../../components/ProductCards.astro';
+import { platformSolutions } from '../../../data/poesis-platform.ts';
+
+const sim = platformSolutions.find((s) => s.slug === 'sim')!;
+---
+<BaseLayout
+  title="Systemic Intelligence Model — an early-stage language model"
+  description={sim.description}
+  pageType="Solution"
+>
+  <section class="hero hero--split">
+    <div class="container">
+      <p class="eyebrow"><a href="/#portfolio">{sim.tags.join(' · ')} · Solution</a></p>
+      <h1>Systemic Intelligence Model — an early-stage language model.</h1>
+      <p class="lead">{sim.tagline}</p>
+      <div class="hero-promise">
+        <p>{sim.description}</p>
+      </div>
+      <div class="hero-cta">
+        <a class="btn btn-ghost" href="https://docs.poesis.cloud/sim/"><Icon name="docs" /> Read the docs</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="section section--soft">
+    <div class="container">
+      <div class="section-head">
+        <p class="eyebrow">Products</p>
+        <h2>One early-stage product.</h2>
+      </div>
+      <ProductCards solution={sim} />
+    </div>
+  </section>
+</BaseLayout>

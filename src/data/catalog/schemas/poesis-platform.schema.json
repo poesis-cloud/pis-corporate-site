@@ -295,10 +295,10 @@
         },
         "features": {
           "type": "array",
-          "minItems": 1,
           "items": {
             "$ref": "#/$defs/feature"
-          }
+          },
+          "description": "Product features; may be empty for an early-stage product that claims no feature yet."
         }
       }
     },
@@ -347,10 +347,10 @@
         },
         "capabilities": {
           "type": "array",
-          "minItems": 1,
           "items": {
             "$ref": "#/$defs/capability"
-          }
+          },
+          "description": "Solution capabilities; may be empty for an early-stage solution that claims no capability yet."
         },
         "products": {
           "type": "array",

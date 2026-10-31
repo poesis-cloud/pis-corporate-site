@@ -124,7 +124,7 @@ test('pilot exports support value-only, pain-only, partial and unsupported scope
 
 test('usage is separate from platform and covers its stable identity ledger', () => {
   assert.deepEqual(Object.keys(poesisUsage).sort(), ['actorTypes', 'pains', 'useCases']);
-  assert.equal(poesisPlatform.solutions.length, 5);
+  assert.equal(poesisPlatform.solutions.length, 6);
   assert.doesNotThrow(() => validateUsage());
   const coverage = usageCoverage();
   assert.deepEqual(coverage, { features: 67, capabilities: 25, affordances: 6 });
@@ -888,7 +888,8 @@ test('built usage pages retain identity, derived badges, contextual links and SE
   assert.equal(options.length, poesisUsage.actorTypes.length + 1);
   for (const option of options) assert.ok(attr(option, 'value') === '' || poesisUsage.actorTypes.some((actor) => actor.slug === attr(option, 'value')));
   for (const solution of poesisPlatform.solutions) {
-    assert.ok(elements(built(solutionHref(solution)), (node) => attr(node, 'data-usage-case')).length);
+    // An early-stage solution without use cases (SIM) has no usage section to render.
+    if (useCasesForSolution(solution.slug).length) assert.ok(elements(built(solutionHref(solution)), (node) => attr(node, 'data-usage-case')).length, solution.slug);
     for (const product of solution.products) {
       const document = built(`${solutionHref(solution)}/products/${product.slug}`);
       for (const feature of product.features) {

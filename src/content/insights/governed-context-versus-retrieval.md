@@ -37,7 +37,7 @@ The first two are the working pair. Asserted context makes observation intelligi
 
 These are not documents about the organization. They are typed, versioned definitions governed through [GSM](https://docs.poesis.cloud/gsm/), the specification underneath the stack. A definition has a stable identity, an explicit lifecycle, an owner, and a version history. Asking which policy is in effect is a query, not an inference.
 
-Today, asserted context is served by the [Definition Manager](https://github.com/poesis-cloud/sie-definition-manager), and the [Definition Operator](https://github.com/poesis-cloud/sie-operator) evaluates typed rules deterministically over it. The SIS Blackboard Manager, the observation and derivation planes, and the observability floor are in development. We separate what is implemented from what is designed because a piece arguing for inspectable context should be inspectable itself.
+Today, asserted context is served by the [Definition Manager](https://github.com/poesis-cloud/sie-definition-manager), and the [Definition Operator](https://github.com/poesis-cloud/sie-definition-operator) evaluates typed rules deterministically over it. The SIS Blackboard Manager, the observation and derivation planes, and the observability floor are in development. We separate what is implemented from what is designed because a piece arguing for inspectable context should be inspectable itself.
 
 ## When governed context replaces retrieval
 
