@@ -41,7 +41,7 @@ export const tailoringFields = [
   { key: 'exclusions', label: 'Exclusions and exit expectations', placeholder: 'Out-of-scope work, retained evidence and exit arrangements' },
 ] as const;
 export type PilotDetails = Partial<Record<typeof tailoringFields[number]['key'], string>>;
-export const pilotEmail = 'clement.cazaud@outlook.com';
+export const pilotEmail = 'partner@poesis.cloud';
 
 export function normalizeSelection(input: Partial<PilotSelection>, catalog: PilotCatalog): PilotSelection {
   const valid = (slugs: string[] = [], records: { slug: string }[]) => [...new Set(slugs)].filter((slug) => records.some((record) => record.slug === slug));

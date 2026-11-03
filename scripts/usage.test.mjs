@@ -118,7 +118,7 @@ test('pilot exports support value-only, pain-only, partial and unsupported scope
   assert.equal(longEmail.shortened, true);
   assert.ok(longEmail.href.length < 1800);
   assert.equal(emailHandoff('A short brief').shortened, false);
-  assert.match(longEmail.href, /^mailto:clement.cazaud@outlook.com/);
+  assert.match(longEmail.href, /^mailto:partner@poesis.cloud/);
   assert.doesNotMatch(safePilotJson({ ...catalog, actors: [{ slug: 'safe', name: '</script>&\u2028' }] }), /<|>|&|\u2028/);
 });
 
