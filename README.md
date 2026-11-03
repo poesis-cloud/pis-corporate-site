@@ -7,6 +7,15 @@ Poesis stack, services, and certification.
 It is deliberately distinct from `docs.poesis.cloud` (the GSM standard + product
 documentation) and from the GitHub org (the standard, framework, and engine repos).
 
+## SaaS customer frontend
+
+Presents Poesis offers and coherent profile, Organization/membership, Plan/billing
+and instance-status self-care over the Account, Plan and Instance Managers.
+
+- [F1 — Offers presentation](https://github.com/poesis-cloud/pis-corporate-site/issues/6)
+- [Plan request forms](https://github.com/poesis-cloud/pis-plan-manager/issues/2) and [identity/self-care](https://github.com/poesis-cloud/pis-account-manager/issues/8)
+- [PIS SaaS capability](https://github.com/poesis-cloud/pis/issues/1)
+
 ## Stack
 
 - [Astro](https://astro.build) (static output) — SEO-first, fast, content-driven.
