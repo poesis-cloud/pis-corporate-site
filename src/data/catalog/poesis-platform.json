@@ -1351,7 +1351,7 @@
         {
           "slug": "safe-agentic-organization",
           "name": "SAFe Agentic Organization",
-          "currentVersion": "0.1",
+          "currentVersion": "1.0.0",
           "tagline": "Organize agentic delivery around clear roles, shared practices and reviewable artifacts.",
           "description": "A catalogue of SAFe-oriented roles and versioned guidance is available, with workflow graphs, playbooks and artifact contracts under integration. Planned authenticated human approval will bind decisions to exact revisions. Execution depends on supported harness, template and host combinations.",
           "repos": [
