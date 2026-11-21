@@ -1,190 +1,67 @@
 ---
-import Icon from './Icon.astro';
-import { siteNavigation } from '../data/site-navigation.ts';
+/**
+ * Nav — four destinations and one call to action.
+ *
+ * Without JavaScript every link is visible and the header simply wraps. With
+ * JavaScript (the `js` class set in the document head), below 760px the links
+ * fold into a disclosure panel; the call to action stays in the bar at every
+ * width. The folded layout is pure CSS, so the page does not shift on load.
+ */
+import { siteNavigation, navigationCta } from '../data/site-navigation.ts';
+import { knowledgeContext } from '../data/knowledge.ts';
+
+const path = Astro.url.pathname.endsWith('/') ? Astro.url.pathname : `${Astro.url.pathname}/`;
+const inKnowledge = knowledgeContext(path).inKnowledge;
+const currentOf = (href: string): 'page' | 'true' | undefined => {
+  if (path === href) return 'page';
+  if (href === '/knowledge/' ? inKnowledge : path.startsWith(href)) return 'true';
+  return undefined;
+};
 ---
 <header class="site-header">
   <div class="container nav">
-    <a class="brand" href="/">
-      <img class="brand-mark" src="/poesis-logo.png" alt="" width="26" height="26" />
-      Poesis
+    <a class="brand" href="/" aria-label="Poesis, home">
+      <img class="brand-mark" src="/poesis-logo.png" alt="" width="28" height="28" />
+      <span>Poesis</span>
     </a>
-    <button
-      class="nav-toggle"
-      type="button"
-      aria-controls="primary-navigation"
-      aria-expanded="false"
-      aria-label="Open primary menu"
-      hidden
-    >
-      <span class="nav-toggle-icon" aria-hidden="true"></span>
-      <span>Menu</span>
-    </button>
     <nav class="nav-links" id="primary-navigation" aria-label="Primary">
-      {siteNavigation.map((group) => (
-        <div class:list={['nav-dropdown', { 'nav-dropdown--platform': group.layout === 'platform' }]}>
-          <button class="nav-dropdown-trigger" aria-haspopup="true" aria-expanded="false">
-            {group.label} <span aria-hidden="true">▾</span>
-          </button>
-          <ul class="nav-dropdown-menu" role="menu">
-            {group.sections.map((section) => (
-              <li class:list={['nav-menu-section', { 'nav-menu-section--solutions': section.layout === 'solutions' }]} role="none">
-                {section.label && <span class="nav-menu-section__label">{section.label}</span>}
-                <ul role="group" aria-label={section.label || group.label}>
-                  {section.items.map((item) => (
-                    <li class={item.children ? 'nav-subgroup' : undefined} role="none">
-                      {item.children ? (
-                        <>
-                          <div class="nav-subgroup-row">
-                            <a href={item.href} role="menuitem" target={item.external ? '_blank' : undefined} rel={item.external ? 'noopener' : undefined}>{item.label}</a>
-                          </div>
-                          <ul class="nav-submenu" role="menu">
-                            {item.children.map((child) => (
-                              <li role="none"><a href={child.href} role="menuitem">{child.label}</a></li>
-                            ))}
-                          </ul>
-                        </>
-                      ) : (
-                        <a href={item.href} role="menuitem" target={item.external ? '_blank' : undefined} rel={item.external ? 'noopener' : undefined}>{item.label}</a>
-                      )}
-                    </li>
-                  ))}
-                </ul>
-              </li>
-            ))}
-          </ul>
-        </div>
-      ))}
-      <div class="nav-dropdown nav-dropdown--search">
-        <button class="nav-dropdown-trigger nav-dropdown-trigger--icon" aria-haspopup="true" aria-expanded="false" aria-label="Search">
-          <Icon name="search" size={18} />
-          <span class="sr-only">Search</span>
-        </button>
-        <div class="nav-dropdown-menu nav-dropdown-menu--search" role="dialog" aria-label="Site search">
-          <div class="search-box" id="nav-search" role="search"></div>
-        </div>
-      </div>
-      <a class="btn btn-primary btn-sm" href="/pilot">Run a Pilot</a>
+      <ul>
+        {siteNavigation.map((item) => (
+          <li><a href={item.href} aria-current={currentOf(item.href)}>{item.label}</a></li>
+        ))}
+      </ul>
     </nav>
+    <a class="btn btn-primary btn-sm nav-cta" href={navigationCta.href} data-track="business_contact_intent" data-track-id="header">{navigationCta.label}</a>
+    <button class="nav-toggle" type="button" aria-controls="primary-navigation" aria-expanded="false">
+      <span class="nav-toggle__icon" aria-hidden="true"></span>
+      <span class="nav-toggle__label">Menu</span>
+    </button>
   </div>
 </header>
 
-<script type="module">
-  document.addEventListener('DOMContentLoaded', () => {
-    const compactMenuQuery = window.matchMedia('(max-width: 1023px)');
-    const header = document.querySelector('.site-header');
-    const nav = document.getElementById('primary-navigation');
-    const menuToggle = document.querySelector('.nav-toggle');
-    const dropdowns = [...document.querySelectorAll('.nav-dropdown')];
-
-    const closeDropdowns = () => {
-      dropdowns.forEach((dropdown) => {
-        dropdown.classList.remove('open');
-        dropdown.querySelector('.nav-dropdown-trigger')?.setAttribute('aria-expanded', 'false');
-      });
+<script>
+  const header = document.querySelector<HTMLElement>('.site-header');
+  const nav = document.querySelector<HTMLElement>('#primary-navigation');
+  const toggle = document.querySelector<HTMLButtonElement>('.nav-toggle');
+  if (header && nav && toggle) {
+    const compact = window.matchMedia('(max-width: 759px)');
+    const setOpen = (open: boolean, restoreFocus = false) => {
+      const next = compact.matches && open;
+      header.classList.toggle('menu-open', next);
+      toggle.setAttribute('aria-expanded', String(next));
+      if (next) nav.querySelector<HTMLAnchorElement>('a')?.focus();
+      else if (restoreFocus) toggle.focus();
     };
-
-    const setMenuOpen = (isOpen, restoreFocus = false) => {
-      if (!header || !nav || !menuToggle) return;
-      const nextOpen = compactMenuQuery.matches && isOpen;
-      const focusIsInNav = nav.contains(document.activeElement);
-      header.classList.toggle('menu-open', nextOpen);
-      menuToggle.setAttribute('aria-expanded', String(nextOpen));
-      menuToggle.setAttribute('aria-label', `${nextOpen ? 'Close' : 'Open'} primary menu`);
-      nav.setAttribute('aria-hidden', String(!nextOpen && compactMenuQuery.matches));
-      if (compactMenuQuery.matches && !nextOpen) closeDropdowns();
-      if ((restoreFocus || focusIsInNav) && compactMenuQuery.matches && !nextOpen) menuToggle.focus();
-    };
-
-    const syncCompactMenu = () => {
-      if (!nav || !menuToggle) return;
-      menuToggle.hidden = !compactMenuQuery.matches;
-      setMenuOpen(false);
-      if (!compactMenuQuery.matches) {
-        nav.removeAttribute('aria-hidden');
-        closeDropdowns();
-      }
-    };
-
-    header?.classList.add('nav-ready');
-    menuToggle?.addEventListener('click', () => {
-      setMenuOpen(menuToggle.getAttribute('aria-expanded') !== 'true');
+    toggle.addEventListener('click', () => setOpen(toggle.getAttribute('aria-expanded') !== 'true'));
+    nav.addEventListener('click', (event) => {
+      if (event.target instanceof Element && event.target.closest('a')) setOpen(false);
     });
-
-    async function initSearch() {
-      const target = document.getElementById('nav-search');
-      if (!target || typeof window === 'undefined') return;
-
-      const loadScript = (src) => new Promise((resolve, reject) => {
-        const s = document.createElement('script');
-        s.src = src;
-        s.async = true;
-        s.onload = resolve;
-        s.onerror = reject;
-        document.head.appendChild(s);
-      });
-
-      try {
-        await loadScript('/pagefind/pagefind-ui.js');
-        if (!window.PagefindUI) throw new Error('PagefindUI not loaded');
-        new window.PagefindUI({
-          element: '#nav-search',
-          showImages: false,
-          showSubResults: false,
-          resetStyles: false,
-          autofocus: true,
-          processResult: (result) => {
-            const type = result.meta?.type || 'Page';
-            result.meta.title = `[${type}] ${result.meta.title}`;
-            result.meta.image = '';
-            return result;
-          },
-          translations: {
-            placeholder: 'Search poesis.cloud...',
-            zero_results: 'No results',
-            many_results: '[COUNT] results',
-            one_result: '1 result',
-          },
-        });
-      } catch (err) {
-        target.innerHTML = '<p class="search-error">Search unavailable.</p>';
-        // eslint-disable-next-line no-console
-        console.error('Pagefind failed to load', err);
-      }
-    }
-
-    initSearch();
-
-    document.querySelectorAll('.nav-dropdown').forEach((dropdown) => {
-      const trigger = dropdown.querySelector('.nav-dropdown-trigger');
-      if (!trigger) return;
-      trigger.addEventListener('click', (e) => {
-        e.preventDefault();
-        if (!compactMenuQuery.matches) return;
-        dropdowns.filter((candidate) => candidate !== dropdown).forEach((candidate) => {
-          candidate.classList.remove('open');
-          candidate.querySelector('.nav-dropdown-trigger')?.setAttribute('aria-expanded', 'false');
-        });
-        const isOpen = dropdown.classList.toggle('open');
-        trigger.setAttribute('aria-expanded', String(isOpen));
-      });
-    });
-
-    nav?.addEventListener('click', (event) => {
-      if (compactMenuQuery.matches && event.target instanceof Element && event.target.closest('a')) setMenuOpen(false);
-    });
-
     document.addEventListener('click', (event) => {
-      if (header && !header.contains(event.target)) setMenuOpen(false);
+      if (event.target instanceof Node && !header.contains(event.target)) setOpen(false);
     });
-
     document.addEventListener('keydown', (event) => {
-      if (event.key !== 'Escape') return;
-      const wasOpen = menuToggle?.getAttribute('aria-expanded') === 'true';
-      setMenuOpen(false, wasOpen);
+      if (event.key === 'Escape' && toggle.getAttribute('aria-expanded') === 'true') setOpen(false, true);
     });
-
-    compactMenuQuery.addEventListener('change', syncCompactMenu);
-    syncCompactMenu();
-  });
+    compact.addEventListener('change', () => setOpen(false));
+  }
 </script>
-

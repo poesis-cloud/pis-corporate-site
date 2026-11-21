@@ -3,7 +3,7 @@
   "type": "module",
   "version": "0.1.0",
   "private": true,
-  "description": "Poesis corporate site (poesis.cloud) — authority & conversion front end.",
+  "description": "Poesis corporate site (poesis.cloud): agentic transformation service, SAF open-source path, Knowledge base.",
   "scripts": {
     "dev": "astro dev",
     "build": "astro build && npx pagefind --site dist",
@@ -11,7 +11,10 @@
     "sync-roadmap": "node --experimental-strip-types scripts/export-roadmap.mjs",
     "test:portfolio": "node --experimental-strip-types --test scripts/portfolio-claims.test.mjs",
     "test:portfolio:workspace": "CHECK_WORKSPACE_PORTFOLIO=1 npm run test:portfolio",
-    "test:usage": "node --experimental-strip-types --test scripts/usage.test.mjs"
+    "test:usage": "node --experimental-strip-types --test scripts/usage.test.mjs",
+    "test:site": "node --experimental-strip-types --test scripts/site-structure.test.mjs",
+    "test": "npm run test:usage && npm run test:portfolio && npm run test:site",
+    "test:built": "CHECK_BUILT_SITE=1 npm run test:site"
   },
   "dependencies": {
     "@astrojs/sitemap": "^3.3.0",

@@ -1,0 +1,98 @@
+---
+/**
+ * One published case study. A page is generated only for records whose status
+ * is `published`; with none, this route builds no page at all.
+ */
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { evidenceKinds, publishedCaseStudies, type CaseStudy } from '../../data/case-studies.ts';
+import { formatDate } from '../../data/format.ts';
+
+export function getStaticPaths() {
+  return publishedCaseStudies.map((study) => ({ params: { slug: study.slug }, props: { study } }));
+}
+
+interface Props {
+  study: CaseStudy;
+}
+const { study } = Astro.props;
+const kind = evidenceKinds[study.kind];
+const sections: [string, string][] = [
+  ['Context', study.context],
+  ['Problem', study.problem],
+  ['Scope', study.scope],
+  ['Method', study.method],
+  ['Agents and workflows', study.agentsAndWorkflows],
+  ['Human controls', study.humanControls],
+  ['Period', study.period],
+  ['Limits', study.limits],
+  ['Learnings', study.learnings],
+  ['Next step', study.nextStep],
+];
+---
+<BaseLayout
+  title={study.title}
+  description={study.summary}
+  pageType="Case Study"
+  breadcrumbs={[{ label: 'Case Studies', href: '/case-studies/' }, { label: study.title }]}
+>
+  <section class="intro intro--with-status">
+    <div class="container">
+      <ol class="crumbs" aria-label="Breadcrumb">
+        <li><a href="/">Poesis</a></li>
+        <li><a href="/case-studies/">Case Studies</a></li>
+        <li aria-current="page">{study.title}</li>
+      </ol>
+      <span class="status status--verified">{kind.label}</span>
+      <h1>{study.title}</h1>
+      <p class="intro__lead">{study.summary}</p>
+      <p class="fineprint">{kind.meaning} Cleared for publication by {study.publicationClearance.clearedBy} on {formatDate(study.publicationClearance.clearedOn)}.</p>
+    </div>
+  </section>
+
+  <section class="band band--tight">
+    <div class="container">
+      <dl class="spec">
+        {sections.map(([label, body]) => (
+          <div>
+            <dt>{label}</dt>
+            <dd>{body}</dd>
+          </div>
+        ))}
+      </dl>
+    </div>
+  </section>
+
+  {study.measuredResults.length > 0 && (
+    <section class="band band--raised band--tight" aria-labelledby="results-title">
+      <div class="container">
+        <div class="band-head">
+          <h2 id="results-title">Measured results</h2>
+          <p>Only what was measured, with how it was measured.</p>
+        </div>
+        <dl class="spec">
+          {study.measuredResults.map((result) => (
+            <div>
+              <dt>{result.indicator}</dt>
+              <dd><strong>{result.value}</strong>. {result.method}</dd>
+            </div>
+          ))}
+        </dl>
+      </div>
+    </section>
+  )}
+
+  <section class="band band--tight" aria-labelledby="evidence-title">
+    <div class="container">
+      <div class="band-head">
+        <h2 id="evidence-title">Evidence</h2>
+      </div>
+      <ul class="plain-list">
+        {study.evidence.map((link) => <li><a href={link.href} target="_blank" rel="noopener noreferrer">{link.label}</a></li>)}
+      </ul>
+      <div class="actions">
+        <a class="btn btn-primary" href="/contact/" data-track="business_contact_intent" data-track-id="case-study">Discuss a pilot for your organization</a>
+        <a class="btn btn-quiet" href="/case-studies/">All case studies</a>
+      </div>
+    </div>
+  </section>
+</BaseLayout>

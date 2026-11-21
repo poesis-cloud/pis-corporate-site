@@ -1,24 +1,22 @@
-import { platformSolutions, solutionHref } from './poesis-platform.ts';
-import { alternatives } from './alternatives.ts';
-import { services } from './services.ts';
+/**
+ * site-navigation.ts — the conversion menu, the footer and the catalog views.
+ *
+ * The primary menu is deliberately four destinations and one call to action.
+ * Everything that describes the wider Poesis stack is reached through Knowledge
+ * (see knowledge.ts), never from the primary menu.
+ */
+import { contactEmail, externalLinks } from './site.ts';
+import { safLinks } from './saf.ts';
 
 export interface SiteNavigationItem {
   href: string;
   label: string;
   external?: boolean;
-  children?: SiteNavigationItem[];
 }
 
-export interface SiteNavigationSection {
-  label?: string;
-  items: SiteNavigationItem[];
-  layout?: 'solutions';
-}
-
-export interface SiteNavigationGroup {
+export interface FooterGroup {
   label: string;
-  sections: SiteNavigationSection[];
-  layout?: 'platform';
+  items: SiteNavigationItem[];
 }
 
 /** What someone arrives with: the demand side of the catalog. */
@@ -37,7 +35,7 @@ export const coverageViews: SiteNavigationItem[] = [
   { href: '/catalog/qualities', label: 'Qualities' },
 ];
 
-/** What is packaged and sold. */
+/** What the catalog records as packaged. */
 export const portfolioViews: SiteNavigationItem[] = [
   { href: '/catalog/solutions', label: 'Solutions' },
   { href: '/catalog/products', label: 'Products' },
@@ -47,117 +45,58 @@ export const portfolioViews: SiteNavigationItem[] = [
 /** Every catalog view, and the in-page nav of every catalog page. */
 export const catalogViews: SiteNavigationItem[] = [...needViews, ...coverageViews, ...portfolioViews];
 
-export const siteNavigation: SiteNavigationGroup[] = [
+/** The primary menu, in display order. */
+export const siteNavigation: SiteNavigationItem[] = [
+  { href: '/transformation/', label: 'Transformation' },
+  { href: '/open-source/', label: 'Open Source' },
+  { href: '/case-studies/', label: 'Case Studies' },
+  { href: '/knowledge/', label: 'Knowledge' },
+];
+
+/** The single highlighted action of the header. */
+export const navigationCta: SiteNavigationItem = { href: '/contact/', label: "Let's talk" };
+
+export const footerNavigation: FooterGroup[] = [
   {
-    label: 'Platform',
-    layout: 'platform',
-    sections: [
-      {
-        label: 'By solution & product',
-        layout: 'solutions',
-        items: [
-          { href: '/#portfolio', label: 'Platform Overview' },
-          ...platformSolutions.map((solution) => ({
-            href: solutionHref(solution),
-            label: solution.fullName,
-            children: solution.products.map((product) => ({
-              href: `${solutionHref(solution)}/products/${product.slug}`,
-              label: product.name,
-            })),
-          })),
-        ],
-      },
-      {
-        label: 'By need',
-        items: needViews,
-      },
-      {
-        label: 'By coverage',
-        items: [...coverageViews, ...portfolioViews],
-      },
-      {
-        label: 'By comparison',
-        items: alternatives.map((a) => ({
-          href: `/it/alternatives/${a.slug}/`,
-          label: `Compared to ${a.name}`,
-        })),
-      },
+    label: 'Transformation',
+    items: [
+      { href: '/transformation/', label: 'Agentic transformation' },
+      { href: '/transformation/#method', label: 'Method' },
+      { href: '/pilot/', label: 'Starting with a pilot' },
+      { href: '/case-studies/', label: 'Case studies' },
     ],
   },
   {
-    label: 'Services',
-    sections: [
-      {
-        items: services.map(({ href, label }) => ({ href, label })),
-      },
+    label: 'Open source',
+    items: [
+      { href: '/open-source/', label: 'SAF overview' },
+      { href: '/open-source/#install', label: 'Install' },
+      { href: safLinks.docs, label: 'SAF documentation', external: true },
+      { href: externalLinks.github, label: 'GitHub', external: true },
     ],
   },
   {
-    label: 'Partnerships',
-    sections: [
-      {
-        items: [
-          { href: '/partnerships/llm-vendor-value-proposal', label: 'LLM Vendor Partnership' },
-        ],
-      },
-    ],
-  },
-  {
-    label: 'Developers',
-    sections: [
-      {
-        items: [
-          { href: 'https://docs.poesis.cloud', label: 'Documentation', external: true },
-          { href: 'https://github.community/', label: 'Community', external: true },
-          { href: 'https://github.com/orgs/poesis-cloud/repositories', label: 'Repositories', external: true },
-          { href: 'https://github.com/orgs/poesis-cloud/projects', label: 'Projects', external: true },
-          { href: 'https://github.com/poesis-cloud', label: 'Organization', external: true },
-        ],
-      },
-    ],
-  },
-  {
-    label: 'Insights',
-    sections: [
-      {
-        items: [
-          { href: '/insights/research', label: 'Articles' },
-        ],
-      },
+    label: 'Knowledge',
+    items: [
+      { href: '/knowledge/', label: 'Knowledge base' },
+      { href: '/insights/research', label: 'Research notes' },
+      { href: '/catalog', label: 'Catalog' },
+      { href: externalLinks.docs, label: 'Documentation', external: true },
     ],
   },
   {
     label: 'Company',
-    sections: [
-      {
-        items: [
-          { href: '/catalog', label: 'Catalog' },
-          { href: '/about', label: 'About' },
-          { href: '/contact', label: 'Contact' },
-          { href: 'https://www.linkedin.com/company/poesis-cloud', label: 'LinkedIn', external: true },
-        ],
-      },
+    items: [
+      { href: '/about/', label: 'About' },
+      { href: '/contact/', label: 'Contact' },
+      { href: `mailto:${contactEmail}`, label: contactEmail },
+      { href: externalLinks.linkedin, label: 'LinkedIn', external: true },
     ],
   },
 ];
 
-const footerLabels: Record<string, string[]> = {
-  Platform: ['Platform Overview', 'Use Cases', 'Organizational Intelligence Platform', 'Systemic Intelligence Engine', 'Systemic Intelligence Sourcing', 'Generative System Model', 'Systemic Agentic Framework', 'Systemic Intelligence Model'],
-  Services: services.map((service) => service.label),
-  Partnerships: ['LLM Vendor Partnership'],
-  Developers: ['Documentation', 'Community', 'Repositories', 'Projects', 'Organization'],
-  Insights: ['Articles', 'Research'],
-  Company: ['Catalog', 'About', 'Contact', 'LinkedIn'],
-};
-
-export const footerNavigation = siteNavigation.map((group) => {
-  const groupItems = group.sections.flatMap((section) => section.items);
-
-  return {
-    label: group.label,
-    items: footerLabels[group.label].flatMap((label) => {
-      const item = groupItems.find((candidate) => candidate.label === label);
-      return item ? [item] : [];
-    }),
-  };
-});
+export const legalNavigation: SiteNavigationItem[] = [
+  { href: '/legal/mentions-legales', label: 'Legal notice' },
+  { href: '/legal/privacy', label: 'Privacy policy' },
+  { href: '/legal/cookies', label: 'Cookie policy' },
+];

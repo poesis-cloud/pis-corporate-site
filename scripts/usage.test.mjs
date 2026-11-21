@@ -47,7 +47,8 @@ import { pains, homepagePainGroups } from '../src/data/pains.ts';
 import { catalogSnapshot, catalogRelations, platformRelations, relationRules } from '../src/data/catalog.ts';
 import { cardTypeLabels } from '../src/data/catalog-card.ts';
 import { catalogTypes, catalogPath, catalogHref, filterCatalog } from '../src/data/catalog-query.ts';
-import { catalogViews, siteNavigation } from '../src/data/site-navigation.ts';
+import { catalogViews, coverageViews, needViews, portfolioViews, siteNavigation } from '../src/data/site-navigation.ts';
+import { platformOverviewPath } from '../src/data/knowledge.ts';
 import { projectPilotCatalog } from '../src/data/pilot-catalog.ts';
 import { emailHandoff, filterCases, normalizeSelection, safePilotJson, selectionFromQuery, selectionQuery, serializeBrief } from '../src/data/pilot.ts';
 
@@ -591,7 +592,8 @@ test('anchors and hrefs keep the published shape', () => {
   assert.equal(valueAnchor({ slug: 'value:platform/analysis-power' }), 'value-platform-analysis-power');
   assert.equal(valueAnchor({ slug: 'value:oip/01' }), 'value-oip-01');
   assert.equal(valueAnchor({ slug: 'value:oip/web-application/01' }), 'value-oip-web-application-01');
-  assert.equal(valueHref({ slug: 'value:platform/analysis-power' }), '/#value-platform-analysis-power');
+  assert.equal(platformOverviewPath, '/knowledge/platform');
+  assert.equal(valueHref({ slug: 'value:platform/analysis-power' }), '/knowledge/platform#value-platform-analysis-power');
   assert.equal(valueHref({ slug: 'value:oip/01' }), '/solutions/oip#value-oip-01');
   assert.equal(valueHref({ slug: 'value:oip/web-application/01' }), '/solutions/oip/products/web-application#value-oip-web-application-01');
   for (const solution of poesisPlatform.solutions) assert.equal(solutionHref(solution), `/solutions/${solution.slug}`);
@@ -603,20 +605,25 @@ test('every catalog entity type is browsable from one navigation section', () =>
     assert.equal(catalogPath(type), `/catalog/${type}`);
     assert.equal(new URL(catalogHref(type, 'test:source'), 'https://poesis.cloud').pathname, `/catalog/${type}`);
   }
-  const platform = siteNavigation.find((group) => group.label === 'Platform');
-  const [portfolio, needs, coverage, comparisons] = platform.sections;
-  // What is packaged comes first; demand and supply follow, comparison last.
-  assert.equal(portfolio.label, 'By solution & product');
-  assert.equal(needs.label, 'By need');
-  assert.equal(coverage.label, 'By coverage');
-  assert.equal(comparisons.label, 'By comparison');
-  // Need and coverage are disjoint, and together they publish every catalog view.
-  assert.deepEqual([...needs.items, ...coverage.items], catalogViews);
-  const company = siteNavigation.find((group) => group.label === 'Company');
-  assert.ok(company.sections.flatMap((section) => section.items).some((item) => item.href === '/catalog'));
-  // The solution shortcuts are reachable once, from the solutions section only.
-  const destinations = platform.sections.flatMap((section) => section.items.flatMap((item) => [item.href, ...(item.children ?? []).map((child) => child.href)]));
-  assert.equal(destinations.filter((href) => href.startsWith('/solutions')).length, new Set(destinations.filter((href) => href.startsWith('/solutions'))).size);
+  // Need, coverage and portfolio are disjoint, and together they publish every catalog view.
+  assert.deepEqual([...needViews, ...coverageViews, ...portfolioViews], catalogViews);
+  assert.equal(new Set(catalogViews.map((view) => view.href)).size, catalogViews.length);
+  // The conversion menu carries no catalog or solution shortcut: Knowledge is their single entry.
+  assert.ok(siteNavigation.some((item) => item.href === '/knowledge/'));
+  assert.ok(siteNavigation.every((item) => !item.href.startsWith('/catalog') && !item.href.startsWith('/solutions')));
+});
+
+test('built Knowledge hub is the single entry to every catalog view, solution and product', { skip: process.env.CHECK_BUILT_USAGE !== '1' }, () => {
+  const hub = built('/knowledge');
+  const hrefs = elements(hub, (node) => node.tagName === 'a').map((node) => attr(node, 'href'));
+  for (const view of catalogViews) assert.ok(hrefs.includes(view.href), view.href);
+  assert.ok(hrefs.includes('/catalog'));
+  assert.ok(hrefs.includes(platformOverviewPath));
+  // The solution and product shortcuts are reachable once, from the solutions section only.
+  for (const solution of poesisPlatform.solutions) {
+    assert.equal(hrefs.filter((href) => href === solutionHref(solution)).length, 1, solution.slug);
+    for (const product of solution.products) assert.equal(hrefs.filter((href) => href === `${solutionHref(solution)}/products/${product.slug}`).length, 1, product.slug);
+  }
 });
 
 test('workspace SEO retains registered platform-linked tasks and all usage titles stay distinct', { skip: process.env.CHECK_WORKSPACE_PORTFOLIO !== '1' }, () => {
@@ -660,7 +667,7 @@ test('built catalogs publish matching filter payloads and compact platform foote
       const source = `${itemKey}:${entry.slug}`;
       const expected = platformRelations(entry[itemKey]);
       const catalogCard = elements(built(`/catalog/${type}`), (node) => attr(node, 'data-catalog-slug') === entry.slug)[0];
-      const ownerPath = itemKey === 'affordance' ? '/' : itemKey === 'feature' ? `${solutionHref(entry.solution)}/products/${entry.product.slug}` : solutionHref(entry.solution);
+      const ownerPath = itemKey === 'affordance' ? platformOverviewPath : itemKey === 'feature' ? `${solutionHref(entry.solution)}/products/${entry.product.slug}` : solutionHref(entry.solution);
       const ownerAnchor = itemKey === 'affordance' ? `affordance-${entry.slug}` : entry[itemKey].slug;
       const ownerCard = elements(built(ownerPath), (node) => attr(node, 'id') === ownerAnchor)[0];
       for (const card of [catalogCard, ownerCard]) {
@@ -734,7 +741,7 @@ test('built catalog index does not repeat its current breadcrumb segment', { ski
 
 test('built catalog index presents shared platform architecture and complete direct usage map', { skip: process.env.CHECK_BUILT_USAGE !== '1' }, () => {
   const catalog = built('/catalog');
-  const homepage = built('/');
+  const homepage = built(platformOverviewPath);
   const catalogPlatform = elements(catalog, (node) => attr(node, 'class')?.split(' ').includes('arch'))[0];
   const homepagePlatform = elements(homepage, (node) => attr(node, 'class')?.split(' ').includes('arch'))[0];
   assert.ok(catalogPlatform);
@@ -783,8 +790,8 @@ test('built catalog index presents shared platform architecture and complete dir
   for (const href of ['/catalog/actors', '/catalog/pains', '/catalog/usage', '/catalog/values']) assert.ok(elements(usageMap, (node) => attr(node, 'href') === href).length, href);
 });
 
-test('built pilot keeps needs first, canonical links, safe projection and useful fallback', { skip: process.env.CHECK_BUILT_USAGE !== '1' }, () => {
-  const document = built('/pilot');
+test('built pilot builder keeps needs first, canonical links, safe projection and useful fallback', { skip: process.env.CHECK_BUILT_USAGE !== '1' }, () => {
+  const document = built('/services/pilot');
   const catalog = projectPilotCatalog();
   const byId = (id) => elements(document, (node) => attr(node, 'id') === id)[0];
   assert.ok(byId('pilot-builder'));
@@ -819,15 +826,22 @@ test('built pilot keeps needs first, canonical links, safe projection and useful
     const destination = built(target.pathname);
     if (target.hash) assert.ok(elements(destination, (node) => attr(node, 'id') === decodeURIComponent(target.hash.slice(1))).length, record.href);
   }
-  const homepage = built('/');
-  for (const identity of ['homepage-hero-pilot', 'homepage-usage-pilot']) {
-    const cta = elements(homepage, (node) => attr(node, 'data-demo-cta') === identity);
-    assert.equal(cta.length, 1);
-    assert.equal(attr(cta[0], 'href'), '/pilot');
+  // The builder is an archived tool: neither the home page nor the platform overview sends visitors to it.
+  for (const page of [built('/'), built(platformOverviewPath)]) {
+    assert.equal(elements(page, (node) => attr(node, 'data-demo-cta')?.startsWith('homepage-')).length, 0);
+    assert.equal(elements(page, (node) => attr(node, 'id') === 'pilot').length, 0);
+    assert.equal(elements(page, (node) => attr(node, 'href') === '#pilot').length, 0);
   }
-  assert.equal(elements(homepage, (node) => attr(node, 'id') === 'pilot').length, 0);
-  assert.equal(elements(homepage, (node) => attr(node, 'href') === '#pilot').length, 0);
-  assert.ok(readFileSync(new URL('../dist/sitemap-0.xml', import.meta.url), 'utf8').includes('/pilot/</loc>'));
+  assert.equal(elements(built('/'), (node) => attr(node, 'href') === '/services/pilot').length, 0);
+  // /pilot keeps its address: it now describes a transformation pilot and points to the archived builder.
+  const orientation = built('/pilot');
+  assert.equal(elements(orientation, (node) => node.tagName === 'h1').length, 1);
+  assert.equal(elements(orientation, (node) => attr(node, 'id') === 'pilot-builder').length, 0);
+  assert.ok(elements(orientation, (node) => attr(node, 'href') === '/services/pilot').length);
+  assert.ok(elements(orientation, (node) => attr(node, 'href') === '/contact/').length);
+  const sitemap = readFileSync(new URL('../dist/sitemap-0.xml', import.meta.url), 'utf8');
+  assert.ok(sitemap.includes('/pilot/</loc>'));
+  assert.ok(sitemap.includes('/services/pilot/</loc>'));
 });
 
 test('built usage pages retain identity, derived badges, contextual links and SEO title identity', { skip: process.env.CHECK_BUILT_USAGE !== '1' }, () => {
@@ -882,7 +896,7 @@ test('built usage pages retain identity, derived badges, contextual links and SE
       const href = attr(link, 'href');
       if (!href || (!href.startsWith('/') && !href.startsWith('#'))) continue;
       const target = new URL(href, `https://poesis.cloud/usage/${useCase.slug}`);
-      if (!(target.pathname === '/' || catalogViews.some((view) => target.pathname === view.href) || target.pathname.startsWith('/usage') || target.pathname.startsWith('/solutions'))) continue;
+      if (!(target.pathname === '/' || target.pathname === platformOverviewPath || catalogViews.some((view) => target.pathname === view.href) || target.pathname.startsWith('/usage') || target.pathname.startsWith('/solutions'))) continue;
       const destination = built(target.pathname);
       if (target.hash) assert.ok(elements(destination, (node) => attr(node, 'id') === decodeURIComponent(target.hash.slice(1))).length, `${useCase.slug}: ${href}`);
     }
@@ -900,7 +914,7 @@ test('built usage pages retain identity, derived badges, contextual links and SE
       assert.equal(attr(elements(item[0], (node) => attr(node, 'data-delivery-status'))[0], 'data-delivery-status'), commitmentStatus([state(entry)]), `${page}: ${entry.slug}`);
     }
   }
-  const homepage = built('/');
+  const homepage = built(platformOverviewPath);
   assert.equal(elements(homepage, (node) => attr(node, 'class')?.includes('think-phase__subpains')).length, 0);
   for (const group of homepagePainGroups) {
     const links = elements(homepage, (node) => attr(node, 'href') === catalogHref('pains', `homepage:${group.slug}`));
@@ -909,7 +923,7 @@ test('built usage pages retain identity, derived badges, contextual links and SE
   }
   const actorsPage = built('/catalog/actors');
   for (const profile of profiles) assert.ok(elements(actorsPage, (node) => attr(node, 'id') === profile.slug).length, `actor ${profile.slug}`);
-  // The homepage keeps actor types as the usage filter rather than a separate section.
+  // The platform overview keeps actor types as the usage filter rather than a separate section.
   const usageHeading = elements(homepage, (node) => node.tagName === 'h3' && attr(node, 'id') === 'usage-actor-heading')[0];
   assert.equal(text(usageHeading), 'Who is it for');
   const usageSelect = elements(homepage, (node) => node.tagName === 'select' && attr(node, 'id') === 'usage-actor')[0];

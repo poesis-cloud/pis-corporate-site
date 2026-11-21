@@ -1,47 +1,37 @@
 ---
-import { footerNavigation } from '../data/site-navigation.ts';
+import { footerNavigation, legalNavigation } from '../data/site-navigation.ts';
 
 const year = new Date().getFullYear();
-
-const legal = [
-  { href: '/legal/mentions-legales', label: 'Legal notice' },
-  { href: '/legal/privacy', label: 'Privacy policy' },
-  { href: '/legal/cookies', label: 'Cookie policy' },
-];
 ---
 <footer class="site-footer">
   <div class="container">
     <div class="footer-grid">
-      <div>
-        <a class="brand" href="/">
-          <img class="brand-mark" src="/poesis-logo.png" alt="" width="26" height="26" /> Poesis
+      <div class="footer-brand">
+        <a class="brand" href="/" aria-label="Poesis, home">
+          <img class="brand-mark" src="/poesis-logo.png" alt="" width="28" height="28" loading="lazy" /> <span>Poesis</span>
         </a>
-        <p class="footer-tag">Harnessing generative AI for an age of governed synthetic autopoiesis.</p>
+        <p class="footer-tag">Agentic transformation for organizations, with SAF, the open-source Systemic Agentic Framework, as its method and engine.</p>
       </div>
       {footerNavigation.map((group) => (
-        <div>
-          <h4>{group.label}</h4>
+        <nav aria-label={group.label}>
+          <h2>{group.label}</h2>
           <ul>
             {group.items.map((item) => (
-              <li><a href={item.href} target={item.external ? '_blank' : undefined} rel={item.external ? 'noopener' : undefined}>{item.label}</a></li>
+              <li><a href={item.href} target={item.external ? '_blank' : undefined} rel={item.external ? 'noopener noreferrer' : undefined}>{item.label}</a></li>
             ))}
           </ul>
-        </div>
+        </nav>
       ))}
-      <div>
-        <h4>Legal</h4>
-        <ul>
-          {legal.map((l) => (
-            <li><a href={l.href}>{l.label}</a></li>
-          ))}
-          <li><a href="/legal/cookies" data-cookie-settings>Cookie settings</a></li>
-        </ul>
-      </div>
     </div>
+    <nav class="footer-legal-links" aria-label="Legal">
+      <ul>
+        {legalNavigation.map((item) => <li><a href={item.href}>{item.label}</a></li>)}
+        <li><a href="/legal/cookies" data-cookie-settings>Cookie settings</a></li>
+      </ul>
+    </nav>
     <div class="footer-legal">
-      <span>&copy; {year} Poesis &middot; Founded by <a href="https://www.linkedin.com/in/clement-cazaud" target="_blank" rel="noopener">Clément Cazaud</a>.</span>
-      <span>Proprietary. &ldquo;Poesis&rdquo;, &ldquo;Generative System Model&rdquo;, &ldquo;Systemic Intelligence Engine&rdquo;, &ldquo;Organizational Intelligence Platform&rdquo;, &ldquo;Systemic Intelligence Sourcing&rdquo;, &ldquo;Systemic Agentic Framework&rdquo;, &ldquo;Systemic Intelligence Model&rdquo; are trademarks of Clément Cazaud.</span>
+      <span>&copy; {year} Poesis &middot; Founded by <a href="https://www.linkedin.com/in/clement-cazaud" target="_blank" rel="noopener noreferrer">Clément Cazaud</a>.</span>
+      <span>&ldquo;Poesis&rdquo;, &ldquo;Generative System Model&rdquo;, &ldquo;Systemic Intelligence Engine&rdquo;, &ldquo;Organizational Intelligence Platform&rdquo;, &ldquo;Systemic Intelligence Sourcing&rdquo;, &ldquo;Systemic Agentic Framework&rdquo;, &ldquo;Systemic Intelligence Model&rdquo; are trademarks of Clément Cazaud. The SAF Agentic Harness and SAF Agentic Organization are released under the Apache License 2.0; this website is proprietary. SAFe&reg; is a registered trademark of Scaled Agile, Inc.; its mention implies no affiliation or endorsement.</span>
     </div>
   </div>
 </footer>
-

@@ -1,0 +1,30 @@
+---
+/** One SAF product: who it is for, what it does, its maturity, and where its code and documentation are. */
+import Icon from './Icon.astro';
+import { maturityLabel, type SafProduct } from '../data/saf.ts';
+
+interface Props {
+  product: SafProduct;
+  trackId: string;
+  /** Heading level of the product name; the panel sits under an h2 by default. */
+  as?: 'h2' | 'h3';
+}
+const { product, trackId, as: Heading = 'h3' } = Astro.props;
+const external = { target: '_blank', rel: 'noopener noreferrer' };
+---
+<article class="product" id={product.key}>
+  <div class="product__top">
+    <p class="for-whom">{product.audience}</p>
+    <span class="status">{maturityLabel}</span>
+  </div>
+  <Heading>{product.name}</Heading>
+  <p class="product__repo">{product.technicalName} · {product.license}</p>
+  <p>{product.summary}</p>
+  <ul class="plain-list">
+    {product.provides.map((item) => <li>{item}</li>)}
+  </ul>
+  <div class="product__links">
+    <a href={product.docs} {...external} data-track="developer_docs_click" data-track-id={`${trackId}-${product.key}`}><Icon name="docs" size={18} /> Technical docs</a>
+    <a href={product.repository} {...external} data-track="developer_repo_click" data-track-id={`${trackId}-${product.key}`}><Icon name="github" size={18} /> Repository</a>
+  </div>
+</article>

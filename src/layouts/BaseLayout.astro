@@ -2,7 +2,17 @@
 import Nav from '../components/Nav.astro';
 import Footer from '../components/Footer.astro';
 import ConsentBanner from '../components/ConsentBanner.astro';
+import KnowledgeBar from '../components/KnowledgeBar.astro';
+import { knowledgeContext } from '../data/knowledge.ts';
+import { contactEmail, externalLinks } from '../data/site.ts';
 import '../styles/global.css';
+import '../styles/site.css';
+
+interface Breadcrumb {
+  label: string;
+  /** Site-relative path. Omit on the current page. */
+  href?: string;
+}
 
 interface Props {
   title: string;
@@ -15,6 +25,12 @@ interface Props {
     authorName: string;
     authorUrl?: string;
   };
+  /** Trail from the home page to this page; emitted as BreadcrumbList JSON-LD. */
+  breadcrumbs?: Breadcrumb[];
+  /** Additional schema.org objects. Only facts that are visible on the page. */
+  jsonLd?: Record<string, unknown>[];
+  /** An above-the-fold image worth fetching before the stylesheet settles. */
+  preloadImage?: { href: string; media?: string; type?: string };
 }
 
 const {
@@ -23,20 +39,21 @@ const {
   pageType,
   noindex = false,
   article,
+  breadcrumbs,
+  jsonLd = [],
+  preloadImage,
 } = Astro.props;
 
 const site = Astro.site ?? new URL('https://poesis.cloud');
 const canonical = new URL(Astro.url.pathname, site).href;
-const isHomepage = Astro.url.pathname === '/';
-const homepageDescription = 'Poesis is an Organizational Intelligence Platform in development: shared definition foundations, local agentic controls and planned IT governance, appraisal and analysis workflows.';
-const resolvedDescription = description ?? (isHomepage
-  ? homepageDescription
-  : 'Poesis develops GSM specification content, SIE definition foundations, SIS contribution intake, local SAF controls, planned OIP workflows and early-stage SIM model work. Availability and integration are stated per scope.');
+const knowledge = knowledgeContext(Astro.url.pathname);
+const conversionDescription = 'Poesis guides the agentic transformation of organizations, from one team to the whole enterprise, with SAF, its open-source Systemic Agentic Framework, as the method and the engine.';
+/** Knowledge pages without their own description keep the wording they were published with. */
+const knowledgeDescription = 'Poesis develops GSM specification content, SIE definition foundations, SIS contribution intake, local SAF controls, planned OIP workflows and early-stage SIM model work. Availability and integration are stated per scope.';
+const resolvedDescription = description ?? (knowledge.inKnowledge ? knowledgeDescription : conversionDescription);
 const fullTitle = `${title} · Poesis`;
 const ogImage = new URL('/og-default.png', site).href;
-const socialImageAlt = isHomepage
-  ? 'Poesis — the Organizational Intelligence Platform for people and AI'
-  : 'Poesis — governed synthetic autopoiesis';
+const socialImageAlt = 'Poesis: governed synthetic autopoiesis';
 
 const organizationLd = {
   '@context': 'https://schema.org',
@@ -45,7 +62,8 @@ const organizationLd = {
   url: site.href,
   logo: new URL('/poesis-logo.png', site).href,
   slogan: 'Define the world in software; generate it.',
-  sameAs: ['https://www.linkedin.com/company/poesis-cloud', 'https://github.com/poesis-cloud'],
+  email: contactEmail,
+  sameAs: [externalLinks.linkedin, externalLinks.github],
 };
 
 const articleLd = article
@@ -65,16 +83,38 @@ const articleLd = article
       publisher: { '@type': 'Organization', name: 'Poesis', url: site.href },
     }
   : null;
+
+const breadcrumbLd = breadcrumbs?.length
+  ? {
+      '@context': 'https://schema.org',
+      '@type': 'BreadcrumbList',
+      itemListElement: [{ label: 'Poesis', href: '/' }, ...breadcrumbs].map((crumb, index) => ({
+        '@type': 'ListItem',
+        position: index + 1,
+        name: crumb.label,
+        item: new URL(crumb.href ?? Astro.url.pathname, site).href,
+      })),
+    }
+  : null;
+
+const structuredData = [organizationLd, articleLd, breadcrumbLd, ...jsonLd.map((entry) => ({ '@context': 'https://schema.org', ...entry }))].filter(Boolean);
+/** `<` never appears raw inside a JSON-LD script, whatever a description contains. */
+const serialize = (value: unknown) => JSON.stringify(value).replace(/</g, '\\u003c');
 ---
 <!doctype html>
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta name="theme-color" content="#070a12" />
+    <meta name="color-scheme" content="dark" />
+    {/* Set before first paint: the compact menu is laid out folded from the start, so
+        nothing moves when the menu script runs. Without scripts the links stay visible. */}
+    <script is:inline>document.documentElement.classList.add('js');</script>
     <link rel="icon" href="/favicon.png" type="image/png" sizes="32x32" />
     <link rel="icon" href="/favicon-16.png" type="image/png" sizes="16x16" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    {preloadImage && <link rel="preload" as="image" href={preloadImage.href} media={preloadImage.media} type={preloadImage.type} fetchpriority="high" />}
     <title>{fullTitle}</title>
     <meta name="description" content={resolvedDescription} />
     {noindex ? <meta name="robots" content="noindex" /> : <link rel="canonical" href={canonical} />}
@@ -94,9 +134,9 @@ const articleLd = article
     <meta name="twitter:title" content={fullTitle} />
     <meta name="twitter:description" content={resolvedDescription} />
     <meta name="twitter:image" content={ogImage} />
+    <meta name="twitter:image:alt" content={socialImageAlt} />
     <meta name="generator" content={Astro.generator} />
-    <script type="application/ld+json" set:html={JSON.stringify(organizationLd)} />
-    {articleLd && <script type="application/ld+json" set:html={JSON.stringify(articleLd)} />}
+    {structuredData.map((entry) => <script type="application/ld+json" set:html={serialize(entry)} />)}
     {/* Consent mode default + dataLayer stub. The gtag.js script itself is NOT
         loaded here — it is injected by ConsentBanner only after the user grants
         analytics consent. This guarantees "reject = zero GA cookies": with
@@ -130,12 +170,21 @@ const articleLd = article
         // host-only vs parent-domain cookies when both sites load the same ID).
         gtag('config', 'G-KZGGY5D9GW', { anonymize_ip: true, cookie_domain: 'poesis.cloud' });
       };
-      // Delegated GA4 events for demo CTAs. The gtag stub just queues these
-      // into dataLayer; they are only actually sent if/when GA4 is loaded
-      // after consent.
+      // Delegated conversion events. The gtag stub only queues them in
+      // dataLayer; they leave the browser if and when GA4 is loaded after
+      // consent. `data-track` names one event of the measurement plan
+      // (src/data/site.ts); `data-demo-cta` is kept for Knowledge pages.
       document.addEventListener('click', function (e) {
         var t = e.target && e.target.closest ? e.target : null;
         if (!t) return;
+        var tracked = t.closest('[data-track]');
+        if (tracked) {
+          gtag('event', tracked.getAttribute('data-track'), {
+            cta_id: tracked.getAttribute('data-track-id') || '',
+            link_url: tracked.getAttribute('href') || '',
+            page_path: location.pathname,
+          });
+        }
         var demo = t.closest('[data-demo-cta]');
         if (demo) {
           gtag('event', 'demo_cta_click', {
@@ -147,11 +196,15 @@ const articleLd = article
       });
     </script>
   </head>
-  <body data-page-type={pageType}>
-    {pageType && <span data-pagefind-meta="type" style="display:none">{pageType}</span>}
+  <body data-page-type={pageType} data-area={knowledge.inKnowledge ? 'knowledge' : 'site'}>
     <a class="skip-link" href="#main">Skip to content</a>
     <Nav />
-    <main id="main">
+    {knowledge.inKnowledge && !knowledge.isHub && <KnowledgeBar archive={knowledge.archive} />}
+    {/* Only Knowledge pages enter the search index: the search on /knowledge/ is a
+        search of the corpus, and nothing outside it (conversion pages, bundled
+        previews under public/) can surface in a result. */}
+    <main id="main" data-pagefind-body={knowledge.inKnowledge ? '' : undefined}>
+      {pageType && <span data-pagefind-meta="type" hidden>{pageType}</span>}
       <slot />
     </main>
     <Footer />

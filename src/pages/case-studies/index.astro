@@ -1,0 +1,117 @@
+---
+/**
+ * Case Studies — the evidence register. It lists the cases that are published
+ * and, when there is none, says so and shows how a case is documented.
+ */
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { caseStudyTemplate, evidenceKinds, publicationChecklist, publishedCaseStudies, type EvidenceKind } from '../../data/case-studies.ts';
+import { harness, organization } from '../../data/saf.ts';
+
+const title = 'Case studies of agentic transformation pilots';
+const description = 'How Poesis documents its pilots: what counts as evidence, how a demonstration differs from a pilot and from an operational deployment, and the cases cleared for publication.';
+const kinds = Object.entries(evidenceKinds) as [EvidenceKind, { label: string; meaning: string }][];
+const external = { target: '_blank', rel: 'noopener noreferrer' };
+---
+<BaseLayout title={title} description={description} pageType="Case Studies" breadcrumbs={[{ label: 'Case Studies' }]}>
+  <section class="intro">
+    <div class="container">
+      <ol class="crumbs" aria-label="Breadcrumb">
+        <li><a href="/">Poesis</a></li>
+        <li aria-current="page">Case Studies</li>
+      </ol>
+      <h1>Case studies of agentic transformation pilots.</h1>
+      <p class="intro__lead">Real work. Verifiable learning. A case is published here when the work took place, its evidence can be inspected, and the organization concerned has agreed to what is said.</p>
+    </div>
+  </section>
+
+  <section class="band band--tight" aria-labelledby="published-title">
+    <div class="container">
+      <div class="band-head">
+        <h2 id="published-title">Published cases</h2>
+      </div>
+      {publishedCaseStudies.length > 0 ? (
+        <ul class="case-list">
+          {publishedCaseStudies.map((study) => (
+            <li class="case-card">
+              <span class="status status--verified">{evidenceKinds[study.kind].label}</span>
+              <h3><a href={`/case-studies/${study.slug}/`}>{study.title}</a></h3>
+              <p>{study.summary}</p>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <div class="evidence-empty">
+          <div>
+            <h3>Pilot case studies are being documented.</h3>
+            <p>No case study is published yet. Nothing on this site stands in for one: there are no sample clients, no illustrative figures and no logos.</p>
+          </div>
+          <div>
+            <p>If you are considering a pilot, the most useful thing we can do is discuss your scope and show you the framework at work.</p>
+            <div class="actions">
+              <a class="btn btn-primary" href="/contact/" data-track="business_contact_intent" data-track-id="case-studies-empty">Discuss a pilot for your organization</a>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  </section>
+
+  <section class="band band--raised" aria-labelledby="kinds-title">
+    <div class="container">
+      <div class="band-head">
+        <h2 id="kinds-title">Three kinds of evidence, never confused.</h2>
+        <p>Every case states which of these it is. A demonstration is not presented as a client pilot, and a pilot is not presented as a deployment.</p>
+      </div>
+      <dl class="spec">
+        {kinds.map(([, kind]) => (
+          <div>
+            <dt>{kind.label}</dt>
+            <dd>{kind.meaning}</dd>
+          </div>
+        ))}
+      </dl>
+    </div>
+  </section>
+
+  <section class="band" aria-labelledby="template-title">
+    <div class="container">
+      <div class="band-head">
+        <h2 id="template-title">What every case contains.</h2>
+        <p>The same structure for each case, so that two of them can be compared and none can hide its limits.</p>
+      </div>
+      <div class="split split--flush">
+        <dl class="spec">
+          {caseStudyTemplate.map((item) => (
+            <div>
+              <dt>{item.field}</dt>
+              <dd>{item.expects}</dd>
+            </div>
+          ))}
+        </dl>
+        <div>
+          <h3>Before a case is published</h3>
+          <ul class="plain-list">
+            {publicationChecklist.map((item) => <li>{item}</li>)}
+          </ul>
+          <h3 class="stack-gap">Evidence you can inspect today</h3>
+          <p>The framework the pilots run on is public. Its code, specifications, tests and releases are the first thing to check.</p>
+          <div class="actions">
+            <a class="btn btn-ghost" href={harness.repository} {...external} data-track="developer_repo_click" data-track-id="case-studies-harness">Harness repository</a>
+            <a class="btn btn-ghost" href={organization.repository} {...external} data-track="developer_repo_click" data-track-id="case-studies-organization">Organization repository</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="closing" aria-labelledby="closing-title">
+    <div class="container">
+      <h2 id="closing-title">The next case could be yours.</h2>
+      <p>A pilot is a bounded scope, agreed success criteria and an evidence review. If it goes well and you agree, it becomes a case on this page.</p>
+      <div class="actions">
+        <a class="btn btn-primary btn-lg" href="/contact/" data-track="business_contact_intent" data-track-id="case-studies-closing">Discuss a pilot for your organization</a>
+        <a class="btn btn-quiet" href="/pilot/">What a first pilot involves</a>
+      </div>
+    </div>
+  </section>
+</BaseLayout>

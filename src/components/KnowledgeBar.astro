@@ -1,0 +1,30 @@
+---
+/**
+ * KnowledgeBar — the envelope shown above every Knowledge page.
+ *
+ * It tells the reader they are in the reference corpus rather than on a sales
+ * page, and gives one way back to the hub and its search. The page beneath it
+ * is rendered exactly as it was published.
+ */
+interface Props {
+  /** Earlier commercial material: kept for reference, not the current offer. */
+  archive?: boolean;
+}
+const { archive = false } = Astro.props;
+---
+<div class="kb-bar" data-pagefind-ignore>
+  <div class="container kb-bar__inner">
+    <p class="kb-bar__where">
+      <a href="/knowledge/">Knowledge</a>
+      <span>Reference material of the Poesis corpus</span>
+    </p>
+    <a class="kb-bar__search" href="/knowledge/#search">Search Knowledge</a>
+  </div>
+  {archive && (
+    <div class="container">
+      <p class="kb-bar__archive" role="note">
+        <strong>Archived offer.</strong> This page records an earlier Poesis offer and is kept as published, for reference. The engagement Poesis offers today is <a href="/transformation/">agentic transformation</a>.
+      </p>
+    </div>
+  )}
+</div>

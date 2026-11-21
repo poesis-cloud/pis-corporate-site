@@ -1,0 +1,567 @@
+<!doctype html>
+<!--
+  Poesis hero film — source of public/hero/seed.{mp4,webm} and of its posters.
+
+  One deterministic function, draw(t) with t in [0, 1), paints a frame. The loop
+  closes exactly: frame 0 and the frame after the last one are the same picture.
+
+  Story, in the order it plays:
+    seed            a seed falls onto the outline of an existing organization
+    planted DNA     it settles into the real Poesis mark (public/poesis-logo.png)
+    growth          a double helix rises, then roles and agents branch from it
+    outputs         work flows outward and leaves artifacts at the nodes
+    governance      indigo gates hold each flow until it is released
+    evolution       evidence returns to the mark, and the cycle starts again
+
+  The outline that never fades is "your organization"; what grows over it, bright,
+  is the agentic organization mirroring it.
+
+  Open through capture-server.mjs:
+    /?play=1                 real-time preview
+    /?t=0.72                 one frame
+    /?capture=1              post every frame and the posters to the server
+    add &layout=portrait     for the narrow-screen poster
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Poesis hero film</title>
+<style>
+  html, body { margin: 0; background: #070a12; }
+  canvas { display: block; }
+</style>
+</head>
+<body>
+<canvas id="film"></canvas>
+<script>
+const query = new URLSearchParams(location.search);
+const FPS = 24;
+const SECONDS = 20;
+const FRAMES = FPS * SECONDS;
+const POSTER_T = 0.74;
+
+const LAYOUTS = {
+  landscape: { W: 1280, H: 720, cx: 986, ground: 520, s: 0.8 },
+  portrait: { W: 720, H: 900, cx: 400, ground: 520, s: 0.86 },
+};
+const L = LAYOUTS[query.get('layout')] ?? LAYOUTS.landscape;
+const canvas = document.getElementById('film');
+canvas.width = L.W;
+canvas.height = L.H;
+const ctx = canvas.getContext('2d');
+
+const INK = '#070a12';
+const TEAL = '#2dd4bf';
+const MINT = '#99f6e4';
+const CYAN = '#38bdf8';
+const PALE = '#e6fbff';
+const GOV = '#a5b4fc';
+const GHOST = '#7d92b4';
+const TAU = Math.PI * 2;
+
+const clamp = (x) => (x < 0 ? 0 : x > 1 ? 1 : x);
+const ease = (x) => { const c = clamp(x); return c * c * (3 - 2 * c); };
+const span = (t, a, b) => ease((t - a) / (b - a));
+const frac = (x) => x - Math.floor(x);
+const px = (unit) => unit * L.s;
+
+// ---- the organization, in units relative to the planted seed -----------------
+const TRUNK = 430;
+const LEVELS = [
+  { y: -150, x: 152, at: 0.18, subs: [[218, -206], [236, -120]] },
+  { y: -250, x: 118, at: 0.24, subs: [[190, -304]] },
+  { y: -340, x: 78, at: 0.30, subs: [[134, -390]] },
+];
+/** Branches that carry a human gate: [level, side]. */
+const GATED = new Set(['0:1', '1:-1', '2:1']);
+
+const at = (x, y) => [L.cx + px(x), L.ground + px(y)];
+
+function bezier(p0, p1, p2, p3, u) {
+  const v = 1 - u;
+  return [
+    v * v * v * p0[0] + 3 * v * v * u * p1[0] + 3 * v * u * u * p2[0] + u * u * u * p3[0],
+    v * v * v * p0[1] + 3 * v * v * u * p1[1] + 3 * v * u * u * p2[1] + u * u * u * p3[1],
+  ];
+}
+
+const branches = [];
+LEVELS.forEach((level, index) => {
+  for (const side of [-1, 1]) {
+    const attach = level.y + 48;
+    const curve = [at(0, attach), at(side * level.x * 0.36, attach - 8), at(side * level.x * 0.82, level.y + 36), at(side * level.x, level.y)];
+    const branch = { index, side, curve, start: level.at, gated: GATED.has(`${index}:${side}`), subs: [], phase: frac(index * 0.37 + (side > 0 ? 0.11 : 0.53)) };
+    level.subs.forEach(([sx, sy], subIndex) => {
+      const from = curve[3];
+      const to = at(side * sx, sy);
+      const mid = [(from[0] + to[0]) / 2 + side * px(10), (from[1] + to[1]) / 2 - px(14)];
+      branch.subs.push({ curve: [from, mid, mid, to], start: level.at + 0.1, phase: frac(branch.phase + 0.29 + subIndex * 0.31) });
+    });
+    branches.push(branch);
+  }
+});
+const crown = at(0, -TRUNK);
+
+/** Lateral coordination between neighbouring roles, and from the crown down. */
+const links = [];
+for (const side of [-1, 1]) {
+  const column = branches.filter((branch) => branch.side === side).map((branch) => branch.curve[3]);
+  links.push([column[0], column[1]], [column[1], column[2]], [column[2], crown]);
+}
+
+// Evolution loop: from the crown, around the outside, back to the planted mark.
+const arc = { cx: L.cx, cy: L.ground - px(TRUNK / 2) + px(12), rx: px(292), ry: px(TRUNK / 2 + 44) };
+const arcPoint = (u) => { const angle = -Math.PI / 2 + u * Math.PI; return [arc.cx + arc.rx * Math.cos(angle), arc.cy + arc.ry * Math.sin(angle)]; };
+const ARC_GATES = [0.3, 0.68];
+
+// Deterministic motes: the same cloud on every run.
+let seedValue = 20261121;
+const random = () => { seedValue = (seedValue * 1664525 + 1013904223) % 4294967296; return seedValue / 4294967296; };
+const motes = Array.from({ length: 46 }, () => ({ x: (random() - 0.5) * 560, y: -random() * 470, r: 0.6 + random() * 1.2, laps: 1 + Math.floor(random() * 2), phase: random(), drift: 18 + random() * 40 }));
+
+// ---- the real Poesis mark, tinted ---------------------------------------------
+const logo = new Image();
+const tinted = document.createElement('canvas');
+function tintLogo() {
+  tinted.width = logo.naturalWidth;
+  tinted.height = logo.naturalHeight;
+  const paint = tinted.getContext('2d');
+  paint.drawImage(logo, 0, 0);
+  paint.globalCompositeOperation = 'source-in';
+  paint.fillStyle = MINT;
+  paint.fillRect(0, 0, tinted.width, tinted.height);
+}
+
+// ---- drawing --------------------------------------------------------------------
+function glow(color, blur) { ctx.shadowColor = color; ctx.shadowBlur = blur; }
+function noGlow() { ctx.shadowColor = 'transparent'; ctx.shadowBlur = 0; }
+
+function strokeCurve(curve, reveal, steps = 30) {
+  if (reveal <= 0) return;
+  ctx.beginPath();
+  ctx.moveTo(curve[0][0], curve[0][1]);
+  const last = Math.max(1, Math.round(steps * reveal));
+  for (let i = 1; i <= last; i++) {
+    const [x, y] = bezier(...curve, Math.min(reveal, i / steps));
+    ctx.lineTo(x, y);
+  }
+  ctx.stroke();
+}
+
+function helix(t, reveal) {
+  const height = px(TRUNK) * reveal;
+  if (height <= 1) return;
+  const turn = TAU * t;
+  const wave = Math.PI / px(62);
+  const amplitude = (rise) => px(24 - 10 * (rise / px(TRUNK)));
+  const strand = (sign) => {
+    ctx.beginPath();
+    for (let rise = 0; rise <= height; rise += 2) {
+      const x = L.cx + sign * amplitude(rise) * Math.sin(wave * rise + turn);
+      const y = L.ground - rise;
+      if (rise === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+    }
+    ctx.stroke();
+  };
+  // Rungs first, so the strands sit on top of them.
+  const rungs = ctx.globalAlpha;
+  for (let rise = px(9); rise <= height; rise += px(15.5)) {
+    const swing = Math.sin(wave * rise + turn);
+    ctx.globalAlpha = rungs * (0.18 + 0.5 * Math.abs(swing));
+    ctx.beginPath();
+    ctx.moveTo(L.cx - amplitude(rise) * swing, L.ground - rise);
+    ctx.lineTo(L.cx + amplitude(rise) * swing, L.ground - rise);
+    ctx.stroke();
+  }
+  ctx.globalAlpha = rungs;
+  strand(1);
+  strand(-1);
+}
+
+function node(point, radius, grown, fill, ring) {
+  if (grown <= 0) return;
+  const r = radius * grown;
+  ctx.beginPath();
+  ctx.arc(point[0], point[1], r, 0, TAU);
+  ctx.fillStyle = INK;
+  ctx.fill();
+  ctx.lineWidth = px(1.8);
+  ctx.strokeStyle = ring;
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.arc(point[0], point[1], r * 0.42, 0, TAU);
+  ctx.fillStyle = fill;
+  ctx.fill();
+}
+
+function diamond(point, size, color, alpha, spin = 0) {
+  ctx.save();
+  ctx.translate(point[0], point[1]);
+  ctx.rotate(Math.PI / 4 + spin);
+  ctx.globalAlpha *= alpha;
+  ctx.fillStyle = INK;
+  ctx.fillRect(-size, -size, size * 2, size * 2);
+  ctx.lineWidth = px(1.8);
+  ctx.strokeStyle = color;
+  ctx.strokeRect(-size, -size, size * 2, size * 2);
+  ctx.restore();
+}
+
+/** The whole structure in one colour: the organization as it already exists. */
+function outline(t) {
+  ctx.save();
+  ctx.globalAlpha = 0.17;
+  ctx.strokeStyle = GHOST;
+  ctx.lineWidth = px(1.2);
+  ctx.lineCap = 'round';
+  helix(t, 1);
+  for (const branch of branches) {
+    strokeCurve(branch.curve, 1);
+    for (const sub of branch.subs) strokeCurve(sub.curve, 1);
+  }
+  ctx.setLineDash([px(3), px(7)]);
+  for (const [from, to] of links) { ctx.beginPath(); ctx.moveTo(from[0], from[1]); ctx.lineTo(to[0], to[1]); ctx.stroke(); }
+  ctx.beginPath();
+  for (let i = 0; i <= 60; i++) { const [x, y] = arcPoint(i / 60); if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y); }
+  ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.globalAlpha = 0.3;
+  for (const branch of branches) {
+    node(branch.curve[3], px(7), 1, GHOST, GHOST);
+    for (const sub of branch.subs) node(sub.curve[3], px(4.6), 1, GHOST, GHOST);
+  }
+  node(crown, px(10), 1, GHOST, GHOST);
+  ctx.restore();
+}
+
+function ground(t) {
+  const half = px(400);
+  const line = ctx.createLinearGradient(L.cx - half, 0, L.cx + half, 0);
+  line.addColorStop(0, 'rgba(125,146,180,0)');
+  line.addColorStop(0.5, 'rgba(153,246,228,.5)');
+  line.addColorStop(1, 'rgba(125,146,180,0)');
+  ctx.strokeStyle = line;
+  ctx.lineWidth = px(1.2);
+  ctx.beginPath();
+  ctx.moveTo(L.cx - half, L.ground);
+  ctx.lineTo(L.cx + half, L.ground);
+  ctx.stroke();
+  // strata
+  ctx.save();
+  ctx.setLineDash([px(2), px(9)]);
+  ctx.globalAlpha = 0.5;
+  for (const [depth, reach] of [[24, 300], [50, 210], [78, 120]]) {
+    const band = ctx.createLinearGradient(L.cx - px(reach), 0, L.cx + px(reach), 0);
+    band.addColorStop(0, 'rgba(125,146,180,0)');
+    band.addColorStop(0.5, 'rgba(125,146,180,.42)');
+    band.addColorStop(1, 'rgba(125,146,180,0)');
+    ctx.strokeStyle = band;
+    ctx.beginPath();
+    ctx.moveTo(L.cx - px(reach), L.ground + px(depth));
+    ctx.lineTo(L.cx + px(reach), L.ground + px(depth));
+    ctx.stroke();
+  }
+  ctx.restore();
+  // ripple when the seed lands
+  const ripple = (t - 0.086) / 0.09;
+  if (ripple > 0 && ripple < 1) {
+    ctx.save();
+    ctx.globalAlpha = (1 - ripple) * 0.7;
+    ctx.strokeStyle = MINT;
+    ctx.lineWidth = px(1.4);
+    ctx.beginPath();
+    ctx.ellipse(L.cx, L.ground, px(20 + 190 * ripple), px(4 + 16 * ripple), 0, 0, TAU);
+    ctx.stroke();
+    ctx.restore();
+  }
+}
+
+function backdrop(t) {
+  ctx.fillStyle = INK;
+  ctx.fillRect(0, 0, L.W, L.H);
+  const breath = 1 + 0.08 * Math.sin(TAU * t);
+  const life = ctx.createRadialGradient(L.cx, L.ground - px(210), 0, L.cx, L.ground - px(210), px(430));
+  life.addColorStop(0, `rgba(45,212,191,${0.105 * breath})`);
+  life.addColorStop(1, 'rgba(45,212,191,0)');
+  ctx.fillStyle = life;
+  ctx.fillRect(0, 0, L.W, L.H);
+  const sky = ctx.createRadialGradient(L.cx + px(210), L.ground - px(430), 0, L.cx + px(210), L.ground - px(430), px(360));
+  sky.addColorStop(0, 'rgba(129,140,248,.07)');
+  sky.addColorStop(1, 'rgba(129,140,248,0)');
+  ctx.fillStyle = sky;
+  ctx.fillRect(0, 0, L.W, L.H);
+}
+
+function drift(t, activity) {
+  ctx.save();
+  ctx.fillStyle = PALE;
+  for (const mote of motes) {
+    const life = frac(t * mote.laps + mote.phase);
+    const [x, y] = at(mote.x + Math.sin(TAU * life) * 8, mote.y - life * mote.drift);
+    ctx.globalAlpha = Math.sin(Math.PI * life) * (0.1 + 0.2 * activity);
+    ctx.beginPath();
+    ctx.arc(x, y, px(mote.r), 0, TAU);
+    ctx.fill();
+  }
+  ctx.restore();
+}
+
+function mark(t) {
+  if (!logo.complete || !logo.naturalWidth) return;
+  const size = px(96);
+  const [x, y] = at(0, 56);
+  const planted = span(t, 0.088, 0.125);
+  const receives = span(t, 0.895, 0.915) * (1 - span(t, 0.93, 0.975));
+  const rest = 1 - span(t, 0.94, 0.99);
+  const alpha = 0.3 + 0.62 * planted * rest + 0.08 * receives;
+  ctx.save();
+  ctx.globalAlpha = Math.min(1, alpha);
+  glow(TEAL, px(10 + 26 * Math.max(receives, planted * (1 - span(t, 0.125, 0.2)))));
+  ctx.drawImage(tinted, x - size / 2, y - size / 2, size, size);
+  ctx.restore();
+}
+
+function seed(t) {
+  const fall = span(t, 0.012, 0.086);
+  const visible = span(t, 0.0, 0.02) * (1 - span(t, 0.086, 0.104));
+  if (visible <= 0) return;
+  const [x, top] = at(0, -TRUNK - 46);
+  const y = top + (L.ground - top) * fall + px(56) * span(t, 0.086, 0.104);
+  ctx.save();
+  ctx.globalAlpha = visible;
+  const trail = ctx.createLinearGradient(0, y - px(70), 0, y);
+  trail.addColorStop(0, 'rgba(153,246,228,0)');
+  trail.addColorStop(1, 'rgba(153,246,228,.5)');
+  ctx.strokeStyle = trail;
+  ctx.lineWidth = px(1.4);
+  ctx.beginPath();
+  ctx.moveTo(x, y - px(70) * fall);
+  ctx.lineTo(x, y);
+  ctx.stroke();
+  glow(MINT, px(22));
+  ctx.fillStyle = PALE;
+  ctx.beginPath();
+  ctx.ellipse(x, y, px(5.5), px(8.5), 0, 0, TAU);
+  ctx.fill();
+  ctx.restore();
+}
+
+/** Position of a flow along a branch, held at the gate when there is one. */
+function flowAlong(life, gated) {
+  if (!gated) return { u: ease(life), held: 0 };
+  if (life < 0.34) return { u: 0.52 * ease(life / 0.34), held: 0 };
+  if (life < 0.62) return { u: 0.52, held: Math.sin(Math.PI * ((life - 0.34) / 0.28)) };
+  return { u: 0.52 + 0.48 * ease((life - 0.62) / 0.38), held: 0 };
+}
+
+function artifact(point, side, life, alpha) {
+  if (life <= 0 || life >= 1) return;
+  const x = point[0] + side * px(30) * ease(life);
+  const y = point[1] - px(38) * ease(life);
+  const half = px(4.6);
+  ctx.save();
+  ctx.globalAlpha = alpha * Math.sin(Math.PI * life);
+  ctx.strokeStyle = PALE;
+  ctx.lineWidth = px(1.4);
+  glow(CYAN, px(8));
+  ctx.strokeRect(x - half, y - half * 1.25, half * 2, half * 2.5);
+  noGlow();
+  ctx.beginPath();
+  ctx.moveTo(x - half * 0.5, y - half * 0.35);
+  ctx.lineTo(x + half * 0.5, y - half * 0.35);
+  ctx.moveTo(x - half * 0.5, y + half * 0.35);
+  ctx.lineTo(x + half * 0.5, y + half * 0.35);
+  ctx.stroke();
+  ctx.restore();
+}
+
+function generation(t) {
+  const fade = 1 - span(t, 0.9, 0.98);
+  if (fade <= 0) return;
+  const activity = span(t, 0.42, 0.5) * (1 - span(t, 0.86, 0.92));
+  ctx.save();
+  ctx.globalAlpha = fade;
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+
+  const rise = ctx.createLinearGradient(0, L.ground, 0, L.ground - px(TRUNK));
+  rise.addColorStop(0, TEAL);
+  rise.addColorStop(1, CYAN);
+
+  // evolution loop
+  const loop = span(t, 0.48, 0.6);
+  if (loop > 0) {
+    ctx.save();
+    ctx.globalAlpha = fade * 0.5;
+    ctx.strokeStyle = GOV;
+    ctx.lineWidth = px(1.3);
+    ctx.setLineDash([px(2), px(8)]);
+    ctx.beginPath();
+    for (let i = 0; i <= Math.round(70 * loop); i++) { const [x, y] = arcPoint(i / 70); if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y); }
+    ctx.stroke();
+    ctx.restore();
+    const travel = (t - 0.62) / 0.28;
+    for (const gate of ARC_GATES) {
+      if (loop < gate) continue;
+      const near = travel > 0 && travel < 1 ? Math.max(0, 1 - Math.abs(travel - gate) / 0.09) : 0;
+      ctx.save();
+      glow(GOV, px(4 + 14 * near));
+      diamond(arcPoint(gate), px(5), GOV, 0.75 + 0.25 * near, near * Math.PI / 2);
+      ctx.restore();
+    }
+    if (travel > 0 && travel < 1) {
+      const [x, y] = arcPoint(ease(travel));
+      ctx.save();
+      glow(GOV, px(18));
+      ctx.fillStyle = '#eef0ff';
+      ctx.beginPath();
+      ctx.arc(x, y, px(4.2), 0, TAU);
+      ctx.fill();
+      ctx.restore();
+    }
+  }
+
+  // trunk
+  ctx.strokeStyle = rise;
+  ctx.lineWidth = px(2);
+  glow(TEAL, px(12));
+  helix(t, span(t, 0.1, 0.3));
+  noGlow();
+
+  // coordination links
+  if (activity > 0) {
+    ctx.save();
+    ctx.globalAlpha = fade * activity * 0.42;
+    ctx.strokeStyle = CYAN;
+    ctx.lineWidth = px(1.1);
+    ctx.setLineDash([px(3), px(6)]);
+    for (const [from, to] of links) { ctx.beginPath(); ctx.moveTo(from[0], from[1]); ctx.lineTo(to[0], to[1]); ctx.stroke(); }
+    ctx.restore();
+    links.forEach(([from, to], index) => {
+      const life = frac(t * 4 + index * 0.23);
+      ctx.save();
+      ctx.globalAlpha = fade * activity * Math.sin(Math.PI * life) * 0.9;
+      ctx.fillStyle = PALE;
+      ctx.beginPath();
+      ctx.arc(from[0] + (to[0] - from[0]) * ease(life), from[1] + (to[1] - from[1]) * ease(life), px(2.2), 0, TAU);
+      ctx.fill();
+      ctx.restore();
+    });
+  }
+
+  // branches, nodes, flows, artifacts, gates
+  for (const branch of branches) {
+    const grown = span(t, branch.start, branch.start + 0.1);
+    ctx.strokeStyle = rise;
+    ctx.lineWidth = px(1.7);
+    glow(TEAL, px(9));
+    strokeCurve(branch.curve, grown);
+    for (const sub of branch.subs) strokeCurve(sub.curve, span(t, sub.start, sub.start + 0.08));
+    noGlow();
+
+    if (branch.gated && grown > 0.52) {
+      const life = frac(t * 5 + branch.phase);
+      const { held } = flowAlong(life, true);
+      ctx.save();
+      glow(GOV, px(4 + 16 * held * activity));
+      diamond(bezier(...branch.curve, 0.52), px(5.4), GOV, 0.8 + 0.2 * held, held * activity * Math.PI / 2);
+      ctx.restore();
+    }
+
+    if (activity > 0) {
+      const life = frac(t * 5 + branch.phase);
+      const { u, held } = flowAlong(life, branch.gated);
+      const [x, y] = bezier(...branch.curve, u);
+      ctx.save();
+      ctx.globalAlpha = fade * activity * (life < 0.06 ? life / 0.06 : life > 0.94 ? (1 - life) / 0.06 : 1);
+      glow(held > 0.05 ? GOV : MINT, px(14));
+      ctx.fillStyle = PALE;
+      ctx.beginPath();
+      ctx.arc(x, y, px(3.1), 0, TAU);
+      ctx.fill();
+      ctx.restore();
+      artifact(branch.curve[3], branch.side, frac(life + 0.5) * 1.6, fade * activity);
+      for (const sub of branch.subs) {
+        const subLife = frac(t * 5 + sub.phase);
+        const [sx, sy] = bezier(...sub.curve, ease(subLife));
+        ctx.save();
+        ctx.globalAlpha = fade * activity * Math.sin(Math.PI * subLife) * 0.9;
+        ctx.fillStyle = PALE;
+        ctx.beginPath();
+        ctx.arc(sx, sy, px(2.2), 0, TAU);
+        ctx.fill();
+        ctx.restore();
+        artifact(sub.curve[3], branch.side, frac(subLife + 0.5) * 1.6, fade * activity);
+      }
+    }
+
+    glow(CYAN, px(8));
+    node(branch.curve[3], px(7), span(t, branch.start + 0.085, branch.start + 0.12), PALE, CYAN);
+    for (const sub of branch.subs) node(sub.curve[3], px(4.6), span(t, sub.start + 0.07, sub.start + 0.1), PALE, TEAL);
+    noGlow();
+  }
+
+  // crown
+  const crowned = span(t, 0.3, 0.36);
+  if (crowned > 0) {
+    ctx.save();
+    ctx.globalAlpha = fade * crowned * (0.22 + 0.1 * Math.sin(TAU * t * 3));
+    const halo = ctx.createRadialGradient(crown[0], crown[1], 0, crown[0], crown[1], px(46));
+    halo.addColorStop(0, 'rgba(56,189,248,.9)');
+    halo.addColorStop(1, 'rgba(56,189,248,0)');
+    ctx.fillStyle = halo;
+    ctx.beginPath();
+    ctx.arc(crown[0], crown[1], px(46), 0, TAU);
+    ctx.fill();
+    ctx.restore();
+    glow(CYAN, px(14));
+    node(crown, px(10), crowned, PALE, CYAN);
+    noGlow();
+  }
+  ctx.restore();
+  return activity;
+}
+
+function draw(t) {
+  backdrop(t);
+  ground(t);
+  outline(t);
+  const activity = generation(t) ?? 0;
+  drift(t, activity);
+  mark(t);
+  seed(t);
+}
+
+// ---- modes ----------------------------------------------------------------------
+const blobOf = (type, quality) => new Promise((resolve) => canvas.toBlob(resolve, type, quality));
+const post = (path, blob) => fetch(path, { method: 'POST', body: blob }).then((response) => { if (!response.ok) throw new Error(`${path}: ${response.status}`); });
+
+async function capture() {
+  const suffix = query.get('layout') === 'portrait' ? '-portrait' : '';
+  draw(POSTER_T);
+  await post(`/still?name=seed-poster${suffix}.png`, await blobOf('image/png'));
+  if (!suffix) {
+    for (let frame = 0; frame < FRAMES; frame++) {
+      draw(frame / FRAMES);
+      await post(`/frame?i=${frame}`, await blobOf('image/jpeg', 0.95));
+      if (frame % FPS === 0) document.title = `frame ${frame} / ${FRAMES}`;
+    }
+  }
+  document.title = 'capture done';
+  document.body.dataset.state = 'done';
+}
+
+logo.onload = () => {
+  tintLogo();
+  if (query.has('capture')) capture().catch((error) => { document.title = `capture failed: ${error.message}`; document.body.dataset.state = 'failed'; });
+  else if (query.has('play')) {
+    const started = performance.now();
+    const tick = (now) => { draw(frac((now - started) / 1000 / SECONDS)); requestAnimationFrame(tick); };
+    requestAnimationFrame(tick);
+  } else draw(Number(query.get('t') ?? POSTER_T));
+  document.body.dataset.ready = 'true';
+};
+logo.src = '/poesis-logo.png';
+</script>
+</body>
+</html>

@@ -1,198 +1,426 @@
 ---
+/**
+ * Home — sells one thing: the agentic transformation of an organization, guided
+ * by Poesis. SAF is shown as its method and engine, and as the open-source path
+ * for developers. Every product statement comes from src/data/saf.ts.
+ */
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Icon from '../components/Icon.astro';
-import DeliveryStatus from '../components/DeliveryStatus.astro';
-import ArchMap from '../components/ArchMap.astro';
-import PlatformValues from '../components/PlatformValues.astro';
-import CatalogCard from '../components/CatalogCard.astro';
-import { poesisUsage, useCaseStatus } from '../data/usage.ts';
-import { qualityCard, serviceCard, useCaseCard } from '../data/catalog-card.ts';
-import { plannedClass } from '../data/poesis-platform.ts';
-import { qualityCategories, qualitiesPublishedBy } from '../data/qualities.ts';
-import ThinkBottleneckDiagram from '../components/ThinkBottleneckDiagram.astro';
-import ThinkTherapyDiagram from '../components/ThinkTherapyDiagram.astro';
-import { actorTypes } from '../data/usage-actors.ts';
-import { services } from '../data/services.ts';
+import CommandBlock from '../components/CommandBlock.astro';
+import ProductPanel from '../components/ProductPanel.astro';
+import Faq from '../components/Faq.astro';
+import { faqLd, homeFaq } from '../data/faq.ts';
+import { publishedCaseStudies } from '../data/case-studies.ts';
+import { installCommands, maturityLabel, latestPreRelease, safProducts, safLinks, marketplace, harness, organization } from '../data/saf.ts';
+import { formatDate } from '../data/format.ts';
 
-/** The homepage shows what the platform already serves; the catalogs hold the full backlog. */
-const currentUseCases = poesisUsage.useCases.filter((useCase) => useCaseStatus(useCase) === 'delivered');
-/** Only the qualities the platform itself bears; solution and product qualities live on their own pages. */
-const platformQualityCards = qualityCategories
-  .flatMap((category) => qualitiesPublishedBy(category.slug, 'platform'))
-  .map(qualityCard);
-const platformQualityNotes = qualityCategories.filter((category) => category.note && qualitiesPublishedBy(category.slug, 'platform').length);
-const serviceCards = services.map(serviceCard);
-const usageActorGroups = [
-  { label: 'People', actors: actorTypes.filter((actor) => actor.kind === 'human') },
-  { label: 'Systems', actors: actorTypes.filter((actor) => actor.kind === 'system') },
-].filter((group) => group.actors.length > 0);
+const ledger = [
+  {
+    pain: 'AI experiments do not become an operating model',
+    approach: 'Tasks and responsibilities are written as workflows: who acts, in what order, producing which artifact. The harness resolves the next eligible step from that definition and from what has already been recorded.',
+    value: 'A way of working you can run again, hand over and improve, in place of a collection of prompts.',
+  },
+  {
+    pain: 'Teams lose context at every handoff',
+    approach: 'Each step writes one artifact of a declared kind, checked against its schema and committed to Git. The next agent or person starts from that artifact, not from a chat history.',
+    value: 'Handoffs that carry their own record.',
+  },
+  {
+    pain: 'Automation without control creates risk',
+    approach: 'Agents write only where their grants allow, workflows name the points where a person reviews, and harness calls are journaled. In the alpha, the harness does not yet authenticate who approved.',
+    value: 'Delegation with a boundary you can read, and a plain statement of what is not enforced yet.',
+  },
+  {
+    pain: 'Scaling relies on tribal knowledge',
+    approach: 'Roles, instructions, skills and model profiles are versioned files in a repository. A second team installs the same organization and adapts it.',
+    value: 'Know-how that is reviewed, versioned and reusable.',
+  },
+  {
+    pain: 'The organization changes faster than its processes',
+    approach: 'Because the organization is declared in files, a change is a reviewed commit: scoped, reversible, and tried on one perimeter before the next.',
+    value: 'Evolution by iteration, one perimeter at a time.',
+  },
+];
+
+const method = [
+  { title: 'Discover and scope', body: 'Clarify the real perimeter, what hurts in it today, and the criteria by which you will judge the result.' },
+  { title: 'Model the agentic seed', body: 'Represent the roles, responsibilities and workflows of that perimeter, and the limits of what is delegated.' },
+  { title: 'Pilot with SAF', body: 'Run the model on the agreed scope, with guardrails and human review at the points you chose.' },
+  { title: 'Evaluate and evolve', body: 'Review the evidence the pilot produced, then decide: extend, adjust or stop.' },
+];
+
+const scopes = ['A whole organization', 'A business unit', 'A department', 'A function', 'A team', 'A process'];
+
+const deliverables = [
+  'An assessment of the scope and of its readiness',
+  'A first model of the agentic organization: the seed',
+  'A pilot workflow running on SAF',
+  'An evidence review of what the pilot showed',
+  'A roadmap for extending or adjusting',
+];
+
+const qualities = [
+  {
+    name: 'Governed',
+    why: 'Work advances through declared workflows. Each step is resolved from configuration and recorded outcomes, not improvised by the model.',
+    limit: 'The harness governs what passes through it. Work done outside a governed workspace is outside its control.',
+  },
+  {
+    name: 'Local-first',
+    why: 'It runs on your own checkouts, in the agent host you already use. There is no Poesis-hosted service to adopt.',
+    limit: 'Models are called through your agent host under its own terms. SAF does not change where that host sends data.',
+  },
+  {
+    name: 'Composable',
+    why: 'The harness knows no methodology. An organization is a set of files (agents, workflows, instructions, skills, contracts) that you can replace or write yourself.',
+    limit: 'One organization ships today. Writing your own means following the harness contracts in the repository.',
+  },
+  {
+    name: 'Inspectable',
+    why: 'Every instruction, workflow and contract is a readable file, and harness calls are written to per-session journals.',
+    limit: 'Journals cover the calls the harness captured, not everything a model did or reasoned.',
+  },
+  {
+    name: 'Git-backed',
+    why: 'Validated writes are committed step by step in your repository. History, diff and revert work as they do for code.',
+    limit: 'It needs Git 2.38 or later and a Git identity in the workspace.',
+  },
+  {
+    name: 'Human-supervised',
+    why: 'Workflows name the points where a person reviews and decides. Agents propose; people advance.',
+    limit: 'Authenticated human approval is planned, not shipped. Today the gate is a step in the workflow, not a verified signature.',
+  },
+  {
+    name: 'Extensible',
+    why: 'Host bindings are separate adapters, each with its own specification. A new host is added beside the core, not inside it.',
+    limit: 'One adapter exists today, for GitHub Copilot. Other hosts are a direction, not a supported integration.',
+  },
+];
+
+const description = 'Poesis helps you transform a team, a function or your whole organization into a governed agentic organization, with SAF, its open-source Systemic Agentic Framework, as the method and the engine.';
+const starUrl = 'https://github.com/orgs/poesis-cloud/repositories?q=saf';
+const heroSources = [{ src: '/hero/seed.webm', type: 'video/webm' }, { src: '/hero/seed.mp4', type: 'video/mp4' }];
 ---
-<BaseLayout title="The Organizational Intelligence Platform" pageType="Home">
-  <section class="hero home-hero hero--split">
-    <div class="container">
-      <p class="eyebrow">The foundation of the autonomous enterprise</p>
-      <h1>The Organizational Intelligence Platform.</h1>
-      <p class="lead">AI is entering sociotechnical organizations it doesn't understand. Humans have always scrambled in the same way. No technology has ever supplied a satisfactory capability to understand, define and realize the organization coherently end-to-end.</p>
-      <p class="lead">Poesis grounds humans and AI in a coherent end-to-end system that manages Definitions of any sociotechnical organization — its DNA — <strong>to efficiently and continuously define, govern and generate that organization</strong>.</p>
-      <div class="hero-promise">
-        <p>The DNA of the organization constitutes a living digital twin — the foundation for <strong>accelerating THINK, BUILD and RUN adequately</strong>, <strong>ultimately leading to the autonomous enterprise</strong>.</p>
-      </div>
-      <div class="hero-cta">
-        <a class="btn btn-primary" href="/pilot" data-demo-cta="homepage-hero-pilot"><Icon name="play" /> Shape a Pilot</a>
-      </div>
-      <p class="hero-note">Human-governed Definitions that people and AI can act on.</p>
-      <nav class="hero-sections" aria-label="On this page">
-        <a href="#pains"><span>Pain points</span></a>
-        <a href="#affordances"><span>Affordances</span></a>
-        <a href="#usage"><span>Usage</span></a>
-        <a href="#qualities"><span>Qualities</span></a>
-        <a href="#services"><span>Services</span></a>
-        <a href="#portfolio"><span>Platform</span></a>
-      </nav>
+<BaseLayout
+  title="Agentic transformation for organizations, built on open-source SAF"
+  description={description}
+  pageType="Home"
+  preloadImage={{ href: '/hero/seed-poster.webp', media: '(min-width: 768px)', type: 'image/webp' }}
+  jsonLd={[
+    { '@type': 'WebSite', name: 'Poesis', url: 'https://poesis.cloud/', description },
+    faqLd(homeFaq),
+  ]}
+>
+  <section class="hero-seed" aria-labelledby="hero-title">
+    <div class="hero-seed__media" aria-hidden="true">
+      <picture>
+        <source media="(max-width: 767px)" srcset="/hero/seed-poster-portrait.webp" type="image/webp" width="720" height="900" />
+        <img class="hero-seed__poster" src="/hero/seed-poster.webp" width="1280" height="720" alt="" decoding="async" fetchpriority="high" />
+      </picture>
+      <video
+        class="hero-seed__video"
+        autoplay
+        muted
+        loop
+        playsinline
+        preload="none"
+        poster="/hero/seed-poster.webp"
+        width="1280"
+        height="720"
+        tabindex="-1"
+        disablepictureinpicture
+        data-sources={JSON.stringify(heroSources)}
+      ></video>
     </div>
-  </section>
-
-  <section id="pains" class="section section--soft home-inversion">
-    <div class="container">
-      <div class="section-head">
-        <p class="eyebrow">Pain points</p>
-        <h2>Drift at machine speed, or align at human speed.</h2>
-        <p class="lead">This is the central tension of industrial GenAI adoption. GenAI accelerates the production of artifacts, but not the production of Definition and governance required to viably deliver these artifacts.</p>
-        <p class="lead">The scarce resource is now more than ever the THINK: the AI and human capacity to define and govern these Definitions for BUILD to generate from and RUN to maintain from.</p>
-      </div>
-      <ThinkBottleneckDiagram />
-    </div>
-  </section>
-
-  <section id="affordances" class="section home-therapy">
-    <div class="container">
-      <div class="section-head">
-        <p class="eyebrow">Affordances</p>
-        <h2>The Poesis Gene Therapy</h2>
-        <p class="lead">Poesis resolves the historical THINK pathology &mdash; for AI, people, and programmatic tools, to accelerate THINK, BUILD and RUN at the expected rate and safety.</p>
-      </div>
-      <ThinkTherapyDiagram />
-    </div>
-  </section>
-
-  <section id="usage" class="section section--soft home-usage">
-    <div class="container">
-      <div class="section-head">
-        <p class="eyebrow">Usage</p>
-        <h2>The organization becomes intelligible.</h2>
-        <p class="lead">To the people and the machines who think, build, and run it. Definitions stop being prose: a structured causal context that can be reasoned over, taught, governed, simulated, and continuously evaluated.</p>
-      </div>
-
-      <h3 class="home-usage-subhead" id="usage-actor-heading">Who is it for</h3>
-      <div class="home-usage-filter">
-        <div class="field home-usage-field">
-          <select id="usage-actor" aria-labelledby="usage-actor-heading">
-            <option value="">Everyone</option>
-            {usageActorGroups.map((group) => (
-              <optgroup label={group.label}>
-                {group.actors.map((actor) => <option value={actor.slug} data-hook={actor.hook}>{actor.name}</option>)}
-              </optgroup>
-            ))}
-          </select>
+    <div class="container hero-seed__content">
+      <p class="hero-seed__kicker">Agentic transformation, guided by Poesis</p>
+      <h1 id="hero-title">
+        Generate easily and rapidly a seed of an agentic organisation mirroring yours to automatize.
+        <span class="hero-seed__turn">Plant it, and watch it to produce and evolve.</span>
+      </h1>
+      <p class="hero-seed__lead">Start with a team, a function, or your entire organization. <strong>Poesis works with you</strong> to model responsibilities and workflows, introduce governed AI agents, and learn from a focused pilot before scaling. SAF, our open-source Systemic Agentic Framework, is the method and the engine underneath.</p>
+      <div class="doors">
+        <div class="door">
+          <a class="btn btn-primary btn-lg" href="/contact/" data-track="business_contact_intent" data-track-id="home-hero">Discuss your transformation</a>
+          <p>For organizations and the people leading their transformation</p>
         </div>
-        <p class="home-usage-hook" id="usage-actor-hook" hidden></p>
-      </div>
-
-      <h3 class="home-usage-subhead">What they do with it</h3>
-      <ul class="think-consequence-list catalog-grid usage-case-list home-usage-cases">
-        {currentUseCases.map((useCase) => <CatalogCard card={useCaseCard(useCase)} as="h4" />)}
-      </ul>
-      <p class="home-usage-empty" id="usage-empty" hidden>No delivered use case names this actor type yet. <a href="/catalog/usage">Browse all use cases &rarr;</a></p>
-
-      <h3 class="home-usage-subhead">What it is worth</h3>
-      <PlatformValues />
-
-      <div class="hero-cta home-usage-cta">
-        <a class="btn btn-primary" href="/pilot" data-demo-cta="homepage-usage-pilot"><Icon name="play" /> Shape your Pilot</a>
-        <a class="btn btn-ghost" href="/catalog"><Icon name="grid" /> Discover the catalog</a>
+        <div class="door">
+          <a class="btn btn-ghost btn-lg" href="/open-source/" data-track="developer_docs_click" data-track-id="home-hero"><Icon name="github" /> Get started with SAF</a>
+          <p>For developers and architects. Open source, {maturityLabel.toLowerCase()}. <a href={harness.repository} target="_blank" rel="noopener noreferrer" data-track="developer_repo_click" data-track-id="home-hero">View on GitHub</a></p>
+        </div>
       </div>
     </div>
+    <button class="hero-seed__toggle" type="button" hidden>Pause background animation</button>
   </section>
 
-  <section id="qualities" class="section home-postures">
+  <section class="band" id="why" aria-labelledby="why-title">
     <div class="container">
-      <div class="section-head">
-        <p class="eyebrow">Qualities</p>
-        <h2>It joins your estate. It never owns it.</h2>
-        <p class="lead">A governance layer earns trust only if you can leave it. The Definition model is an open, inspectable standard rather than a proprietary format; execution runs inside a control boundary you define, on infrastructure you already operate &mdash; cloud where it serves you, never as a condition. And because governance claims are worthless without their limits, each quality below states what it guarantees and where that guarantee stops.</p>
+      <div class="band-head">
+        <h2 id="why-title">Agents are easy to add. An organization that works with them is not.</h2>
+        <p>Most difficulties with AI at work are organizational: who is responsible, what is handed over, who decides. These are the ones a transformation with Poesis addresses, and how SAF makes each of them explicit.</p>
       </div>
-
-      <div class="home-posture">
-        <ul class="think-therapy__grid catalog-grid home-posture__list">
-          {platformQualityCards.map((card) => <CatalogCard card={card} as="h3" variant="platform" />)}
-        </ul>
-        {platformQualityNotes.map((category) => (
-          <p class="home-posture__note">{category.noteState && <DeliveryStatus state={category.noteState} />} {category.note}</p>
+      <div class="ledger__head" aria-hidden="true">
+        <span>What goes wrong</span>
+        <span>What SAF makes explicit</span>
+        <span>What you get</span>
+      </div>
+      <ul class="ledger">
+        {ledger.map((row) => (
+          <li class="ledger__row">
+            <div>
+              <p class="ledger__label">What goes wrong</p>
+              <h3>{row.pain}</h3>
+            </div>
+            <div>
+              <p class="ledger__label">What SAF makes explicit</p>
+              <p>{row.approach}</p>
+            </div>
+            <div>
+              <p class="ledger__label">What you get</p>
+              <p class="ledger__value">{row.value}</p>
+            </div>
+          </li>
         ))}
-      </div>
-
-      <div class="hero-cta">
-        <a class="btn btn-ghost" href="/catalog/qualities"><Icon name="check-badge" /> All qualities</a>
-      </div>
-    </div>
-  </section>
-
-
-  <section id="services" class="section section--soft" aria-labelledby="services-heading">
-    <div class="container">
-      <div class="section-head">
-        <p class="eyebrow">Services</p>
-        <h2 id="services-heading">From first proof to organizational transformation.</h2>
-        <p class="lead">Evaluate Poesis on a real problem, shape your path toward enterprise autonomy, or prepare the workflows and context that make AI useful. Our service roadmap extends from transformation and context engineering to managed OIP and SIE, and GSM practitioner certification. Start today with a Poesis Pilot by agreement; all other offers are planned.</p>
-      </div>
-      <ul class="think-therapy__grid catalog-grid">
-        {serviceCards.map((card) => <CatalogCard card={card} variant="platform" />)}
       </ul>
+
+      <ol class="flow" aria-label="From your organization to its governed evolution">
+        <li><strong>Your organization</strong>The team, function or enterprise as it works today.</li>
+        <li><strong>Agentic seed</strong>Its roles, responsibilities and workflows, written down.</li>
+        <li><strong>Governed workflows</strong>Agents carry out steps the harness resolves and checks.</li>
+        <li class="flow__gov"><strong>Human review</strong>People decide at the points the workflow names.</li>
+        <li><strong>Learning and evolution</strong>Evidence from the work changes the seed.</li>
+      </ol>
+      <p class="flow__loop">The last step feeds the second: what the work teaches is written back into the seed, and the cycle starts again on a firmer base.</p>
+
+      <div class="actions">
+        <a class="btn btn-primary" href="/contact/" data-track="business_contact_intent" data-track-id="home-why">Map a first workflow with us</a>
+        <a class="btn btn-quiet" href="/transformation/">How an engagement works</a>
+      </div>
     </div>
   </section>
 
-  <section id="portfolio" class="section home-platform">
+  <section class="band band--raised" id="method" aria-labelledby="method-title">
     <div class="container">
-      <div class="section-head">
-        <p class="eyebrow">Platform</p>
-        <h2>Explore the complete solutions and products map.</h2>
-        <p class="lead">Specification, source content, local controls and planned integrations contribute in different ways. Explore each product for feature scope and historical version metadata.</p>
+      <div class="band-head">
+        <h2 id="method-title">Four steps, on a scope you choose.</h2>
+        <p>The method is the same whether the scope is one process or a whole enterprise. It is indicative: scope, pace and terms are agreed for each engagement.</p>
       </div>
-      <ArchMap />
+      <ol class="steps">
+        {method.map((step) => (
+          <li>
+            <h3>{step.title}</h3>
+            <p>{step.body}</p>
+          </li>
+        ))}
+      </ol>
+      <div class="split">
+        <div>
+          <h3>Where it can start</h3>
+          <ul class="chips">
+            {scopes.map((scope) => <li>{scope}</li>)}
+          </ul>
+        </div>
+        <div>
+          <h3>What an engagement may produce</h3>
+          <ul class="plain-list">
+            {deliverables.map((item) => <li>{item}</li>)}
+          </ul>
+          <p class="fineprint">Which of these apply, and in what depth, depends on the scope agreed. None is a fixed package or a committed timeline.</p>
+        </div>
+      </div>
+      <div class="actions">
+        <a class="btn btn-ghost" href="/transformation/#method">See the method in detail</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="band" id="strengths" aria-labelledby="strengths-title">
+    <div class="container">
+      <div class="band-head">
+        <h2 id="strengths-title">Seven properties, each with its limit.</h2>
+        <p>What makes the method dependable is in the framework itself. Each property below states what it gives you and where, in the current alpha, it stops.</p>
+      </div>
+      <dl class="qualities">
+        {qualities.map((quality) => (
+          <div class="quality">
+            <dt>{quality.name}</dt>
+            <dd>
+              {quality.why}
+              <p class="quality__limit"><b>Limit today.</b> {quality.limit}</p>
+            </dd>
+          </div>
+        ))}
+      </dl>
+    </div>
+  </section>
+
+  <section class="band band--raised" id="saf" aria-labelledby="saf-title">
+    <div class="container">
+      <div class="band-head">
+        <h2 id="saf-title">Two SAF products, for two kinds of people.</h2>
+        <p>SAF is the Systemic Agentic Framework. The harness is the engine; the organization is the first thing built to run on it. Both are plugins for a conversational agent host, not a hosted service you subscribe to.</p>
+      </div>
+      <div class="products">
+        {safProducts.map((product) => <ProductPanel product={product} trackId="home-saf" />)}
+      </div>
+      <p class="fineprint">{maturityLabel}: the latest pre-release of both products is {latestPreRelease.version}, published on {formatDate(latestPreRelease.publishedOn)}. Interfaces may change before a final release. Supported today: GitHub Copilot only.</p>
+    </div>
+  </section>
+
+  <section class="band" id="proof" aria-labelledby="proof-title">
+    <div class="container">
+      <div class="band-head">
+        <h2 id="proof-title">Real work. Verifiable learning.</h2>
+        <p>A method earns trust through pilots that took place, with evidence a reader can inspect. Poesis publishes a case only when it is traceable and cleared by the organization concerned.</p>
+      </div>
+      {publishedCaseStudies.length > 0 ? (
+        <ul class="case-list">
+          {publishedCaseStudies.map((study) => (
+            <li class="case-card">
+              <span class="status status--verified">{study.kind === 'pilot' ? 'Pilot' : study.kind === 'demonstration' ? 'Demonstration' : 'Operational deployment'}</span>
+              <h3><a href={`/case-studies/${study.slug}/`}>{study.title}</a></h3>
+              <p>{study.summary}</p>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <div class="evidence-empty">
+          <div>
+            <h3>Pilot case studies are being documented.</h3>
+            <p>No case study is published yet. This page will show them when their evidence and publication clearance are in hand, and it will say plainly whether each one is a demonstration, a pilot or an operational deployment.</p>
+          </div>
+          <div>
+            <p>Until then, the open-source repositories are the evidence you can inspect yourself.</p>
+            <div class="actions">
+              <a class="btn btn-primary" href="/contact/" data-track="business_contact_intent" data-track-id="home-proof">Discuss a pilot for your organization</a>
+              <a class="btn btn-quiet" href="/case-studies/">How cases are documented</a>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  </section>
+
+  <section class="band band--raised" id="open-source" aria-labelledby="oss-title">
+    <div class="container">
+      <div class="band-head">
+        <p class="for-whom">For developers and architects</p>
+        <h2 id="oss-title">Build your own agentic organization with SAF.</h2>
+        <p>You do not need Poesis to use SAF. Read the code, run it on a repository of your own, and tell us what breaks.</p>
+      </div>
+      <ol class="steps steps--three">
+        <li>
+          <h3>Explore the code</h3>
+          <p>The <a href={harness.repository} target="_blank" rel="noopener noreferrer" data-track="developer_repo_click" data-track-id="home-oss-harness">harness</a>, the <a href={organization.repository} target="_blank" rel="noopener noreferrer" data-track="developer_repo_click" data-track-id="home-oss-organization">organization</a> and the <a href={marketplace.repository} target="_blank" rel="noopener noreferrer" data-track="developer_repo_click" data-track-id="home-oss-marketplace">plugin marketplace</a> are public on GitHub, under Apache-2.0.</p>
+        </li>
+        <li>
+          <h3>Install and run</h3>
+          <p>Three commands with the GitHub Copilot CLI, from the preview channel. The <a href={safLinks.quickstart} target="_blank" rel="noopener noreferrer" data-track="developer_docs_click" data-track-id="home-oss-quickstart">Quickstart</a> takes you to a first workflow.</p>
+        </li>
+        <li>
+          <h3>Contribute</h3>
+          <p>Open an issue or a pull request. Contributions are accepted under Apache-2.0 with the Developer Certificate of Origin: see <a href={harness.contributing} target="_blank" rel="noopener noreferrer" data-track="developer_repo_click" data-track-id="home-oss-contributing">CONTRIBUTING.md</a>.</p>
+        </li>
+      </ol>
+      <div class="split">
+        <div>
+          <CommandBlock label="Install both plugins (preview channel)" commands={installCommands} trackId="home-oss" />
+          <p class="command__note">{maturityLabel}. The stable channel has no release yet. Requirements and host details are on the <a href="/open-source/#install">open-source page</a>.</p>
+        </div>
+        <div>
+          <h3>Help the project be found</h3>
+          <p>A star on GitHub is the simplest way to follow the work and to tell us it matters to you.</p>
+          <div class="actions">
+            <a class="btn btn-primary" href={starUrl} target="_blank" rel="noopener noreferrer" data-track="developer_repo_click" data-track-id="home-oss-star"><Icon name="github" /> Star the repositories</a>
+            <a class="btn btn-ghost" href="/open-source/">The full developer path</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="band" id="faq" aria-labelledby="faq-title">
+    <div class="container">
+      <div class="band-head">
+        <h2 id="faq-title">Questions people ask first.</h2>
+      </div>
+      <Faq items={homeFaq} />
+    </div>
+  </section>
+
+  <section class="closing" aria-labelledby="closing-title">
+    <div class="container">
+      <h2 id="closing-title">Let's explore your first agentic use case.</h2>
+      <p>Tell us the scope you have in mind and what you would want to see change. We will answer with what a first step could look like, and say so if Poesis is not the right fit.</p>
+      <div class="actions">
+        <a class="btn btn-primary btn-lg" href="/contact/" data-track="business_contact_intent" data-track-id="home-closing">Discuss your transformation</a>
+        <a class="btn btn-quiet" href="/open-source/" data-track="developer_docs_click" data-track-id="home-closing">Get started with SAF</a>
+      </div>
     </div>
   </section>
 </BaseLayout>
 
-<script>
-  const picker = document.querySelector<HTMLSelectElement>('#usage-actor');
-  const cases = [...document.querySelectorAll<HTMLElement>('.home-usage-cases > [data-usage-case]')];
-  const hook = document.querySelector<HTMLElement>('#usage-actor-hook');
-  const empty = document.querySelector<HTMLElement>('#usage-empty');
-  if (picker && cases.length && hook && empty) {
-    const apply = () => {
-      const actor = picker.value;
-      let shown = 0;
-      for (const card of cases) {
-        card.hidden = Boolean(actor) && !card.dataset.actors?.split(' ').includes(actor);
-        if (!card.hidden) shown++;
-      }
-      const selected = picker.selectedOptions[0];
-      hook.textContent = selected?.dataset.hook ?? '';
-      hook.hidden = !selected?.dataset.hook;
-      empty.hidden = shown > 0;
-    };
-    picker.addEventListener('change', apply);
-    apply();
-  }
-</script>
+<script is:inline>
+  // Links published before the redesign pointed at sections of the former
+  // homepage, now the platform overview of the Knowledge corpus. A fragment
+  // never reaches a server, so only the page itself can forward it.
+  (function () {
+    var hash = location.hash.slice(1);
+    if (!hash || document.getElementById(hash)) return;
+    var moved = ['pains', 'affordances', 'usage', 'qualities', 'services', 'portfolio'];
+    if (moved.indexOf(hash) > -1 || /^(affordance-|value-platform-|quality-)/.test(hash)) location.replace('/knowledge/platform/#' + hash);
+  })();
 
-<style>
-  .home-usage-filter { margin: 0 0 1rem; }
-  .home-usage-field { max-width: 24rem; }
-  .home-usage-hook { margin: 1rem 0 0; font-size: 1.05rem; }
-  .home-usage-subhead { margin: 2.5rem 0 1.75rem; font-size: 1rem; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
-  .home-usage-cases > li[hidden] { display: none; }
-  .home-usage-empty { margin: 1.5rem 0 0; color: var(--muted); }
-  .home-usage-cta { margin-top: 2.5rem; }
-  @media (max-width: 640px) { .home-usage-cases { grid-template-columns: minmax(0, 1fr); } }
-</style>
+  // Background film. The still poster is the default for everyone. The film is
+  // fetched only on a wide viewport, when the visitor has not asked for reduced
+  // motion or reduced data, and it can be paused at any time.
+  (function () {
+    var video = document.querySelector('.hero-seed__video');
+    var toggle = document.querySelector('.hero-seed__toggle');
+    if (!video || !toggle || typeof video.play !== 'function') return;
+    var wide = window.matchMedia('(min-width: 768px)');
+    var still = window.matchMedia('(prefers-reduced-motion: reduce)');
+    var connection = navigator.connection || {};
+    var lean = Boolean(connection.saveData) || /(^|-)2g$/.test(connection.effectiveType || '') || window.matchMedia('(prefers-reduced-data: reduce)').matches;
+    var choice = null;
+    try { choice = sessionStorage.getItem('poesis-hero-film'); } catch (error) { /* storage unavailable */ }
+    var loaded = false;
+
+    function label(paused) { toggle.textContent = paused ? 'Play background animation' : 'Pause background animation'; }
+    function load() {
+      if (loaded) return;
+      loaded = true;
+      JSON.parse(video.getAttribute('data-sources')).forEach(function (source) {
+        var element = document.createElement('source');
+        element.src = source.src;
+        element.type = source.type;
+        video.appendChild(element);
+      });
+      video.addEventListener('playing', function () { video.classList.add('is-playing'); });
+      video.load();
+    }
+    function play() {
+      load();
+      var started = video.play();
+      if (started && started.catch) started.catch(function () { label(true); });
+    }
+    function apply() {
+      var allowed = wide.matches && !still.matches && !lean;
+      toggle.hidden = !allowed;
+      if (!allowed) { video.pause(); video.classList.remove('is-playing'); return; }
+      if (choice === 'paused') { label(true); return; }
+      label(false);
+      play();
+    }
+    toggle.addEventListener('click', function () {
+      var pausing = loaded && !video.paused;
+      choice = pausing ? 'paused' : 'playing';
+      try { sessionStorage.setItem('poesis-hero-film', choice); } catch (error) { /* storage unavailable */ }
+      if (pausing) video.pause(); else play();
+      label(pausing);
+    });
+    wide.addEventListener('change', apply);
+    still.addEventListener('change', apply);
+    apply();
+  })();
+</script>

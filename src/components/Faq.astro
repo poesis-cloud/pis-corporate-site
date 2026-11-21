@@ -1,0 +1,19 @@
+---
+/** Questions as native disclosures: they open without JavaScript and are keyboard-operable by default. */
+import type { FaqItem } from '../data/faq.ts';
+
+interface Props {
+  items: FaqItem[];
+}
+const { items } = Astro.props;
+---
+<div class="faq">
+  {items.map((item) => (
+    <details>
+      <summary><h3>{item.question}</h3></summary>
+      <div class="faq__answer">
+        {item.answer.map((paragraph) => <p>{paragraph}</p>)}
+      </div>
+    </details>
+  ))}
+</div>

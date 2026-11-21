@@ -12,6 +12,7 @@ import { solutionQualities, productQualities, platformQualities, qualityHref } f
 import DeliveryStatus from './DeliveryStatus.astro';
 import ProductRoadmapMini from './ProductRoadmapMini.astro';
 import Icon from './Icon.astro';
+import { platformOverviewPath } from '../data/knowledge.ts';
 
 const stack = platformSolutions.filter((s) => s.slug !== 'saf');
 const framework = platformSolutions.find((s) => s.slug === 'saf')!;
@@ -35,7 +36,7 @@ const frameworkHref = solutionHref(framework);
         <summary>Affordances</summary>
         <nav class="arch-comps" aria-label="Platform affordances">
           {affordances.map((a) => (
-            <a class:list={['arch-comp', plannedClass(affordanceStatus(a))]} href={`/#affordance-${a.slug}`}>{a.name} <DeliveryStatus state={affordanceStatus(a)} /></a>
+            <a class:list={['arch-comp', plannedClass(affordanceStatus(a))]} href={`${platformOverviewPath}#affordance-${a.slug}`}>{a.name} <DeliveryStatus state={affordanceStatus(a)} /></a>
           ))}
         </nav>
       </details>
