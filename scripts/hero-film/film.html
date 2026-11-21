@@ -483,7 +483,6 @@ function generation(t) {
     for (const sub of branch.subs) strokeCurve(sub.curve, span(t, sub.start, sub.start + T.subSpan));
     noGlow();
 
-
     if (activity > 0) {
       const life = frac(t * 5 + branch.phase);
       const { u, held } = flowAlong(life, branch.gated);

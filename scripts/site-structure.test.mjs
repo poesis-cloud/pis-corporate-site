@@ -235,15 +235,23 @@ builtTest('the hero film is local, silent, optional and has a still fallback', (
     const size = statSync(here(`../dist${source.src}`)).size;
     assert.ok(size > 100_000 && size < 2_500_000, `${source.src}: ${size} bytes`);
   }
-  const still = first(hero, 'img');
+  const still = elements(hero, (node) => hasClass(node, 'hero-seed__poster'))[0];
   assert.equal(attr(still, 'alt'), '');
   assert.ok(Number(attr(still, 'width')) > 0 && Number(attr(still, 'height')) > 0);
   // The still is an image under the film, not a `poster` attribute: a poster would be fetched
-  // even on screens that never play the film.
+  // even on screens that never play the film. Below 1100px the stage is not displayed, so the
+  // picture is offered only above that width and the image itself is an empty pixel.
   assert.ok(!hasAttr(video, 'poster'));
-  for (const poster of [attr(still, 'src'), attr(first(hero, 'source'), 'srcset')]) {
-    assert.match(poster, /^\/hero\//);
-    assert.ok(statSync(here(`../dist${poster}`)).size < 60_000, poster);
+  assert.ok(attr(still, 'src').startsWith('data:image/gif;base64,'));
+  const wide = first(hero, 'source');
+  assert.equal(attr(wide, 'media'), '(min-width: 1100px)');
+  // Narrow screens get the same picture as a visible still, described for non-sighted readers.
+  const figure = elements(hero, (node) => hasClass(node, 'hero-figure'))[0];
+  assert.ok(attr(figure, 'alt').length > 40);
+  assert.equal(attr(figure, 'loading'), 'lazy');
+  for (const picture of [attr(wide, 'srcset'), attr(figure, 'src')]) {
+    assert.match(picture, /^\/hero\//);
+    assert.ok(statSync(here(`../dist${picture}`)).size < 60_000, picture);
   }
   const toggle = elements(hero, (node) => hasClass(node, 'hero-seed__toggle'))[0];
   assert.equal(toggle.tagName, 'button');

@@ -11,9 +11,11 @@ export const contactEmail = 'partner@poesis.cloud';
 export const externalLinks = {
   github: 'https://github.com/poesis-cloud',
   docs: 'https://docs.poesis.cloud',
-  safDocs: 'https://docs.poesis.cloud/saf/',
   linkedin: 'https://www.linkedin.com/company/poesis-cloud',
 } as const;
+
+/** Spread on a link that leaves the site: it opens in a new tab without giving that tab access to this page. */
+export const externalLinkAttributes = { target: '_blank', rel: 'noopener noreferrer' } as const;
 
 /**
  * Consent-gated measurement plan. The names are queued in `dataLayer` by the

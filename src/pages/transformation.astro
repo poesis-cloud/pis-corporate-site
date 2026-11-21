@@ -8,7 +8,8 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import Faq from '../components/Faq.astro';
 import { faqLd, transformationFaq } from '../data/faq.ts';
 import { publishedCaseStudies } from '../data/case-studies.ts';
-import { maturityLabel, safLinks, supportedHost } from '../data/saf.ts';
+import { maturityLabel, supportedHost } from '../data/saf.ts';
+import { externalLinks } from '../data/site.ts';
 
 const title = 'Agentic transformation of your organization';
 const description = 'Poesis guides the agentic transformation of an organization or of one of its parts: scope, model of roles and workflows, pilot with SAF under human review, evidence review and next step.';
@@ -184,7 +185,7 @@ const limits = [
             <p>What you can verify today is the framework itself: its code, its specifications and its releases are public.</p>
             <div class="actions">
               <a class="btn btn-ghost" href="/case-studies/">How cases are documented</a>
-              <a class="btn btn-quiet" href={safLinks.github} target="_blank" rel="noopener noreferrer" data-track="developer_repo_click" data-track-id="transformation-proof">Poesis on GitHub</a>
+              <a class="btn btn-quiet" href={externalLinks.github} target="_blank" rel="noopener noreferrer" data-track="developer_repo_click" data-track-id="transformation-proof">Poesis on GitHub</a>
             </div>
           </div>
         </div>

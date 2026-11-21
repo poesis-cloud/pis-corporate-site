@@ -13,14 +13,13 @@
  */
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Icon from '../components/Icon.astro';
-import { contactEmail, externalLinks } from '../data/site.ts';
+import { contactEmail, externalLinkAttributes, externalLinks } from '../data/site.ts';
 import { harness, organization, safLinks } from '../data/saf.ts';
 
 const title = "Let's talk about your transformation";
 const description = 'Tell Poesis which team, function or organization you want to transform. A short brief becomes an email you send yourself. Developers: SAF questions go to GitHub issues.';
 /** "Not sure yet" comes first: an untouched field must not read as a deliberate choice. */
 const scopes = ['Not sure yet', 'A whole organization', 'A department or business unit', 'A team', 'A function', 'A process', 'Something else'];
-const external = { target: '_blank', rel: 'noopener noreferrer' };
 ---
 <BaseLayout
   title={title}
@@ -110,16 +109,16 @@ const external = { target: '_blank', rel: 'noopener noreferrer' };
           <h2>Working with SAF on your own?</h2>
           <p>Questions, bug reports and proposals about the open-source framework go to GitHub, in public. This is community support, with no response-time commitment.</p>
           <ul class="plain-list">
-            <li><a href={harness.issues} {...external} data-track="developer_repo_click" data-track-id="contact-harness-issues">Harness issues</a></li>
-            <li><a href={organization.issues} {...external} data-track="developer_repo_click" data-track-id="contact-organization-issues">Organization issues</a></li>
-            <li><a href={safLinks.docs} {...external} data-track="developer_docs_click" data-track-id="contact-docs">SAF documentation</a></li>
+            <li><a href={harness.issues} {...externalLinkAttributes} data-track="developer_repo_click" data-track-id="contact-harness-issues">Harness issues</a></li>
+            <li><a href={organization.issues} {...externalLinkAttributes} data-track="developer_repo_click" data-track-id="contact-organization-issues">Organization issues</a></li>
+            <li><a href={safLinks.docs} {...externalLinkAttributes} data-track="developer_docs_click" data-track-id="contact-docs">SAF documentation</a></li>
           </ul>
         </div>
         <div>
           <h2>Elsewhere</h2>
           <ul class="plain-list">
-            <li><a href={externalLinks.github} {...external}>Poesis on GitHub</a></li>
-            <li><a href={externalLinks.linkedin} {...external}>Poesis on LinkedIn</a></li>
+            <li><a href={externalLinks.github} {...externalLinkAttributes}>Poesis on GitHub</a></li>
+            <li><a href={externalLinks.linkedin} {...externalLinkAttributes}>Poesis on LinkedIn</a></li>
           </ul>
         </div>
       </aside>

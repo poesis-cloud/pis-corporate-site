@@ -6,6 +6,8 @@
  * it has always had; `/knowledge/` is the single public entry that indexes it.
  * This module only names routes: it holds no editorial content.
  */
+import { safLinks } from './saf.ts';
+import { externalLinks } from './site.ts';
 
 /** The former homepage, preserved as the platform overview of the corpus. */
 export const platformOverviewPath = '/knowledge/platform';
@@ -58,8 +60,8 @@ export const archiveEntries: ArchiveEntry[] = [
 ];
 
 export const externalDocumentation = [
-  { href: 'https://docs.poesis.cloud', label: 'Poesis documentation', note: 'Product and specification documentation.' },
-  { href: 'https://docs.poesis.cloud/saf/', label: 'SAF documentation', note: 'The Systemic Agentic Framework: harness, organization, quickstart.' },
+  { href: externalLinks.docs, label: 'Poesis documentation', note: 'Product and specification documentation.' },
+  { href: safLinks.docs, label: 'SAF documentation', note: 'The Systemic Agentic Framework: harness, organization, quickstart.' },
   { href: 'https://docs.poesis.cloud/milestones/', label: 'Milestones and versions', note: 'Recorded and planned milestones per product.' },
-  { href: 'https://github.com/poesis-cloud', label: 'Poesis on GitHub', note: 'Public repositories, issues and releases.' },
+  { href: externalLinks.github, label: 'Poesis on GitHub', note: 'Public repositories, issues and releases.' },
 ] as const;

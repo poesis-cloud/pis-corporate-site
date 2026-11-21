@@ -7,7 +7,8 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Icon from '../components/Icon.astro';
 import { thesisPath } from '../data/knowledge.ts';
-import { externalLinks } from '../data/site.ts';
+import { safLinks } from '../data/saf.ts';
+import { externalLinkAttributes, externalLinks } from '../data/site.ts';
 
 const title = 'About Poesis';
 const description = 'Poesis is the company behind SAF, the open-source Systemic Agentic Framework. It treats an organization as a system that produces itself, and guides its agentic transformation.';
@@ -37,7 +38,6 @@ const people: { name: string; role: string; photo: string; bio: string; profile?
     profile: 'https://www.linkedin.com/in/abidihamza',
   },
 ];
-const external = { target: '_blank', rel: 'noopener noreferrer' };
 ---
 <BaseLayout
   title={title}
@@ -99,7 +99,7 @@ const external = { target: '_blank', rel: 'noopener noreferrer' };
             <h3>{person.name}</h3>
             <p class="person__role">{person.role}</p>
             <p>{person.bio}</p>
-            {person.profile && <p><a href={person.profile} {...external}>{person.name.split(' ')[0]} on LinkedIn</a></p>}
+            {person.profile && <p><a href={person.profile} {...externalLinkAttributes}>{person.name.split(' ')[0]} on LinkedIn</a></p>}
           </li>
         ))}
       </ul>
@@ -112,9 +112,9 @@ const external = { target: '_blank', rel: 'noopener noreferrer' };
         <h2 id="trust-title">Where to check what we say.</h2>
       </div>
       <ul class="kb-links">
-        <li><a href={externalLinks.github} {...external} data-track="developer_repo_click" data-track-id="about-trust">Poesis on GitHub</a><p>The code, its releases and its issues.</p></li>
-        <li><a href={externalLinks.safDocs} {...external} data-track="developer_docs_click" data-track-id="about-trust">SAF documentation</a><p>How the framework works and what it does not do yet.</p></li>
-        <li><a href={externalLinks.linkedin} {...external}>Poesis on LinkedIn</a><p>The company page.</p></li>
+        <li><a href={externalLinks.github} {...externalLinkAttributes} data-track="developer_repo_click" data-track-id="about-trust">Poesis on GitHub</a><p>The code, its releases and its issues.</p></li>
+        <li><a href={safLinks.docs} {...externalLinkAttributes} data-track="developer_docs_click" data-track-id="about-trust">SAF documentation</a><p>How the framework works and what it does not do yet.</p></li>
+        <li><a href={externalLinks.linkedin} {...externalLinkAttributes}>Poesis on LinkedIn</a><p>The company page.</p></li>
         <li><a href="/legal/mentions-legales">Legal notice</a><p>Publisher and hosting information.</p></li>
       </ul>
     </div>

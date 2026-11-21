@@ -6,11 +6,11 @@
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import { caseStudyTemplate, evidenceKinds, publicationChecklist, publishedCaseStudies, type EvidenceKind } from '../../data/case-studies.ts';
 import { harness, organization } from '../../data/saf.ts';
+import { externalLinkAttributes } from '../../data/site.ts';
 
 const title = 'Case studies of agentic transformation pilots';
 const description = 'How Poesis documents its pilots: what counts as evidence, how a demonstration differs from a pilot and from an operational deployment, and the cases cleared for publication.';
 const kinds = Object.entries(evidenceKinds) as [EvidenceKind, { label: string; meaning: string }][];
-const external = { target: '_blank', rel: 'noopener noreferrer' };
 ---
 <BaseLayout title={title} description={description} pageType="Case Studies" breadcrumbs={[{ label: 'Case Studies' }]}>
   <section class="intro">
@@ -96,8 +96,8 @@ const external = { target: '_blank', rel: 'noopener noreferrer' };
           <h3 class="stack-gap">Evidence you can inspect today</h3>
           <p>The framework the pilots run on is public. Its code, specifications, tests and releases are the first thing to check.</p>
           <div class="actions">
-            <a class="btn btn-ghost" href={harness.repository} {...external} data-track="developer_repo_click" data-track-id="case-studies-harness">Harness repository</a>
-            <a class="btn btn-ghost" href={organization.repository} {...external} data-track="developer_repo_click" data-track-id="case-studies-organization">Organization repository</a>
+            <a class="btn btn-ghost" href={harness.repository} {...externalLinkAttributes} data-track="developer_repo_click" data-track-id="case-studies-harness">Harness repository</a>
+            <a class="btn btn-ghost" href={organization.repository} {...externalLinkAttributes} data-track="developer_repo_click" data-track-id="case-studies-organization">Organization repository</a>
           </div>
         </div>
       </div>

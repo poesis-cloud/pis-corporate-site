@@ -10,7 +10,7 @@ import CommandBlock from '../components/CommandBlock.astro';
 import ProductPanel from '../components/ProductPanel.astro';
 import Faq from '../components/Faq.astro';
 import { faqLd, homeFaq } from '../data/faq.ts';
-import { publishedCaseStudies } from '../data/case-studies.ts';
+import { evidenceKinds, publishedCaseStudies } from '../data/case-studies.ts';
 import { installCommands, maturityLabel, latestPreRelease, safProducts, safLinks, marketplace, harness, organization, supportedHost } from '../data/saf.ts';
 import { formatDate } from '../data/format.ts';
 
@@ -98,7 +98,6 @@ const qualities = [
 ];
 
 const description = 'Poesis helps you transform a team, a function or your whole organization into a governed agentic organization, with SAF, its open-source Systemic Agentic Framework, as the method and the engine.';
-const starUrl = 'https://github.com/orgs/poesis-cloud/repositories?q=saf';
 const heroSources = [{ src: '/hero/seed.webm', type: 'video/webm' }, { src: '/hero/seed.mp4', type: 'video/mp4' }];
 ---
 <BaseLayout
@@ -113,9 +112,11 @@ const heroSources = [{ src: '/hero/seed.webm', type: 'video/webm' }, { src: '/he
 >
   <section class="hero-seed" aria-labelledby="hero-title">
     <div class="hero-seed__media" aria-hidden="true">
+      {/* Below 1100px this stage is not displayed, so the picture is offered only above it: the
+          image itself is an empty pixel, and a phone fetches nothing here. */}
       <picture>
-        <source media="(max-width: 1099px)" srcset="/hero/seed-poster-portrait.webp" type="image/webp" width="720" height="900" />
-        <img class="hero-seed__poster" src="/hero/seed-poster.webp" width="1280" height="720" alt="" decoding="async" fetchpriority="high" />
+        <source media="(min-width: 1100px)" srcset="/hero/seed-poster.webp" type="image/webp" width="1280" height="720" />
+        <img class="hero-seed__poster" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" width="1280" height="720" alt="" decoding="async" fetchpriority="high" />
       </picture>
       <video
         class="hero-seed__video"
@@ -296,7 +297,7 @@ const heroSources = [{ src: '/hero/seed.webm', type: 'video/webm' }, { src: '/he
         <ul class="case-list">
           {publishedCaseStudies.map((study) => (
             <li class="case-card">
-              <span class="status status--verified">{study.kind === 'pilot' ? 'Pilot' : study.kind === 'demonstration' ? 'Demonstration' : 'Operational deployment'}</span>
+              <span class="status status--verified">{evidenceKinds[study.kind].label}</span>
               <h3><a href={`/case-studies/${study.slug}/`}>{study.title}</a></h3>
               <p>{study.summary}</p>
             </li>
@@ -350,7 +351,7 @@ const heroSources = [{ src: '/hero/seed.webm', type: 'video/webm' }, { src: '/he
           <h3>Help the project be found</h3>
           <p>A star on GitHub is the simplest way to follow the work and to tell us it matters to you.</p>
           <div class="actions">
-            <a class="btn btn-primary" href={starUrl} target="_blank" rel="noopener noreferrer" data-track="developer_repo_click" data-track-id="home-oss-star"><Icon name="github" /> Star the repositories</a>
+            <a class="btn btn-primary" href={safLinks.repositories} target="_blank" rel="noopener noreferrer" data-track="developer_repo_click" data-track-id="home-oss-star"><Icon name="github" /> Star the repositories</a>
             <a class="btn btn-ghost" href="/open-source/">The full developer path</a>
           </div>
         </div>

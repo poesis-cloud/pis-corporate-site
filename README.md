@@ -50,6 +50,7 @@ src/
     case-studies/              evidence register, one page per published case
     pilot.astro                what a first pilot is
     about.astro  contact.astro
+    llms.txt.ts                /llms.txt, generated from data/saf.ts
     knowledge/                 hub, platform overview (the former homepage), thesis
     catalog/ solutions/ usage/ insights/ it/ services/ partnerships/   Knowledge, unchanged URLs
   data/
@@ -76,8 +77,8 @@ What changed around the corpus:
 
 | Before | Now | How |
 | --- | --- | --- |
-| `/` was the platform overview | `/knowledge/platform/` holds it, sections and anchors intact | Page moved. Old deep links such as `/#affordance-…`, `/#value-platform-…`, `/#quality-…`, `/#portfolio` are forwarded by a script on the home page, because a URL fragment never reaches a server |
-| `/pilot/` was the OIP and SIE pilot brief builder | `/services/pilot/` holds the builder; `/pilot/` describes a transformation pilot and links to it | Address kept, content replaced; builder moved |
+| `/` was the platform overview | `/knowledge/platform/` holds it, sections and anchors intact | Page moved. An old deep link such as `/#affordance-…` or `/#portfolio` is followed to the overview by a script on the home page whenever that anchor exists there; a URL fragment never reaches a server, so no redirect could do it |
+| `/pilot/` was the OIP and SIE pilot brief builder | `/services/pilot/` holds the builder; `/pilot/` describes a transformation pilot and links to it | Address kept, content replaced; builder moved. A brief's selection link, `/pilot?value=…`, is forwarded to the builder |
 | `/about/` carried the research argument | `/knowledge/thesis/` holds it, text unchanged; `/about/` is short | Sections moved |
 | `/services/*`, `/partnerships/*` were offers in the menu | Same addresses, shown with an "Archived offer" notice and listed under Knowledge → Archive | Envelope added by the layout, pages untouched |
 | `/catalog/*`, `/solutions/*`, `/usage/*`, `/insights/*`, `/it/alternatives/*` | Same addresses, same content, with the Knowledge bar | Envelope added by the layout |
@@ -152,8 +153,9 @@ observe an email being sent.
 - Structured data: `Organization` everywhere; `WebSite` and `FAQPage` on the home page; `Service`
   and `FAQPage` on `/transformation/`; `SoftwareSourceCode` on `/open-source/`; `BreadcrumbList`
   on inner pages; `BlogPosting` on research notes. No price, rating, review or award.
-- `public/llms.txt` gives language models the entities and the canonical pages. It is a
-  convenience, not a ranking lever.
+- `/llms.txt` gives language models the entities and the canonical pages. It is generated
+  from `src/data/saf.ts`, so it cannot disagree with the pages. A convenience, not a ranking
+  lever.
 
 ## Tests
 
@@ -177,8 +179,11 @@ documentation repositories.
 ## Hero film
 
 See [`scripts/hero-film/README.md`](scripts/hero-film/README.md). The film is drawn from the
-real Poesis mark, served locally, silent, paused on request, and never fetched on a small
-screen or when the visitor asks for reduced motion or data.
+real Poesis mark, served locally, silent and paused on request. It opens on the complete
+picture, and the home page prints a four-line legend: the seed, and the three signs of the
+film (AI agent, human review, checked output). It plays only from 1100 px, where it has room beside the words, and never when the
+visitor asks for reduced motion or data; below that width the page shows the same picture as a
+still.
 
 ## Deploy
 

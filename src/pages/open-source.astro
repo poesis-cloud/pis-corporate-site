@@ -8,13 +8,12 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import Icon from '../components/Icon.astro';
 import CommandBlock from '../components/CommandBlock.astro';
 import ProductPanel from '../components/ProductPanel.astro';
-import { firstRunCommand, harness, installCommands, latestPreRelease, marketplace, maturityLabel, orchestrators, organization, organizationInventory, prerequisites, safLinks, safProducts, supportedHost, verifiedOn } from '../data/saf.ts';
+import { firstRunCommand, harness, installCommands, latestPreRelease, marketplace, maturityLabel, orchestrators, organization, organizationInventory, prerequisites, safLinks, safProducts, supportedHost, verifiedOn, type SafProduct } from '../data/saf.ts';
+import { externalLinkAttributes, externalLinks } from '../data/site.ts';
 import { formatDate } from '../data/format.ts';
 
 const title = 'SAF, the open-source Systemic Agentic Framework';
 const description = 'SAF is an open-source framework for running agentic organizations: a deterministic harness and a first organization for scaled agile delivery. Alpha preview, Apache-2.0, for GitHub Copilot.';
-const external = { target: '_blank', rel: 'noopener noreferrer' };
-const starUrl = 'https://github.com/orgs/poesis-cloud/repositories?q=saf';
 
 const loop = [
   { title: 'The organization declares', body: 'Agents, workflows, instructions, skills, model profiles, access rules and artifact schemas are files in the organization plugin.' },
@@ -24,7 +23,7 @@ const loop = [
   { title: 'A person reviews', body: 'At the points the workflow names, a person reads the artifact and decides whether the work advances.', gov: true },
 ];
 
-const sourceCode = (product: typeof harness) => ({
+const sourceCode = (product: SafProduct) => ({
   '@type': 'SoftwareSourceCode',
   name: product.name,
   alternateName: product.technicalName,
@@ -41,19 +40,19 @@ const sourceCode = (product: typeof harness) => ({
   breadcrumbs={[{ label: 'Open Source' }]}
   jsonLd={safProducts.map(sourceCode)}
 >
-  <section class="intro intro--with-status">
+  <section class="intro">
     <div class="container">
       <ol class="crumbs" aria-label="Breadcrumb">
         <li><a href="/">Poesis</a></li>
         <li aria-current="page">Open Source</li>
       </ol>
-      <span class="status">{maturityLabel} · {latestPreRelease.version}</span>
       <h1>SAF, the open-source Systemic Agentic Framework.</h1>
       <p class="intro__lead">SAF runs an organization of AI agents the way an organization actually works: roles with responsibilities, workflows that link them, artifacts that are checked, and people who decide. It is a framework for organizations, not a team of bots.</p>
+      <p class="intro__note">{maturityLabel}, under the Apache License 2.0, for {supportedHost.name} today.</p>
       <div class="actions">
         <a class="btn btn-primary btn-lg" href="#install" data-track="developer_install_click" data-track-id="oss-intro">Install SAF</a>
-        <a class="btn btn-ghost btn-lg" href={safLinks.github} {...external} data-track="developer_repo_click" data-track-id="oss-intro"><Icon name="github" /> Poesis on GitHub</a>
-        <a class="btn btn-quiet" href={safLinks.docs} {...external} data-track="developer_docs_click" data-track-id="oss-intro">Read the documentation</a>
+        <a class="btn btn-ghost btn-lg" href={externalLinks.github} {...externalLinkAttributes} data-track="developer_repo_click" data-track-id="oss-intro"><Icon name="github" /> Poesis on GitHub</a>
+        <a class="btn btn-quiet" href={safLinks.docs} {...externalLinkAttributes} data-track="developer_docs_click" data-track-id="oss-intro">Read the documentation</a>
       </div>
     </div>
   </section>
@@ -70,7 +69,7 @@ const sourceCode = (product: typeof harness) => ({
       <dl class="spec stack-gap">
         <div>
           <dt>Status</dt>
-          <dd>{maturityLabel}. Latest pre-release of both: <a href={harness.releases} {...external}>{latestPreRelease.version}</a>, {formatDate(latestPreRelease.publishedOn)}. No final release has been published.</dd>
+          <dd>{maturityLabel}. Latest pre-release of both: <a href={harness.releases} {...externalLinkAttributes}>{latestPreRelease.version}</a>, {formatDate(latestPreRelease.publishedOn)}. No final release has been published.</dd>
         </div>
         <div>
           <dt>Licence</dt>
@@ -99,7 +98,7 @@ const sourceCode = (product: typeof harness) => ({
           <li class={step.gov ? 'flow__gov' : undefined}><strong>{step.title}</strong>{step.body}</li>
         ))}
       </ol>
-      <p class="flow__loop">In the alpha, the review point is a step of the workflow: the harness does not yet authenticate the person who approves. The full contract is in the <a href={`${harness.repository}/blob/main/def/core/spec.md`} {...external} data-track="developer_repo_click" data-track-id="oss-how-spec">harness core specification</a>.</p>
+      <p class="flow__loop">In the alpha, the review point is a step of the workflow: the harness does not yet authenticate the person who approves. The full contract is in the <a href={`${harness.repository}/blob/main/def/core/spec.md`} {...externalLinkAttributes} data-track="developer_repo_click" data-track-id="oss-how-spec">harness core specification</a>.</p>
     </div>
   </section>
 
@@ -107,12 +106,12 @@ const sourceCode = (product: typeof harness) => ({
     <div class="container">
       <div class="band-head">
         <h2 id="install-title">Install.</h2>
-        <p>Both products are plugins for {supportedHost.name}. They are installed from the <a href={marketplace.repository} {...external} data-track="developer_repo_click" data-track-id="oss-install-marketplace">Poesis SAF marketplace</a>, on its preview channel while SAF is in alpha.</p>
+        <p>Both products are plugins for {supportedHost.name}. They are installed from the <a href={marketplace.repository} {...externalLinkAttributes} data-track="developer_repo_click" data-track-id="oss-install-marketplace">Poesis SAF marketplace</a>, on its preview channel while SAF is in alpha.</p>
       </div>
       <div class="split split--flush">
         <div>
           <CommandBlock label="GitHub Copilot CLI, preview channel" commands={installCommands} trackId="oss-install" />
-          <p class="command__note">These commands are the ones documented in the <a href={safLinks.quickstart} {...external} data-track="developer_docs_click" data-track-id="oss-install-quickstart">Quickstart</a> and in the organization’s README. The stable channel (<code>{marketplace.stable.id}</code>) is reserved for final releases and listed no plugin on {formatDate(verifiedOn)}. A one-line installer is described in the Quickstart.</p>
+          <p class="command__note">These commands are the ones documented in the <a href={safLinks.quickstart} {...externalLinkAttributes} data-track="developer_docs_click" data-track-id="oss-install-quickstart">Quickstart</a> and in the organization’s README. The stable channel (<code>{marketplace.stable.id}</code>) is reserved for final releases and listed no plugin on {formatDate(verifiedOn)}. A one-line installer is described in the Quickstart.</p>
         </div>
         <div>
           <h3>You need</h3>
@@ -156,8 +155,8 @@ const sourceCode = (product: typeof harness) => ({
         <div>
           <p>The documentation is the reference from here: it describes each workflow, what the orchestrators expect from you, and the known alpha limitations.</p>
           <div class="actions">
-            <a class="btn btn-ghost" href={safLinks.quickstart} {...external} data-track="developer_docs_click" data-track-id="oss-first-quickstart">Open the Quickstart</a>
-            <a class="btn btn-quiet" href={safLinks.usage} {...external} data-track="developer_docs_click" data-track-id="oss-first-usage">Running workflows</a>
+            <a class="btn btn-ghost" href={safLinks.quickstart} {...externalLinkAttributes} data-track="developer_docs_click" data-track-id="oss-first-quickstart">Open the Quickstart</a>
+            <a class="btn btn-quiet" href={safLinks.usage} {...externalLinkAttributes} data-track="developer_docs_click" data-track-id="oss-first-usage">Running workflows</a>
           </div>
         </div>
       </div>
@@ -175,17 +174,17 @@ const sourceCode = (product: typeof harness) => ({
           <h3>Ask, report, propose</h3>
           <p>Questions, bug reports and proposals go to the issue tracker of the repository concerned. Issues are public and carry no response-time commitment: this is community support, not a support contract.</p>
           <div class="product__links">
-            <a href={harness.issues} {...external} data-track="developer_repo_click" data-track-id="oss-community-harness-issues"><Icon name="github" size={18} /> Harness issues</a>
-            <a href={organization.issues} {...external} data-track="developer_repo_click" data-track-id="oss-community-organization-issues"><Icon name="github" size={18} /> Organization issues</a>
+            <a href={harness.issues} {...externalLinkAttributes} data-track="developer_repo_click" data-track-id="oss-community-harness-issues"><Icon name="github" size={18} /> Harness issues</a>
+            <a href={organization.issues} {...externalLinkAttributes} data-track="developer_repo_click" data-track-id="oss-community-organization-issues"><Icon name="github" size={18} /> Organization issues</a>
           </div>
         </article>
         <article class="product">
           <h3>Star, fork, contribute</h3>
-          <p>Contributions are accepted under Apache-2.0. Commits are signed off under the <a href={safLinks.developerCertificate} {...external}>Developer Certificate of Origin</a>, and each repository states its conventions in <code>CONTRIBUTING.md</code>.</p>
+          <p>Contributions are accepted under Apache-2.0. Commits are signed off under the <a href={safLinks.developerCertificate} {...externalLinkAttributes}>Developer Certificate of Origin</a>, and each repository states its conventions in <code>CONTRIBUTING.md</code>.</p>
           <div class="product__links">
-            <a href={starUrl} {...external} data-track="developer_repo_click" data-track-id="oss-community-star"><Icon name="github" size={18} /> Star the repositories</a>
-            <a href={harness.contributing} {...external} data-track="developer_repo_click" data-track-id="oss-community-harness-contributing">Contribute to the harness</a>
-            <a href={organization.contributing} {...external} data-track="developer_repo_click" data-track-id="oss-community-organization-contributing">Contribute to the organization</a>
+            <a href={safLinks.repositories} {...externalLinkAttributes} data-track="developer_repo_click" data-track-id="oss-community-star"><Icon name="github" size={18} /> Star the repositories</a>
+            <a href={harness.contributing} {...externalLinkAttributes} data-track="developer_repo_click" data-track-id="oss-community-harness-contributing">Contribute to the harness</a>
+            <a href={organization.contributing} {...externalLinkAttributes} data-track="developer_repo_click" data-track-id="oss-community-organization-contributing">Contribute to the organization</a>
           </div>
         </article>
       </div>

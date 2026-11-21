@@ -124,6 +124,7 @@ export const safLinks = {
   docs: 'https://docs.poesis.cloud/saf/',
   quickstart: 'https://docs.poesis.cloud/saf/quickstart/',
   usage: 'https://docs.poesis.cloud/saf/usage/',
-  github: 'https://github.com/poesis-cloud',
+  /** The SAF repositories of the organization, listed together so a visitor can star them. */
+  repositories: 'https://github.com/orgs/poesis-cloud/repositories?q=saf',
   developerCertificate: 'https://developercertificate.org/',
 } as const;
