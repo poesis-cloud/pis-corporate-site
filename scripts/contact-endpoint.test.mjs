@@ -79,6 +79,13 @@ test('missing, malformed and oversized fields are refused, field by field, and n
   assert.equal((await post(payload({ ...valid, company: '', message: '' }))).status, 200);
   assert.equal(delivered.length, 1);
   assert.equal(delivered[0].subject, 'Transformation request: Ada Lovelace');
+  // Addresses a browser accepts are accepted here too: an apostrophe, a plus tag, a subdomain.
+  for (const email of ["o'brien@company.com", 'ada+poesis@mail.example.org', 'first.last@sub.domain.co.uk']) {
+    assert.equal((await post(payload({ ...valid, email }))).status, 200, email);
+  }
+  for (const email of ['ada@example', 'ada example@x.org', '<ada@example.org>', 'ada@exa"mple.org']) {
+    assert.equal((await post(payload({ ...valid, email }))).status, 422, email);
+  }
 });
 
 test('automated posts are refused and told so: a filled trap, an instant submission, a missing timer', async () => {
@@ -152,7 +159,19 @@ test('what a visitor types cannot forge a header or smuggle control characters',
   assert.deepEqual(Object.keys(validate({ ...valid, admin: true, __proto__: { polluted: true } }).values).sort(), Object.keys(LIMITS).sort());
 });
 
-test('the receiver refuses to start without an origin list or a transport', () => {
-  assert.throws(() => createHandler({ allowedOrigins: [], deliver: async () => {} }), /allowedOrigins/);
-  assert.throws(() => createHandler({ allowedOrigins: [ORIGIN] }), /deliver/);
+test('the receiver refuses to start without an origin list, a transport or a trusted client key', () => {
+  const key = () => 'client';
+  assert.throws(() => createHandler({ allowedOrigins: [], deliver: async () => {}, clientKey: key }), /allowedOrigins/);
+  assert.throws(() => createHandler({ allowedOrigins: [ORIGIN], clientKey: key }), /deliver/);
+  // No default: guessing the client from a header it controls would defeat the rate limit.
+  assert.throws(() => createHandler({ allowedOrigins: [ORIGIN], deliver: async () => {} }), /clientKey/);
+});
+
+test('each client has its own quota', async () => {
+  let client = 'a';
+  const { post } = setup({ clientKey: () => client, rateLimit: { windowMs: 60_000, max: 1 } });
+  assert.equal((await post(payload())).status, 200);
+  assert.equal((await post(payload())).status, 429);
+  client = 'b';
+  assert.equal((await post(payload())).status, 200);
 });

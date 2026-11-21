@@ -25,8 +25,7 @@ export const externalLinks = {
  * configuration fails the build, so the site cannot ship a form that posts
  * somewhere the privacy policy does not name.
  */
-function contactTransport(): { endpoint: string; processor: string } | null {
-  const env = (import.meta as unknown as { env?: Record<string, string | undefined> }).env ?? {};
+export function contactTransport(env: Record<string, string | undefined>): { endpoint: string; processor: string } | null {
   const endpoint = (env.PUBLIC_CONTACT_ENDPOINT ?? '').trim();
   const processor = (env.PUBLIC_CONTACT_PROCESSOR ?? '').trim();
   if (!endpoint && !processor) return null;
@@ -35,7 +34,8 @@ function contactTransport(): { endpoint: string; processor: string } | null {
   if (!processor) throw new Error('PUBLIC_CONTACT_PROCESSOR must name the service that receives the contact form');
   return { endpoint, processor };
 }
-export const contact = contactTransport();
+/** The transport of this build. `import.meta.env` exists in a build; under plain Node (the tests) there is none. */
+export const contact = contactTransport((import.meta as unknown as { env?: Record<string, string | undefined> }).env ?? {});
 
 /** Spread on a link that leaves the site: it opens in a new tab without giving that tab access to this page. */
 export const externalLinkAttributes = { target: '_blank', rel: 'noopener noreferrer' } as const;

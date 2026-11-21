@@ -46,9 +46,10 @@ went nowhere.
 Neither was chosen: both need a decision and an account that only Poesis can provide.
 
 1. **Deploy `handler.mjs`.** It is written against web-standard `Request` and `Response`, has no
-   dependency and holds no secret. Its host gives it two things: the list of allowed origins,
-   and a `deliver(message)` function that hands the request to Poesis and throws if it could
-   not. Since the domain's mail is on Microsoft 365, sending through that tenant keeps the data
+   dependency and holds no secret. Its host gives it three things: the list of allowed origins,
+   a `clientKey(request)` function returning the client's address as the platform reports it
+   (never a header the client can set), and a `deliver(message)` function that hands the
+   request to Poesis and throws if it could not. Since the domain's mail is on Microsoft 365, sending through that tenant keeps the data
    with a processor Poesis already uses. The `deliver` function is deliberately not written
    here: it depends on the mail API chosen and could not be tested without its credentials.
 2. **Use a hosted form service** whose JSON API answers `{ "ok": true }` on success. The page

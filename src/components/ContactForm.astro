@@ -63,13 +63,6 @@ const posts = contact !== null;
       <textarea id="brief-message" name="Additional context" data-key="message" rows="3" maxlength={limit.message}></textarea>
     </div>
 
-    {posts && (
-      <div class="brief-form__trap" aria-hidden="true">
-        <label for="brief-website">Leave this field empty</label>
-        <input id="brief-website" name="_gotcha" data-trap type="text" tabindex="-1" autocomplete="off" />
-      </div>
-    )}
-
     <div class="actions">
       {posts
         ? <button class="btn btn-primary btn-lg" type="submit"><Icon name="message" /> Discuss your transformation</button>
@@ -77,13 +70,16 @@ const posts = contact !== null;
       {!posts && <button class="btn btn-ghost" type="button" data-contact-copy hidden><Icon name="copy" /> Copy the request</button>}
     </div>
 
+    {/* Without scripts the form can only use its `mailto:` action, whatever the build: the wording follows what will really happen. */}
+    {posts && <p class="brief-form__note js-only">Your request goes to the Poesis team. We use these details only to answer you. See the <a href="/legal/privacy">privacy policy</a>.</p>}
     {posts
-      ? <p class="brief-form__note">Your request goes to the Poesis team. We use these details only to answer you. See the <a href="/legal/privacy">privacy policy</a>.</p>
+      ? <noscript><p class="brief-form__note">Scripts are off in your browser: this form will prepare an email in your own mail app, addressed to <strong>{contactEmail}</strong>, for you to send. See the <a href="/legal/privacy">privacy policy</a>.</p></noscript>
       : <p class="brief-form__note">This form prepares an email in your own mail app, addressed to <strong>{contactEmail}</strong>. You read it and send it; this page transmits and stores nothing. See the <a href="/legal/privacy">privacy policy</a>.</p>}
   </form>
 
   <p class="brief-form__status" data-contact-status role="status" aria-live="polite"></p>
-  <a class="btn btn-ghost" data-contact-fallback data-track="business_contact_intent" data-track-id={`${source}-email-fallback`} href={`mailto:${contactEmail}`} hidden><Icon name="mail" /> Send it by email instead</a>
+  {/* Not tracked through `data-track`: once filled in, this link carries what the visitor typed. */}
+  <a class="btn btn-ghost" data-contact-fallback href={`mailto:${contactEmail}`} hidden><Icon name="mail" /> Send it by email instead</a>
 
   {posts && (
     <div class="brief-form__done" data-contact-done tabindex="-1" hidden>

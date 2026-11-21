@@ -14,10 +14,12 @@
 // It listens on 127.0.0.1 only. It is a test double, not something to deploy.
 import { createServer } from 'node:http';
 import { mkdir, writeFile } from 'node:fs/promises';
+import { resolve } from 'node:path';
+import { pathToFileURL } from 'node:url';
 import { createHandler } from './handler.mjs';
 
 const port = Number(process.env.PORT ?? 4601);
-const outbox = new URL(process.env.CONTACT_OUTBOX ? `file://${process.env.CONTACT_OUTBOX.replace(/\/?$/, '/')}` : './outbox/', import.meta.url);
+const outbox = process.env.CONTACT_OUTBOX ? pathToFileURL(`${resolve(process.env.CONTACT_OUTBOX)}/`) : new URL('./outbox/', import.meta.url);
 await mkdir(outbox, { recursive: true });
 let count = 0;
 
@@ -29,7 +31,9 @@ const handle = createHandler({
   deliver: async (message) => {
     if (process.env.CONTACT_DELIVERY === 'fail') throw new Error('delivery disabled for this test');
     count += 1;
-    await writeFile(new URL(`request-${String(count).padStart(3, '0')}.json`, outbox), `${JSON.stringify(message, null, 2)}\n`);
+    // Named by time of arrival, so a restarted server never overwrites an earlier request.
+    const stamp = new Date().toISOString().replace(/[:.]/g, '-');
+    await writeFile(new URL(`request-${stamp}-${String(count).padStart(3, '0')}.json`, outbox), `${JSON.stringify(message, null, 2)}\n`);
   },
 });
 

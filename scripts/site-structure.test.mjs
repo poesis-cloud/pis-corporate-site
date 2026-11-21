@@ -21,7 +21,7 @@ import { caseStudies, fictionalNotice, illustrativeExample, publicationChecklist
 import { briefMailto, buildPayload, composeBrief, contactFields, interpretResponse, MAILTO_LIMIT } from '../src/scripts/contact-brief.ts';
 import { LIMITS } from '../contact-endpoint/handler.mjs';
 import { methodSteps } from '../src/data/method.ts';
-import { contact, contactEmail, offerName } from '../src/data/site.ts';
+import { contact, contactEmail, contactTransport, offerName } from '../src/data/site.ts';
 import { platformSolutions, solutionHref } from '../src/data/poesis-platform.ts';
 import { alternatives } from '../src/data/alternatives.ts';
 
@@ -149,7 +149,11 @@ test('FAQ covers the questions buyers and developers ask, and structured data re
   ]);
   for (const step of methodSteps) for (const key of ['summary', 'what', 'who', 'saf', 'result']) assert.ok(step[key].trim(), `${step.title}: ${key}`);
   // No duration, price or result is promised by the method.
-  assert.doesNotMatch(JSON.stringify(methodSteps), /\b\d+\s*(weeks?|days?|months?|%|x)\b|ROI|guarantee/i);
+  const promise = /\d+\s*(?:weeks?|days?|months?)\b|\d+\s*%|\b\d+x\b|\bROI\b|guarantee/i;
+  assert.doesNotMatch(JSON.stringify(methodSteps), promise);
+  // The guard itself: it catches a figure, and does not trip on ordinary words.
+  for (const text of ['cuts lead time by 30% in the pilot', 'done in 6 weeks', 'a 3x gain', 'a clear ROI', 'we guarantee it']) assert.match(text, promise, text);
+  for (const text of ['an android app', 'five steps', 'the first three steps']) assert.doesNotMatch(text, promise, text);
   assert.equal(offerName, 'Agentic Organization Transformation');
   const readiness = homeFaq.at(-1).answer.join(' ');
   assert.match(readiness, /^No\./);
@@ -168,7 +172,7 @@ test('no case study is published without evidence, stated limits and clearance',
   assert.match(illustrativeExample.title, /^Fictional example: /);
   for (const key of ['measuredResults', 'publicationClearance', 'kind', 'status']) assert.equal(key in illustrativeExample, false, key);
   for (const phrase of ['Fictional example.', 'does not exist', 'not a client of Poesis', 'nothing was measured']) assert.ok(fictionalNotice.includes(phrase), phrase);
-  assert.doesNotMatch(JSON.stringify(illustrativeExample), /\d+\s*%|€|\$|ROI|saved|faster/i);
+  assert.doesNotMatch(JSON.stringify(illustrativeExample), /\d+\s*%|€|\$|\bROI\b|\bsaved\b|\bfaster\b/i);
   for (const link of illustrativeExample.evidence) assert.ok(link.href.startsWith('https://github.com/poesis-cloud/'), link.href);
   const record = {
     slug: 'sample', status: 'published', kind: 'pilot', title: 't', summary: 's', context: 'c', problem: 'p', scope: 's', method: 'm',
@@ -224,8 +228,22 @@ test('a contact request becomes an email draft or a payload, within the bounds t
   assert.deepEqual(interpretResponse(429, { ok: false }), { state: 'throttled' });
   assert.deepEqual(interpretResponse(422, { ok: false, errors: { email: 'invalid', nonsense: 'x' } }), { state: 'invalid', fields: ['email'] });
   assert.deepEqual(interpretResponse(422, { ok: false, errors: {} }), { state: 'failed' });
-  // This build has no receiver configured: the form is an email draft, and the site says so.
+  // Under plain Node there is no build environment: no receiver.
   assert.equal(contact, null);
+});
+
+test('the form posts only to a complete, safe configuration; anything else is no receiver or a failed build', () => {
+  assert.equal(contactTransport({}), null);
+  assert.equal(contactTransport({ PUBLIC_CONTACT_ENDPOINT: '  ', PUBLIC_CONTACT_PROCESSOR: '' }), null);
+  assert.deepEqual(contactTransport({ PUBLIC_CONTACT_ENDPOINT: ' https://receiver.example/contact ', PUBLIC_CONTACT_PROCESSOR: ' Example Forms ' }), { endpoint: 'https://receiver.example/contact', processor: 'Example Forms' });
+  // A local receiver is accepted for tests on this machine only.
+  assert.ok(contactTransport({ PUBLIC_CONTACT_ENDPOINT: 'http://127.0.0.1:4601/contact', PUBLIC_CONTACT_PROCESSOR: 'local test receiver' }));
+  // Half a configuration never ships: the privacy policy must be able to name who receives the request.
+  assert.throws(() => contactTransport({ PUBLIC_CONTACT_ENDPOINT: 'https://receiver.example/contact' }), /PUBLIC_CONTACT_PROCESSOR/);
+  assert.throws(() => contactTransport({ PUBLIC_CONTACT_PROCESSOR: 'Example Forms' }), /PUBLIC_CONTACT_ENDPOINT/);
+  for (const endpoint of ['http://receiver.example/contact', 'ftp://receiver.example', 'receiver.example/contact', 'javascript:alert(1)', 'https://receiver.example/"onload="x', 'http://127.0.0.1.evil.example/contact']) {
+    assert.throws(() => contactTransport({ PUBLIC_CONTACT_ENDPOINT: endpoint, PUBLIC_CONTACT_PROCESSOR: 'Example Forms' }), /https URL/, endpoint);
+  }
 });
 
 test('menu, call to action, footer and legal links point at distinct, well-formed destinations', () => {
@@ -479,20 +497,35 @@ builtTest('the contact form is short, labelled, honest about its transport, and 
     const status = elements(scope, (node) => hasAttr(node, 'data-contact-status'))[0];
     assert.equal(attr(status, 'role'), 'status', route);
     assert.equal(clean(text(status)), '', route);
-    // This build has no receiver: the form says it prepares an email, posts nowhere and shows no "sent" panel.
-    assert.ok(!hasAttr(form, 'data-endpoint'), route);
-    assert.equal(clean(text(elements(form, (node) => node.tagName === 'button' && attr(node, 'type') === 'submit')[0])), 'Prepare my email', route);
-    assert.ok(clean(text(form)).includes('This form prepares an email in your own mail app'), route);
-    assert.equal(elements(scope, (node) => hasAttr(node, 'data-contact-done')).length, 0, route);
-    assert.equal(elements(form, (node) => hasAttr(node, 'data-trap')).length, 0, route);
-    assert.doesNotMatch(clean(text(scope)), /has reached Poesis|Message sent|was sent\b/i, route);
+    // Without scripts the form can only prepare an email: no hidden field sits in the markup to leak into that draft.
+    assert.equal(elements(form, (node) => hasAttr(node, 'data-trap') || attr(node, 'name') === '_gotcha').length, 0, route);
+    // The fallback link will carry the request once filled in: it must not be sent to analytics by its address.
+    assert.ok(!hasAttr(elements(scope, (node) => hasAttr(node, 'data-contact-fallback'))[0], 'data-track'), route);
+    const button = clean(text(elements(form, (node) => node.tagName === 'button' && attr(node, 'type') === 'submit')[0]));
+    const done = elements(scope, (node) => hasAttr(node, 'data-contact-done'));
+    if (hasAttr(form, 'data-endpoint')) {
+      // A receiver is configured: the confirmation exists but is hidden until the receiver answers.
+      assert.match(attr(form, 'data-endpoint'), /^https:\/\/|^http:\/\/(127\.0\.0\.1|localhost)[:/]/, route);
+      assert.equal(button, 'Discuss your transformation', route);
+      assert.equal(done.length, 1, route);
+      assert.ok(hasAttr(done[0], 'hidden'), route);
+      assert.ok(elements(form, (node) => node.tagName === 'noscript').length, `${route}: wording for visitors without scripts`);
+    } else {
+      // No receiver: the form says it prepares an email, posts nowhere and has no "sent" panel at all.
+      assert.equal(button, 'Prepare my email', route);
+      assert.ok(clean(text(form)).includes('This form prepares an email in your own mail app'), route);
+      assert.equal(done.length, 0, route);
+      assert.doesNotMatch(clean(text(scope)), /has reached Poesis|Message sent|was sent\b/i, route);
+    }
   }
   const contact = built('/contact/');
   for (const destination of [harness.issues, organization.issues]) assert.ok(elements(contact, (node) => attr(node, 'href') === destination).length, destination);
   // No third-party form service and no key in any page that carries the form.
   for (const route of formPages) assert.doesNotMatch(read(distFile(route)), /formspree|getform|netlify|hubspot|typeform|web3forms|api[_-]?key|secret/i, route);
   // The privacy policy describes the transport that was actually built.
-  assert.ok(clean(text(mainOf(built('/legal/privacy/')))).includes('The contact form runs entirely in your browser'));
+  const posting = hasAttr(first(built('/contact/'), 'form'), 'data-endpoint');
+  const privacy = clean(text(mainOf(built('/legal/privacy/'))));
+  assert.ok(privacy.includes(posting ? 'The contact form sends what you enter' : 'The contact form runs entirely in your browser'));
 });
 
 builtTest('the open-source page shows the verified install commands, and keeps what exists apart from what does not', () => {

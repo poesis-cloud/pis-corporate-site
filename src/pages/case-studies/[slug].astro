@@ -74,24 +74,26 @@ const sections: [string, string][] = [
     </div>
   </section>
 
-  <section class="band band--raised band--tight" aria-labelledby="results-title">
-    <div class="container">
-      <div class="band-head">
-        <h2 id="results-title">Measured results</h2>
-        <p>{study ? 'Only what was measured, with how it was measured.' : 'None. A real case reports here only what was measured, with its method. An invented example has nothing to report.'}</p>
+  {(!study || study.measuredResults.length > 0) && (
+    <section class="band band--raised band--tight" aria-labelledby="results-title">
+      <div class="container">
+        <div class="band-head">
+          <h2 id="results-title">Measured results</h2>
+          <p>{study ? 'Only what was measured, with how it was measured.' : 'None. A real case reports here only what was measured, with its method. An invented example has nothing to report.'}</p>
+        </div>
+        {study && (
+          <dl class="spec">
+            {study.measuredResults.map((result) => (
+              <div>
+                <dt>{result.indicator}</dt>
+                <dd><strong>{result.value}</strong>. {result.method}</dd>
+              </div>
+            ))}
+          </dl>
+        )}
       </div>
-      {study && study.measuredResults.length > 0 && (
-        <dl class="spec">
-          {study.measuredResults.map((result) => (
-            <div>
-              <dt>{result.indicator}</dt>
-              <dd><strong>{result.value}</strong>. {result.method}</dd>
-            </div>
-          ))}
-        </dl>
-      )}
-    </div>
-  </section>
+    </section>
+  )}
 
   <section class="band band--tight" aria-labelledby="evidence-title">
     <div class="container">

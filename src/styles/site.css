@@ -1473,7 +1473,8 @@ h3.stack-gap {
   margin: 0 0 1rem;
 }
 
-.closing p {
+/* Only the sentences that introduce the section: the form inside it keeps its own text sizes. */
+.closing h2 ~ p {
   max-width: var(--measure);
   font-size: 1.12rem;
 }
@@ -1764,6 +1765,15 @@ h3.stack-gap {
   font-size: .9rem;
   line-height: 1.55;
   color: var(--muted);
+}
+
+/* Wording that is true only when scripts run. */
+.js-only {
+  display: none;
+}
+
+.js .js-only {
+  display: block;
 }
 
 .brief-form__note strong {

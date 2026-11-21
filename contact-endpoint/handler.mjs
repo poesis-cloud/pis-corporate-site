@@ -23,7 +23,8 @@ export const MAX_BODY_BYTES = 16 * 1024;
 
 const REQUIRED = ['name', 'email', 'goal'];
 const SINGLE_LINE = ['name', 'email', 'company', 'source'];
-const EMAIL = /^[^\s@<>"']+@[^\s@<>"']+\.[^\s@<>"']{2,}$/;
+/** Deliberately loose: the browser already checked the syntax. Apostrophes are legal in the local part (o'brien@...). */
+const EMAIL = /^[^\s@<>"]+@[^\s@<>"']+\.[^\s@<>"']{2,}$/;
 
 const text = (value) => (typeof value === 'string' ? value : '');
 /** No control character survives; a single-line field cannot carry a line break into a mail header. */
@@ -67,21 +68,24 @@ export function toMessage(values, receivedAt) {
  * @param {string[]} options.allowedOrigins          origins of the site, e.g. ['https://poesis.cloud']
  * @param {(message: object) => Promise<void>} options.deliver   hands the request to Poesis; throws if it could not
  * @param {() => number} [options.now]
- * @param {{ windowMs: number, max: number }} [options.rateLimit]   per client; best effort on a stateless host
+ * @param {(request: Request) => string} options.clientKey   the client's address as the host platform reports it.
+ *        Never read it from a header the client can set (a raw X-Forwarded-For): the rate limit would be
+ *        bypassed by lying, or would lump every visitor into one bucket.
+ * @param {{ windowMs: number, max: number }} [options.rateLimit]   attempts per client, successful or not; best effort on a stateless host
  * @param {number} [options.minElapsedMs]            a form filled faster than this was not filled by a person
- * @param {(request: Request) => string} [options.clientKey]
  * @returns {(request: Request) => Promise<Response>}
  */
 export function createHandler({
   allowedOrigins,
   deliver,
   now = Date.now,
-  rateLimit = { windowMs: 10 * 60 * 1000, max: 5 },
+  clientKey,
+  rateLimit = { windowMs: 10 * 60 * 1000, max: 8 },
   minElapsedMs = 2500,
-  clientKey = (request) => (request.headers.get('x-forwarded-for') ?? '').split(',')[0].trim() || 'unknown',
 }) {
   if (!Array.isArray(allowedOrigins) || !allowedOrigins.length) throw new Error('allowedOrigins is required');
   if (typeof deliver !== 'function') throw new Error('deliver is required');
+  if (typeof clientKey !== 'function') throw new Error('clientKey is required');
   const seen = new Map();
 
   const throttled = (key) => {

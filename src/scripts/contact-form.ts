@@ -19,6 +19,22 @@ function track(name: string, placement: string): void {
   (window as unknown as { gtag?: (...parameters: unknown[]) => void }).gtag?.('event', name, { cta_id: placement, page_path: location.pathname });
 }
 
+function addTrap(form: HTMLFormElement): HTMLInputElement {
+  const wrapper = document.createElement('div');
+  wrapper.className = 'brief-form__trap';
+  wrapper.setAttribute('aria-hidden', 'true');
+  const input = document.createElement('input');
+  input.type = 'text';
+  input.name = '_gotcha';
+  input.tabIndex = -1;
+  input.autocomplete = 'off';
+  input.setAttribute('aria-label', 'Leave this field empty');
+  input.dataset.trap = '';
+  wrapper.append(input);
+  form.append(wrapper);
+  return input;
+}
+
 function mount(form: HTMLFormElement): void {
   const scope = form.parentElement ?? form;
   const status = scope.querySelector<HTMLElement>('[data-contact-status]');
@@ -31,7 +47,9 @@ function mount(form: HTMLFormElement): void {
   const done = scope.querySelector<HTMLElement>('[data-contact-done]');
   const fallback = scope.querySelector<HTMLAnchorElement>('[data-contact-fallback]');
   const copy = form.querySelector<HTMLButtonElement>('[data-contact-copy]');
-  const trap = form.querySelector<HTMLInputElement>('[data-trap]');
+  // The field a person never sees: added here, so a visitor without scripts, whose form
+  // falls back to an email draft, does not find it in that draft.
+  const trap = endpoint ? addTrap(form) : null;
   const field = (key: FieldKey) => form.querySelector<Field>(`[data-key="${key}"]`);
   const errorOf = (element: Field) => document.getElementById(`${element.id}-error`);
   const idleLabel = submit.innerHTML;
@@ -76,10 +94,14 @@ function mount(form: HTMLFormElement): void {
     fallback.href = briefMailto(email, request).href;
     fallback.hidden = false;
   };
+  const withdrawEmail = (): void => { if (fallback) fallback.hidden = true; };
+  // Measured by placement only: the link itself holds the request and must never be sent as an event value.
+  fallback?.addEventListener('click', () => track('business_contact_intent', `${placement}-email-fallback`));
 
   const report = (outcome: Outcome, request: ContactValues): void => {
     if (outcome.state === 'sent') {
       track('business_contact_sent', placement);
+      withdrawEmail();
       form.hidden = true;
       status.textContent = '';
       if (done) { done.hidden = false; done.focus(); }
@@ -89,7 +111,8 @@ function mount(form: HTMLFormElement): void {
       const rejected = outcome.fields.map(field).filter((element): element is Field => element !== null);
       for (const element of rejected) mark(element, false);
       rejected[0]?.focus();
-      status.textContent = 'Your request was not sent: some details were not accepted. Check the marked fields and send again.';
+      status.textContent = `Your request was not sent: some details were not accepted. Check the marked fields and send again, or send it by email to ${email}.`;
+      offerEmail(request);
       return;
     }
     status.textContent = outcome.state === 'throttled'
@@ -99,6 +122,7 @@ function mount(form: HTMLFormElement): void {
   };
 
   const send = async (request: ContactValues): Promise<void> => {
+    withdrawEmail();
     submit.disabled = true;
     form.setAttribute('aria-busy', 'true');
     submit.textContent = 'Sending…';
