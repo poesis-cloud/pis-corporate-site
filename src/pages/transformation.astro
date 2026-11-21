@@ -1,0 +1,199 @@
+---
+/**
+ * Transformation — the single commercial service of Poesis.
+ * Outcome, audience and scope, difficulties, method, proof, engagement terms
+ * and limits, questions, then one call to action.
+ */
+import BaseLayout from '../layouts/BaseLayout.astro';
+import ContactSection from '../components/ContactSection.astro';
+import Faq from '../components/Faq.astro';
+import { faqLd, transformationFaq } from '../data/faq.ts';
+import { publishedCaseStudies } from '../data/case-studies.ts';
+import { methodSteps } from '../data/method.ts';
+import { maturityLabel, supportedHost } from '../data/saf.ts';
+import { offerName } from '../data/site.ts';
+
+const title = offerName;
+const description = 'Poesis guides the agentic transformation of an organization or of one of its parts: scope, model of roles and workflows, pilot with SAF under human review, evidence review and next step.';
+
+const audiences = [
+  { who: 'Executives and business owners', need: 'who want AI to change how a unit works, not only which tools it uses.' },
+  { who: 'Transformation and operations leads', need: 'who must turn scattered experiments into a way of working that holds.' },
+  { who: 'CIOs, CTOs and architects', need: 'who are asked to let agents act, and need to see the boundary they act within.' },
+];
+
+const scopes = [
+  { name: 'A process', body: 'One recurring flow of work, from its trigger to its result.' },
+  { name: 'A team or a function', body: 'The roles of a team, the handoffs between them and what they deliver.' },
+  { name: 'A department or business unit', body: 'Several teams, with the coordination and decisions that link them.' },
+  { name: 'A whole organization', body: 'Addressed perimeter by perimeter, each one building on the evidence of the last.' },
+];
+
+const difficulties = [
+  { title: 'Pilots that never leave the lab', body: 'A demonstration impresses, then nothing changes in how the work is organized. The missing piece is an operating model: responsibilities, workflows and human decisions that people can adopt.' },
+  { title: 'Delegation nobody can account for', body: 'Agents are given tools and access, and no one can say afterwards what they were allowed to do, what they did, or who accepted the result.' },
+  { title: 'Knowledge that lives in a few heads', body: 'The prompts, the habits and the judgment that make AI useful stay with the people who found them. The second team starts from zero.' },
+];
+
+const terms = [
+  { term: 'How it starts', detail: 'With a conversation about your scope. There is no qualification questionnaire and no standard package to pick.' },
+  { term: 'How it is scoped', detail: 'By agreement: perimeter, access, responsibilities, timing and commercial terms are written down before any work begins.' },
+  { term: 'What Poesis brings', detail: 'The method, the modelling work and the people who build SAF.' },
+  { term: 'What you bring', detail: 'The people who own the perimeter, time for review and decisions, and access to an agent host SAF supports.' },
+  { term: 'Where it runs', detail: 'Locally, on your repositories, inside the agent host your organization already uses. Poesis hosts nothing.' },
+  { term: 'What you keep', detail: 'The model, the workflows and the artifacts. They are files in your repository, on open-source software.' },
+];
+
+const limits = [
+  `SAF is in ${maturityLabel.toLowerCase()}. It is suited to a bounded pilot under human review, not to unattended production work.`,
+  `One agent host is supported today: ${supportedHost.name}.`,
+  'Authenticated human approval is planned. Today each workflow ends by handing its results to a person, and the system does not verify who decided.',
+  'Poesis publishes no price list and no committed duration. Both depend on the scope.',
+];
+---
+<BaseLayout
+  title={title}
+  description={description}
+  pageType="Service"
+  breadcrumbs={[{ label: 'Transformation' }]}
+  jsonLd={[
+    {
+      '@type': 'Service',
+      name: offerName,
+      serviceType: 'Agentic organizational transformation consulting',
+      description,
+      url: 'https://poesis.cloud/transformation/',
+      provider: { '@type': 'Organization', name: 'Poesis', url: 'https://poesis.cloud/' },
+      audience: { '@type': 'BusinessAudience', name: 'Organizations and the people leading their transformation' },
+    },
+    faqLd(transformationFaq),
+  ]}
+>
+  <section class="intro">
+    <div class="container">
+      <ol class="crumbs" aria-label="Breadcrumb">
+        <li><a href="/">Poesis</a></li>
+        <li aria-current="page">Transformation</li>
+      </ol>
+      <h1>{offerName}.</h1>
+      <p class="intro__lead">Poesis works with you to turn a part of your organization, or all of it, into an agentic organization: one where AI agents carry defined responsibilities inside explicit workflows, and people decide where it matters.</p>
+      <p class="intro__lead">You do not buy a tool. You engage a team to model your perimeter, run it on SAF in a focused pilot, and judge the result on evidence.</p>
+      <div class="actions">
+        <a class="btn btn-primary btn-lg" href="#contact" data-track="business_contact_intent" data-track-id="transformation-intro">Discuss your transformation</a>
+        <a class="btn btn-quiet" href="/how-it-works/">See how it works</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="band band--raised" aria-labelledby="who-title">
+    <div class="container">
+      <div class="band-head">
+        <h2 id="who-title">For the people accountable for how work gets done.</h2>
+      </div>
+      <ul class="plain-list prose-narrow">
+        {audiences.map((audience) => <li><strong>{audience.who}</strong> {audience.need}</li>)}
+      </ul>
+      <div class="split">
+        <div>
+          <h3>Choose where to begin</h3>
+          <p>The engagement adapts to the perimeter. A small scope is not a lesser one: it is how the method earns the next.</p>
+        </div>
+        <dl class="spec">
+          {scopes.map((scope) => (
+            <div>
+              <dt>{scope.name}</dt>
+              <dd>{scope.body}</dd>
+            </div>
+          ))}
+        </dl>
+      </div>
+    </div>
+  </section>
+
+  <section class="band" aria-labelledby="difficulties-title">
+    <div class="container">
+      <div class="band-head">
+        <h2 id="difficulties-title">Three situations this work is meant for.</h2>
+      </div>
+      <ul class="ledger ledger--pair">
+        {difficulties.map((item) => (
+          <li class="ledger__row">
+            <h3>{item.title}</h3>
+            <p>{item.body}</p>
+          </li>
+        ))}
+      </ul>
+    </div>
+  </section>
+
+  <section class="band band--raised" id="method" aria-labelledby="method-title">
+    <div class="container">
+      <div class="band-head">
+        <h2 id="method-title">The method: plant a seed, then let evidence decide.</h2>
+        <p>The seed is a small, complete model of your perimeter as an agentic organization. It is planted on a real scope, observed, and changed by what the work shows. Five steps get you there; they are indicative, not contractual.</p>
+      </div>
+      <ol class="steps steps--five">
+        {methodSteps.map((step) => (
+          <li>
+            <h3>{step.title}</h3>
+            <p>{step.summary}</p>
+            <p class="steps__output">{step.result}</p>
+          </li>
+        ))}
+      </ol>
+      <div class="actions">
+        <a class="btn btn-ghost" href="/how-it-works/">Each step in detail</a>
+        <a class="btn btn-quiet" href="/open-source/" data-track="developer_docs_click" data-track-id="transformation-method">The framework it runs on</a>
+      </div>
+    </div>
+  </section>
+
+  {publishedCaseStudies.length > 0 && (
+    <section class="band" id="proof" aria-labelledby="proof-title">
+      <div class="container">
+        <div class="band-head">
+          <h2 id="proof-title">Proof you can inspect.</h2>
+          <p>Each case states whether it is a demonstration, a pilot or an operational deployment, and links to its evidence.</p>
+        </div>
+        <div class="actions"><a class="btn btn-ghost" href="/case-studies/">Read the case studies</a></div>
+      </div>
+    </section>
+  )}
+
+  <section class="band band--raised" id="engagement" aria-labelledby="engagement-title">
+    <div class="container">
+      <div class="band-head">
+        <h2 id="engagement-title">How an engagement is framed, and where it stops.</h2>
+      </div>
+      <div class="split split--flush">
+        <dl class="spec">
+          {terms.map((item) => (
+            <div>
+              <dt>{item.term}</dt>
+              <dd>{item.detail}</dd>
+            </div>
+          ))}
+        </dl>
+        <div>
+          <h3>Limits you should know before we talk</h3>
+          <ul class="plain-list">
+            {limits.map((limit) => <li>{limit}</li>)}
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="band" id="faq" aria-labelledby="faq-title">
+    <div class="container">
+      <div class="band-head">
+        <h2 id="faq-title">Questions before a first conversation.</h2>
+      </div>
+      <Faq items={transformationFaq} />
+    </div>
+  </section>
+
+  <ContactSection source="transformation" title="Start with the scope you have in mind.">
+    <p>Describe the team, function or process, and what you would want to see change.</p>
+  </ContactSection>
+</BaseLayout>

@@ -1,0 +1,133 @@
+---
+/**
+ * Case Studies — the evidence register.
+ *
+ * Two states, decided by src/data/case-studies.ts:
+ *   no published case   the page explains how Poesis documents a pilot. It is not
+ *                       presented as a collection, stays out of the menu, the
+ *                       sitemap and the search engines' index, and no commercial
+ *                       page sends traffic to it.
+ *   one case or more    the page lists the cases, and enters the menu and the index.
+ * The address never changes.
+ */
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { caseStudyTemplate, evidenceKinds, fictionalNotice, publicationChecklist, publishedCaseStudies, shownExample, type EvidenceKind } from '../../data/case-studies.ts';
+import { harness, organization } from '../../data/saf.ts';
+import { externalLinkAttributes } from '../../data/site.ts';
+
+const hasCases = publishedCaseStudies.length > 0;
+const title = hasCases ? 'Case studies of agentic transformation pilots' : 'How Poesis documents its pilots';
+const breadcrumb = hasCases ? 'Case Studies' : 'Documenting pilots';
+const description = hasCases
+  ? 'Pilots of agentic transformation run with Poesis: context, scope, method, human controls, measured results and limits, each with evidence you can inspect.'
+  : 'What counts as evidence of an agentic transformation pilot, how a demonstration differs from a pilot and from an operational deployment, and what a case must contain before Poesis publishes it.';
+const kinds = Object.entries(evidenceKinds) as [EvidenceKind, { label: string; meaning: string }][];
+---
+<BaseLayout title={title} description={description} pageType="Case Studies" noindex={!hasCases} breadcrumbs={[{ label: breadcrumb }]}>
+  <section class="intro">
+    <div class="container">
+      <ol class="crumbs" aria-label="Breadcrumb">
+        <li><a href="/">Poesis</a></li>
+        <li aria-current="page">{breadcrumb}</li>
+      </ol>
+      <h1>{title}.</h1>
+      {hasCases
+        ? <p class="intro__lead">Real work. Verifiable learning. Each case below took place, can be inspected, and was cleared by the organization concerned.</p>
+        : <p class="intro__lead">A pilot is worth publishing when the work took place, its evidence can be inspected, and the organization concerned has agreed to what is said. This is the standard Poesis holds a case to.</p>}
+    </div>
+  </section>
+
+  {hasCases && (
+    <section class="band band--tight" aria-labelledby="published-title">
+      <div class="container">
+        <div class="band-head">
+          <h2 id="published-title">Published cases</h2>
+        </div>
+        <ul class="case-list">
+          {publishedCaseStudies.map((study) => (
+            <li class="case-card">
+              <span class="status status--verified">{evidenceKinds[study.kind].label}</span>
+              <h3><a href={`/case-studies/${study.slug}/`}>{study.title}</a></h3>
+              <p>{study.summary}</p>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </section>
+  )}
+
+  {shownExample && (
+    <section class="band band--tight" id="example" aria-labelledby="example-title">
+      <div class="container">
+        <div class="band-head">
+          <h2 id="example-title">What a case looks like.</h2>
+          <p>No real case is published yet. To show the format, here is one that is entirely invented.</p>
+        </div>
+        <article class="case-card case-card--fiction">
+          <p class="fiction-notice" role="note">{fictionalNotice}</p>
+          <h3><a href={`/case-studies/${shownExample.slug}/`}>{shownExample.title}</a></h3>
+          <p>{shownExample.summary}</p>
+        </article>
+      </div>
+    </section>
+  )}
+
+  <section class="band band--raised" aria-labelledby="kinds-title">
+    <div class="container">
+      <div class="band-head">
+        <h2 id="kinds-title">Three kinds of evidence, never confused.</h2>
+        <p>Every case states which of these it is. A demonstration is not presented as a client pilot, and a pilot is not presented as a deployment. An invented example is none of the three, and says so.</p>
+      </div>
+      <dl class="spec">
+        {kinds.map(([, kind]) => (
+          <div>
+            <dt>{kind.label}</dt>
+            <dd>{kind.meaning}</dd>
+          </div>
+        ))}
+      </dl>
+    </div>
+  </section>
+
+  <section class="band" aria-labelledby="template-title">
+    <div class="container">
+      <div class="band-head">
+        <h2 id="template-title">What every case contains.</h2>
+        <p>The same structure for each case, so that two of them can be compared and none can hide its limits.</p>
+      </div>
+      <div class="split split--flush">
+        <dl class="spec">
+          {caseStudyTemplate.map((item) => (
+            <div>
+              <dt>{item.field}</dt>
+              <dd>{item.expects}</dd>
+            </div>
+          ))}
+        </dl>
+        <div>
+          <h3>Before a case is published</h3>
+          <ul class="plain-list">
+            {publicationChecklist.map((item) => <li>{item}</li>)}
+          </ul>
+          <h3 class="stack-gap">Evidence you can inspect today</h3>
+          <p>The framework the pilots run on is public. Its code, specifications, tests and releases are the first thing to check.</p>
+          <div class="actions">
+            <a class="btn btn-ghost" href={harness.repository} {...externalLinkAttributes} data-track="developer_repo_click" data-track-id="case-studies-harness">Harness repository</a>
+            <a class="btn btn-ghost" href={organization.repository} {...externalLinkAttributes} data-track="developer_repo_click" data-track-id="case-studies-organization">Organization repository</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="closing" aria-labelledby="closing-title">
+    <div class="container">
+      <h2 id="closing-title">A pilot starts with a conversation.</h2>
+      <p>A bounded scope, success criteria agreed first, and a review of the evidence at the end.</p>
+      <div class="actions">
+        <a class="btn btn-primary btn-lg" href="/contact/" data-track="business_contact_intent" data-track-id="case-studies-closing">Discuss a pilot for your organization</a>
+        <a class="btn btn-quiet" href="/how-it-works/">How it works</a>
+      </div>
+    </div>
+  </section>
+</BaseLayout>

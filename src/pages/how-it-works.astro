@@ -1,0 +1,127 @@
+---
+/**
+ * How It Works — the journey of an accompanied transformation, step by step.
+ *
+ * For a decision-maker who wants to know what will actually happen. Each step
+ * says who does the work and what SAF contributes, so nothing done by people is
+ * made to sound automatic. The steps come from src/data/method.ts.
+ */
+import BaseLayout from '../layouts/BaseLayout.astro';
+import ContactSection from '../components/ContactSection.astro';
+import Faq from '../components/Faq.astro';
+import { faqLd, howItWorksFaq } from '../data/faq.ts';
+import { methodSteps } from '../data/method.ts';
+import { publishedCaseStudies } from '../data/case-studies.ts';
+import { maturityLabel, supportedHost } from '../data/saf.ts';
+
+const title = 'How an agentic transformation works';
+const description = 'The five steps of an agentic transformation guided by Poesis: understand the organization, choose the workflows, design the agentic organization with SAF, run a governed pilot, evaluate and evolve.';
+
+const human = [
+  { what: 'Choosing what to delegate', why: 'Which work goes to agents, and which stays with people, is decided by those accountable for it.' },
+  { what: 'Reviewing the work', why: 'Each workflow ends by handing its results to a person, who reads them and accepts, raises concerns or rejects.' },
+  { what: 'Judging the pilot', why: 'The evidence is laid out; the decision to extend, adjust or stop is yours.' },
+];
+---
+<BaseLayout
+  title={title}
+  description={description}
+  pageType="Method"
+  breadcrumbs={[{ label: 'How It Works' }]}
+  jsonLd={[
+    faqLd(howItWorksFaq),
+  ]}
+>
+  <section class="intro">
+    <div class="container">
+      <ol class="crumbs" aria-label="Breadcrumb">
+        <li><a href="/">Poesis</a></li>
+        <li aria-current="page">How It Works</li>
+      </ol>
+      <h1>How an agentic transformation works.</h1>
+      <p class="intro__lead">Five steps take a team, a function or a whole organization from how it works today to a first agentic organization in use, judged on evidence. Poesis does the work with you; SAF, its open-source framework, runs it.</p>
+      <p class="intro__note">The steps are indicative. Scope, pace and terms are agreed for each engagement, and no duration or result is promised here.</p>
+      <div class="actions">
+        <a class="btn btn-primary btn-lg" href="#contact" data-track="business_contact_intent" data-track-id="how-intro">Discuss your transformation</a>
+        <a class="btn btn-quiet" href="/transformation/" data-track="business_transformation_click" data-track-id="how-intro">What the engagement covers</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="band band--raised" id="steps" aria-labelledby="steps-title">
+    <div class="container">
+      <div class="band-head">
+        <h2 id="steps-title">The five steps.</h2>
+      </div>
+      <ol class="journey">
+        {methodSteps.map((step) => (
+          <li class="journey__step">
+            <div class="journey__head">
+              <h3>{step.title}</h3>
+              <p>{step.what}</p>
+            </div>
+            <dl class="journey__facts">
+              <div>
+                <dt>Who does it</dt>
+                <dd>{step.who}</dd>
+              </div>
+              <div>
+                <dt>What SAF does</dt>
+                <dd>{step.saf}</dd>
+              </div>
+              <div>
+                <dt>What you have at the end</dt>
+                <dd>{step.result}</dd>
+              </div>
+            </dl>
+          </li>
+        ))}
+      </ol>
+    </div>
+  </section>
+
+  <section class="band" id="human" aria-labelledby="human-title">
+    <div class="container">
+      <div class="band-head">
+        <h2 id="human-title">What stays in human hands.</h2>
+        <p>An agentic organization is not an unattended one. Three things are never delegated.</p>
+      </div>
+      <dl class="spec">
+        {human.map((item) => (
+          <div>
+            <dt>{item.what}</dt>
+            <dd>{item.why}</dd>
+          </div>
+        ))}
+      </dl>
+      <p class="fineprint">SAF is in {maturityLabel.toLowerCase()} and runs on {supportedHost.name} today. In this version the human gate is the end of each workflow; the decision is not yet a signature the system records or verifies. A pilot is therefore run with your people in the loop, not left to run alone.</p>
+    </div>
+  </section>
+
+  <section class="band band--raised" id="built-on" aria-labelledby="built-title">
+    <div class="container">
+      <div class="band-head">
+        <h2 id="built-title">Nothing hidden in the method.</h2>
+        <p>The model of your organization is a set of readable files in your own repository. The framework that runs it is open source. You keep both, with or without Poesis.</p>
+      </div>
+      <div class="actions">
+        <a class="btn btn-ghost" href="/open-source/" data-track="developer_docs_click" data-track-id="how-built-on">Explore SAF open source</a>
+        <a class="btn btn-quiet" href="/pilot/">What a first pilot involves</a>
+        {publishedCaseStudies.length > 0 && <a class="btn btn-quiet" href="/case-studies/">Read the case studies</a>}
+      </div>
+    </div>
+  </section>
+
+  <section class="band" id="faq" aria-labelledby="faq-title">
+    <div class="container">
+      <div class="band-head">
+        <h2 id="faq-title">Questions about the journey.</h2>
+      </div>
+      <Faq items={howItWorksFaq} />
+    </div>
+  </section>
+
+  <ContactSection source="how-it-works" title="Start with the first step.">
+    <p>It starts with a conversation. Tell us which part of your organization you have in mind.</p>
+  </ContactSection>
+</BaseLayout>

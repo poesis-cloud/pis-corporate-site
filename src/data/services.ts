@@ -30,8 +30,8 @@ export interface Service {
   stages: ServicePoint[];
 }
 
-/** The Pilot retains its dedicated engagement route. */
-export function serviceHref(service: Pick<Service, 'slug'>): string { return service.slug === 'pilot' ? '/pilot' : `/services/${service.slug}`; }
+/** Every catalog service record, the Pilot included, is a Knowledge page under `/services/`. */
+export function serviceHref(service: Pick<Service, 'slug'>): string { return `/services/${service.slug}`; }
 
 const authored = catalog.services as Omit<Service, 'href'>[];
 

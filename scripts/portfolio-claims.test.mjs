@@ -4,7 +4,8 @@ import { readFileSync } from 'node:fs';
 import { createHash } from 'node:crypto';
 import { parse } from 'parse5';
 import { services, serviceHref, validateServices } from '../src/data/services.ts';
-import { siteNavigation, footerNavigation } from '../src/data/site-navigation.ts';
+import { siteNavigation, footerNavigation, navigationCta } from '../src/data/site-navigation.ts';
+import { archiveEntries, knowledgeContext, platformOverviewPath } from '../src/data/knowledge.ts';
 import { evaluateRequirement, productTimeline, platformSolutions, affordances, affordanceStatus, validatePortfolio, featureStatus, capabilityShipped, capabilityStatus, realizations, realizationStatus, realizationRequirements, operationalVerdictStatus, semanticEdges, solutionHref } from '../src/data/poesis-platform.ts';
 import { pains, painRelations } from '../src/data/pains.ts';
 import { commitmentStatus, deliveryLabels, productStatus, milestoneStatus } from '../src/data/poesis-platform.ts';
@@ -60,21 +61,38 @@ test('a shipped milestone the product already reached cannot be published as pla
     }
   }
 });
-const partnerships = siteNavigation.find((group) => group.label === 'Partnerships').sections.flatMap((section) => section.items);
+/** Partnership pages left the menu with the SAF-centred redesign; they are archive entries of the Knowledge hub. */
+const partnerships = archiveEntries.filter((entry) => entry.href.startsWith('/partnerships/'));
 const attribute = (node, name) => node.attrs?.find((attr) => attr.name === name)?.value;
 const text = (node) => node.nodeName === '#text' ? node.value : (node.childNodes ?? []).map(text).join('');
 const elements = (node, predicate) => [...(predicate(node) ? [node] : []), ...(node.childNodes ?? []).flatMap((child) => elements(child, predicate))];
 const hasClass = (node, name) => attribute(node, 'class')?.split(/\s+/).includes(name) ?? false;
 
-test('service and partnership navigation retains the matching detail destinations', () => {
-  const navigation = siteNavigation.flatMap((group) => group.sections.flatMap((section) => section.items));
-  const footer = footerNavigation.flatMap((group) => group.items);
-  for (const choice of [...services, ...partnerships]) {
-    assert.ok(navigation.some((item) => item.href === choice.href), choice.href);
-    assert.ok(footer.some((item) => item.href === choice.href), choice.href);
-  }
+test('the primary menu is four destinations and one call to action, with no Platform or Partnerships entry', () => {
+  // Case Studies joins the menu with the first published case, and not before.
+  assert.deepEqual(siteNavigation, [
+    { href: '/transformation/', label: 'Transformation' },
+    { href: '/how-it-works/', label: 'How It Works' },
+    { href: '/open-source/', label: 'Open Source' },
+    { href: '/knowledge/', label: 'Knowledge' },
+  ]);
+  assert.deepEqual(navigationCta, { href: '/contact/', label: "Let's talk" });
+  const everywhere = [...siteNavigation, navigationCta, ...footerNavigation.flatMap((group) => group.items)];
+  assert.ok(everywhere.every((item) => !/platform|partnership/i.test(item.label)));
+  // An archived offer is never one click away from the menu or the footer.
+  assert.ok(everywhere.every((item) => !knowledgeContext(item.href).archive));
+  for (const group of footerNavigation) assert.ok(group.items.length, group.label);
+});
+
+test('service records and partnership pages stay reachable through the Knowledge archive', () => {
+  assert.ok(partnerships.length);
   assert.ok(services.every((service) => service.href === serviceHref(service)));
-  assert.equal(services[0].href, '/pilot');
+  // Every record, the Pilot included, is a Knowledge page under /services/.
+  assert.deepEqual(services.map((service) => service.href), services.map((service) => `/services/${service.slug}`));
+  for (const choice of [...services, ...partnerships]) assert.equal(knowledgeContext(choice.href).archive, true, choice.href);
+  for (const href of ['/catalog/services', '/services/pilot', ...partnerships.map((entry) => entry.href)]) assert.ok(archiveEntries.some((entry) => entry.href === href), href);
+  assert.equal(knowledgeContext('/pilot').inKnowledge, false);
+  assert.equal(knowledgeContext('/transformation/').inKnowledge, false);
 });
 
 test('services publish exactly the seven ordered offers with only the Pilot available', () => {
@@ -82,8 +100,8 @@ test('services publish exactly the seven ordered offers with only the Pilot avai
   const labels = ['Poesis Pilot', 'Autonomous Enterprise Transformation', 'Agentic Transformation', 'Organizational Context Engineering', 'OIP SaaS', 'SIE SaaS', 'GSM Certification'];
   assert.deepEqual(services.map((service) => service.label), labels);
   assert.deepEqual(services.map((service) => service.availability), ['By agreement', ...Array(6).fill('Planned')]);
-  assert.deepEqual(siteNavigation.find((group) => group.label === 'Services').sections.flatMap((section) => section.items.map((item) => item.label)), labels);
-  assert.deepEqual(footerNavigation.find((group) => group.label === 'Services').items.map((item) => item.label), labels);
+  // The catalog still publishes all seven; none of them is a destination of the conversion menu.
+  assert.ok(siteNavigation.every((item) => !services.some((service) => service.href === item.href)));
   assert.ok(services.every((service) => !['consulting', 'saas', 'on-prem-integration-administration', 'certification'].includes(service.slug)));
 });
 
@@ -407,11 +425,11 @@ test('built core routes retain all feature, capability and legacy value anchors'
       for (const value of productValues(solution.slug, product.slug)) { anchor(productHtml, valueAnchor(value)); for (const alias of valueAliases(value)) anchor(productHtml, alias); }
     }
   }
-  const home = read('../dist/index.html');
-  assert.equal(text(elements(parse(home), (node) => node.tagName === 'h1')[0]), 'The Organizational Intelligence Platform.');
-  assert.ok(!home.includes('ambition, not complete live coverage'));
-  for (const affordance of affordances) anchor(home, `affordance-${affordance.slug}`);
-  for (const value of platformValues) anchor(home, valueAnchor(value));
+  const overview = read(`../dist${platformOverviewPath}/index.html`);
+  assert.equal(text(elements(parse(overview), (node) => node.tagName === 'h1')[0]), 'The Organizational Intelligence Platform.');
+  assert.ok(!overview.includes('ambition, not complete live coverage'));
+  for (const affordance of affordances) anchor(overview, `affordance-${affordance.slug}`);
+  for (const value of platformValues) anchor(overview, valueAnchor(value));
 });
 
 test('all built values and scoped claims carry accessible status icons with dependency-specific status', { skip: !process.env.CHECK_BUILT_PORTFOLIO }, () => {
@@ -463,7 +481,7 @@ test('all built values and scoped claims carry accessible status icons with depe
     }
     return document;
   };
-  const home = readPage('');
+  const home = readPage(platformOverviewPath);
   for (const value of platformValues) assertItem(home, valueAnchor(value), valueStatus(value.slug), true);
   for (const affordance of affordances) assertItem(home, `affordance-${affordance.slug}`, affordanceStatus(affordance));
   for (const solution of platformSolutions) {
@@ -487,9 +505,9 @@ test('all built values and scoped claims carry accessible status icons with depe
   for (const card of elements(partnership, (node) => hasClass(node, 'value-card'))) assertStatus(firstStatus(card), 'planned');
 });
 
-for (const [id, choices] of [['services', services], ['partnerships', partnerships]]) {
+for (const [id, choices] of [['services', services]]) {
   test(`built ${id} listing contains the intended choices and detail pages link back`, { skip: !process.env.CHECK_BUILT_PORTFOLIO }, () => {
-    const home = parse(read('../dist/index.html'));
+    const home = parse(read(`../dist${platformOverviewPath}/index.html`));
     const matches = elements(home, (node) => attribute(node, 'id') === id);
     assert.equal(matches.length, 1, `unique ${id} destination`);
     const section = matches[0];
@@ -502,7 +520,7 @@ for (const [id, choices] of [['services', services], ['partnerships', partnershi
       const link = links.find((node) => attribute(node, 'href') === choice.href);
       assert.equal(text(link), choice.label);
       const detail = parse(read(`../dist${choice.href}/index.html`));
-      assert.ok(elements(detail, (node) => node.tagName === 'a' && attribute(node, 'href') === `/#${id}`).length, `${choice.href} listing backlink`);
+      assert.ok(elements(detail, (node) => node.tagName === 'a' && attribute(node, 'href') === `${platformOverviewPath}#${id}`).length, `${choice.href} listing backlink`);
       const heading = text(elements(detail, (node) => node.tagName === 'h1')[0]);
       assert.ok(id === 'services' ? heading === choice.label : choice.title ? heading === choice.title : heading.startsWith(choice.label), `${choice.href} detail heading`);
       if (choice.availability) {
@@ -520,8 +538,28 @@ for (const [id, choices] of [['services', services], ['partnerships', partnershi
   });
 }
 
-test('built roadmap labels distinguish shipped releases from planned milestones independently of scope', { skip: !process.env.CHECK_BUILT_PORTFOLIO }, () => {
+test('built partnership pages are listed in the Knowledge archive and say they are not the current offer', { skip: !process.env.CHECK_BUILT_PORTFOLIO }, () => {
+  const hub = parse(read('../dist/knowledge/index.html'));
+  const archive = elements(hub, (node) => node.tagName === 'section' && attribute(node, 'id') === 'archive');
+  assert.equal(archive.length, 1);
+  for (const choice of partnerships) {
+    const link = elements(archive[0], (node) => node.tagName === 'a' && attribute(node, 'href') === choice.href);
+    assert.equal(link.length, 1, choice.href);
+    assert.equal(text(link[0]), choice.label);
+    const detail = parse(read(`../dist${choice.href}/index.html`));
+    assert.equal(elements(detail, (node) => node.tagName === 'h1').length, 1, `${choice.href} heading`);
+    const notice = elements(detail, (node) => hasClass(node, 'kb-bar__archive'));
+    assert.equal(notice.length, 1, `${choice.href} archive notice`);
+    assert.ok(elements(notice[0], (node) => node.tagName === 'a' && attribute(node, 'href') === '/transformation/').length);
+  }
+  // The home page carries no partnerships section and no link to one.
   const home = parse(read('../dist/index.html'));
+  assert.equal(elements(home, (node) => attribute(node, 'id') === 'partnerships').length, 0);
+  assert.equal(elements(home, (node) => attribute(node, 'href')?.startsWith('/partnerships')).length, 0);
+});
+
+test('built roadmap labels distinguish shipped releases from planned milestones independently of scope', { skip: !process.env.CHECK_BUILT_PORTFOLIO }, () => {
+  const home = parse(read(`../dist${platformOverviewPath}/index.html`));
   for (const solution of platformSolutions) for (const product of solution.products) {
     const milestones = productTimeline(product);
     const detail = parse(read(`../dist${solutionHref(solution)}/products/${product.slug}/index.html`));

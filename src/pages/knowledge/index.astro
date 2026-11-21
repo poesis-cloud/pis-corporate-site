@@ -1,0 +1,213 @@
+---
+/**
+ * Knowledge — the single public entry to the Poesis corpus.
+ *
+ * This page writes nothing new about the corpus. It lists what exists, straight
+ * from the same data the corpus pages render (the insights collection, the
+ * platform and usage catalogs, the comparison register), and searches it with
+ * Pagefind. Titles and summaries shown here are the corpus's own.
+ */
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { platformSolutions, solutionHref } from '../../data/poesis-platform.ts';
+import { poesisUsage } from '../../data/usage.ts';
+import { alternatives } from '../../data/alternatives.ts';
+import { coverageViews, needViews, portfolioViews } from '../../data/site-navigation.ts';
+import { archiveEntries, externalDocumentation, platformOverviewPath, thesisPath } from '../../data/knowledge.ts';
+
+const title = 'Poesis Knowledge base';
+const description = 'The Poesis corpus in one place: research notes, the platform overview, the catalog of use cases, capabilities and products, solution pages, comparisons and documentation. Searchable.';
+
+const posts = (await getCollection('insights')).sort((a, b) => b.data.date.getTime() - a.data.date.getTime());
+const insightHref = (id: string) => `/insights/${id.replace(/\.md$/, '')}`;
+const premises = posts.filter((post) => post.data.tags.includes('Premise'));
+const notes = posts.filter((post) => !post.data.tags.includes('Premise'));
+const productCount = platformSolutions.reduce((count, solution) => count + solution.products.length, 0);
+
+const topics = [
+  { href: '#research', label: 'Research' },
+  { href: '#platform', label: 'Platform' },
+  { href: '#catalog', label: 'Catalog' },
+  { href: '#solutions', label: 'Solutions and products' },
+  { href: '#comparisons', label: 'Comparisons' },
+  { href: '#documentation', label: 'Documentation' },
+  { href: '#archive', label: 'Archive' },
+];
+---
+<BaseLayout title={title} description={description} pageType="Knowledge" breadcrumbs={[{ label: 'Knowledge' }]}>
+  <section class="intro">
+    <div class="container">
+      <ol class="crumbs" aria-label="Breadcrumb">
+        <li><a href="/">Poesis</a></li>
+        <li aria-current="page">Knowledge</li>
+      </ol>
+      <h1>Poesis Knowledge base.</h1>
+      <p class="intro__lead">Everything Poesis has published about its thinking and its stack: {posts.length} research notes, the platform overview, a catalog of {poesisUsage.useCases.length} use cases, {platformSolutions.length} solutions and {productCount} products, comparisons and documentation. It is reference material, kept as written. For what Poesis offers today, see <a href="/transformation/">Transformation</a>.</p>
+
+      <div class="kb-search" id="search">
+        <h2 class="sr-only">Search the Knowledge base</h2>
+        <div class="search-box" id="knowledge-search" role="search" aria-label="Knowledge base"></div>
+        <noscript><p class="kb-search__fallback">Search needs JavaScript. Every part of the corpus is also listed below.</p></noscript>
+      </div>
+
+      <nav class="stack-gap" aria-label="Knowledge topics">
+        <ul class="kb-topics">
+          {topics.map((topic) => <li><a href={topic.href}>{topic.label}</a></li>)}
+        </ul>
+      </nav>
+    </div>
+  </section>
+
+  <div class="container" data-pagefind-ignore="all">
+    <section class="kb-group" id="research" aria-labelledby="research-title">
+      <div>
+        <h2 id="research-title">Research</h2>
+        <p class="kb-group__about">Research notes from the Poesis team: a small set of premises, and what follows from them.</p>
+        <p class="kb-group__about"><a href="/insights/research">All research notes</a><br /><a href={thesisPath}>The thesis and its argument</a></p>
+      </div>
+      <div>
+        <h3 class="kb-sub">Premises</h3>
+        <ul class="kb-links">
+          {premises.map((post) => (
+            <li><a href={insightHref(post.id)}>{post.data.title}</a></li>
+          ))}
+        </ul>
+        <h3 class="kb-sub">Notes</h3>
+        <ul class="kb-links">
+          {notes.map((post) => (
+            <li><a href={insightHref(post.id)}>{post.data.title}</a></li>
+          ))}
+        </ul>
+      </div>
+    </section>
+
+    <section class="kb-group" id="platform" aria-labelledby="platform-title">
+      <div>
+        <h2 id="platform-title">Platform</h2>
+        <p class="kb-group__about">The Organizational Intelligence Platform as Poesis defines it, with the delivery status of each part.</p>
+      </div>
+      <ul class="kb-links">
+        <li><a href={platformOverviewPath}>Platform overview</a><p>Pain points, affordances, usage, qualities and the map of solutions and products.</p></li>
+        <li><a href={`${platformOverviewPath}#pains`}>Pain points</a></li>
+        <li><a href={`${platformOverviewPath}#affordances`}>Affordances</a></li>
+        <li><a href={`${platformOverviewPath}#usage`}>Usage</a></li>
+        <li><a href={`${platformOverviewPath}#qualities`}>Qualities</a></li>
+        <li><a href={`${platformOverviewPath}#portfolio`}>Solutions and products map</a></li>
+      </ul>
+    </section>
+
+    <section class="kb-group" id="catalog" aria-labelledby="catalog-title">
+      <div>
+        <h2 id="catalog-title">Catalog</h2>
+        <p class="kb-group__about">Three connected catalogs: what Poesis is, what it is used for, and how it is delivered.</p>
+        <p class="kb-group__about"><a href="/catalog">Catalog index</a></p>
+      </div>
+      <div>
+        <h3 class="kb-sub">By need</h3>
+        <ul class="kb-links">
+          {needViews.map((view) => <li><a href={view.href}>{view.label}</a></li>)}
+        </ul>
+        <h3 class="kb-sub">By coverage</h3>
+        <ul class="kb-links">
+          {coverageViews.map((view) => <li><a href={view.href}>{view.label}</a></li>)}
+        </ul>
+        <h3 class="kb-sub">By portfolio</h3>
+        <ul class="kb-links">
+          {portfolioViews.map((view) => <li><a href={view.href}>{view.label}</a></li>)}
+        </ul>
+      </div>
+    </section>
+
+    <section class="kb-group" id="solutions" aria-labelledby="solutions-title">
+      <div>
+        <h2 id="solutions-title">Solutions and products</h2>
+        <p class="kb-group__about">The six solutions of the Poesis stack and their products, each with features, capabilities and recorded milestones.</p>
+      </div>
+      <ul class="kb-links kb-links--wide">
+        {platformSolutions.map((solution) => (
+          <li>
+            <a href={solutionHref(solution)}>{solution.fullName} ({solution.name})</a>
+            <p>
+              {solution.products.map((product, index) => (
+                <>{index > 0 && ' · '}<a href={`${solutionHref(solution)}/products/${product.slug}`}>{product.name}</a></>
+              ))}
+            </p>
+          </li>
+        ))}
+      </ul>
+    </section>
+
+    <section class="kb-group" id="comparisons" aria-labelledby="comparisons-title">
+      <div>
+        <h2 id="comparisons-title">Comparisons</h2>
+        <p class="kb-group__about">How Poesis relates to established tool classes. Category-level comparisons, with trademark notes on each page.</p>
+      </div>
+      <ul class="kb-links">
+        {alternatives.map((alternative) => (
+          <li><a href={`/it/alternatives/${alternative.slug}/`}>Compared to {alternative.name}</a></li>
+        ))}
+      </ul>
+    </section>
+
+    <section class="kb-group" id="documentation" aria-labelledby="documentation-title">
+      <div>
+        <h2 id="documentation-title">Documentation</h2>
+        <p class="kb-group__about">Product and specification documentation lives on its own site, and the code on GitHub.</p>
+      </div>
+      <ul class="kb-links">
+        {externalDocumentation.map((entry) => (
+          <li><a href={entry.href} target="_blank" rel="noopener noreferrer" data-track="developer_docs_click" data-track-id="knowledge-documentation">{entry.label}</a><p>{entry.note}</p></li>
+        ))}
+      </ul>
+    </section>
+
+    <section class="kb-group" id="archive" aria-labelledby="archive-title">
+      <div>
+        <h2 id="archive-title">Archive</h2>
+        <p class="kb-group__about">Earlier commercial material, kept as published for reference. These pages are not the current offer: that is <a href="/transformation/">agentic transformation</a>.</p>
+      </div>
+      <ul class="kb-links">
+        {archiveEntries.map((entry) => (
+          <li><a href={entry.href}>{entry.label}</a><p>{entry.note}</p></li>
+        ))}
+      </ul>
+    </section>
+  </div>
+</BaseLayout>
+
+<script>
+  // Pagefind is fetched on this page only. The index holds Knowledge pages and
+  // nothing else (see data-pagefind-body in BaseLayout).
+  const target = document.getElementById('knowledge-search');
+  if (target) {
+    const script = document.createElement('script');
+    script.src = '/pagefind/pagefind-ui.js';
+    script.async = true;
+    script.onload = () => {
+      const PagefindUI = (window as unknown as { PagefindUI?: new (options: Record<string, unknown>) => unknown }).PagefindUI;
+      if (!PagefindUI) return fail();
+      new PagefindUI({
+        element: '#knowledge-search',
+        showImages: false,
+        showSubResults: false,
+        resetStyles: false,
+        processResult: (result: { meta: Record<string, string> }) => {
+          result.meta.title = `[${result.meta.type || 'Page'}] ${result.meta.title}`;
+          result.meta.image = '';
+          return result;
+        },
+        translations: {
+          placeholder: 'Search the Knowledge base',
+          zero_results: 'No result for [SEARCH_TERM]',
+          many_results: '[COUNT] results',
+          one_result: '1 result',
+        },
+      });
+    };
+    script.onerror = fail;
+    document.head.appendChild(script);
+    function fail() {
+      if (target) target.innerHTML = '<p class="search-error">Search is unavailable. Every part of the corpus is listed below.</p>';
+    }
+  }
+</script>

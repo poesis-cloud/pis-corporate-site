@@ -2,14 +2,14 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 ---
 <BaseLayout title="Page not found" description="The page you were looking for does not exist." noindex>
-  <section class="hero">
+  <section class="intro">
     <div class="container">
-      <p class="eyebrow">404</p>
       <h1>Page not found.</h1>
-      <p class="lead">The page you were looking for doesn't exist or has moved.</p>
-      <div class="hero-cta">
-        <a class="btn btn-primary" href="/">Back to home</a>
-        <a class="btn btn-ghost" href="/insights/research">Browse insights</a>
+      <p class="intro__lead">This address does not exist, or the page has moved. The Knowledge base lists and searches everything Poesis has published.</p>
+      <div class="actions">
+        <a class="btn btn-primary" href="/">Back to the home page</a>
+        <a class="btn btn-ghost" href="/knowledge/">Search the Knowledge base</a>
+        <a class="btn btn-quiet" href="/contact/">Contact Poesis</a>
       </div>
     </div>
   </section>

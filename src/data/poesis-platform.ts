@@ -1,3 +1,5 @@
+import { platformOverviewPath } from './knowledge.ts';
+
 export const CLAUSE_URL = 'https://docs.poesis.cloud/milestones/';
 import catalog from './catalog/poesis-platform.json' with { type: 'json' };
 export type DeliveryState = 'planned' | 'partial' | 'delivered';
@@ -103,7 +105,7 @@ export function subjectLabel(subject: string): string | undefined {
   return product ? `${solution.name} · ${product.name}` : undefined;
 }
 export function subjectHref(subject: string): string {
-  if (subject === 'platform') return '/';
+  if (subject === 'platform') return platformOverviewPath;
   const [owner, ...rest] = subject.split('/');
   return rest.length ? `/solutions/${owner}/products/${rest[0]}` : `/solutions/${owner}`;
 }

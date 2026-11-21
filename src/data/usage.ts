@@ -12,6 +12,7 @@ import { platformSolutions, affordances, affordanceStatus, capabilityStatus, com
 import { actorTypes } from './usage-actors.ts';
 import { usagePains, type UsagePain } from './usage-pains.ts';
 import { usageValues, valueAnchor, type Value } from './usage-values.ts';
+import { platformOverviewPath } from './knowledge.ts';
 import catalog from './catalog/poesis-usage.json' with { type: 'json' };
 
 export { usageValues, valueAnchor, valueAliases, solutionValueAnchor } from './usage-values.ts';
@@ -68,7 +69,7 @@ export interface ValueSupport { type: 'feature' | 'capability' | 'affordance'; s
 
 export function featureHref(entry: UsageFeature): string { return `${solutionHref(entry.solution)}/products/${entry.product.slug}#${entry.feature.slug}`; }
 export function capabilityHref(entry: UsageCapability): string { return `${solutionHref(entry.solution)}#${entry.capability.slug}`; }
-export function affordanceHref(entry: UsageAffordance): string { return `/#affordance-${entry.affordance.slug}`; }
+export function affordanceHref(entry: UsageAffordance): string { return `${platformOverviewPath}#affordance-${entry.affordance.slug}`; }
 
 /** Use cases that explicitly realize this independent value. */
 export function useCasesForValue(slug: string): UseCase[] {
@@ -115,7 +116,7 @@ function valueOwner(slug: string): string[] { return slug.replace(/^value:/, '')
 export function valueHref(value: Pick<Value, 'slug'>): string {
   const [owner, ...rest] = valueOwner(value.slug);
   if (!rest.length) return `/catalog/values#${valueAnchor(value)}`;
-  if (owner === 'platform') return `/#${valueAnchor(value)}`;
+  if (owner === 'platform') return `${platformOverviewPath}#${valueAnchor(value)}`;
   const base = solutionHref({ slug: owner });
   return rest.length === 2 ? `${base}/products/${rest[0]}#${valueAnchor(value)}` : `${base}#${valueAnchor(value)}`;
 }

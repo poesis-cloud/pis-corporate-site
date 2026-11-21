@@ -22,3 +22,9 @@ pnpm-debug.log*
 # editor / OS
 .DS_Store
 Thumbs.db
+
+# hero film working files (frames and stills; the published assets live in public/hero)
+scripts/hero-film/out/
+
+# requests "delivered" by the local test receiver of the contact form
+contact-endpoint/outbox/

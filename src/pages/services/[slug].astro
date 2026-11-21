@@ -2,6 +2,7 @@
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import Icon from '../../components/Icon.astro';
 import { services, type Service } from '../../data/services.ts';
+import { offerName } from '../../data/site.ts';
 
 export function getStaticPaths() {
   return services.filter((service) => service.slug !== 'pilot').map((service) => ({
@@ -19,14 +20,14 @@ const { service } = Astro.props;
 <BaseLayout title={service.label} description={service.summary} pageType="Service">
   <section class="section service-intro" aria-labelledby="service-title">
     <div class="container">
-      <p class="eyebrow"><a href="/#services">Services</a> / {service.category}</p>
+      <p class="eyebrow"><a href="/knowledge/platform#services">Services</a> / {service.category}</p>
       <p class="service-availability"><Icon name="clock" size={15} /> {service.availability} offer</p>
       <h1 id="service-title">{service.label}</h1>
       <p class="service-promise">{service.title}</p>
       <p class="lead">{service.lead}</p>
+      {/* An archived offer is not sold: its page keeps its text, and its only action leads to the current offer. */}
       <div class="hero-cta">
-        <a class="btn btn-primary" href="/contact"><Icon name="message" /> Discuss future requirements</a>
-        <a class="btn btn-ghost" href="/pilot"><Icon name="play" /> Start with a Pilot</a>
+        <a class="btn btn-ghost" href="/transformation/">See what Poesis offers today <Icon name="arrow-right" /></a>
       </div>
       <p class="service-boundary">{service.availabilityNote}</p>
     </div>
@@ -83,13 +84,13 @@ const { service } = Astro.props;
   <section class="section">
     <div class="container">
       <div class="section-head">
-        <p class="eyebrow">Next step</p>
-        <h2>Bring the problem you need to solve.</h2>
-        <p class="lead">Share your context and requirements for this planned offer. For an evaluation available by agreement now, begin with a Poesis Pilot.</p>
+        <p class="eyebrow">Today</p>
+        <h2>This offer is archived.</h2>
+        <p class="lead">Poesis now offers one engagement: {offerName}. If the need described on this page is yours, that is where the conversation starts.</p>
       </div>
       <div class="hero-cta">
-        <a class="btn btn-primary" href="/contact"><Icon name="message" /> Discuss future requirements</a>
-        <a class="btn btn-ghost" href="/pilot"><Icon name="play" /> Shape your Pilot</a>
+        <a class="btn btn-primary" href="/contact/"><Icon name="message" /> Discuss your transformation</a>
+        <a class="btn btn-ghost" href="/transformation/">See the current offer</a>
       </div>
       <nav class="service-navigation" aria-label="All services">
         {services.map((choice) => <a href={choice.href} aria-current={choice.slug === service.slug ? 'page' : undefined}>{choice.label}<Icon name="arrow-right" size={15} /></a>)}

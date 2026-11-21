@@ -1,0 +1,40 @@
+---
+/**
+ * CommandBlock — shell commands a reader can select or copy.
+ *
+ * The commands are plain text in a <pre>, so they work without JavaScript. The
+ * copy button appears only when the Clipboard API is available.
+ */
+interface Props {
+  label: string;
+  commands: string[];
+  /** Identifies the block in the `developer_install_click` event. */
+  trackId: string;
+}
+const { label, commands, trackId } = Astro.props;
+---
+<div class="command" data-command>
+  <div class="command__bar">
+    <span>{label}</span>
+    <button class="command__copy" type="button" hidden data-track="developer_install_click" data-track-id={trackId}>Copy</button>
+  </div>
+  <pre tabindex="0" aria-label={label}><code>{commands.join('\n')}</code></pre>
+</div>
+
+<script>
+  for (const block of document.querySelectorAll<HTMLElement>('[data-command]')) {
+    const button = block.querySelector<HTMLButtonElement>('.command__copy');
+    const code = block.querySelector('code');
+    if (!button || !code || !navigator.clipboard) continue;
+    button.hidden = false;
+    button.addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(code.textContent ?? '');
+        button.textContent = 'Copied';
+      } catch {
+        button.textContent = 'Copy failed: select the text';
+      }
+      setTimeout(() => { button.textContent = 'Copy'; }, 2500);
+    });
+  }
+</script>

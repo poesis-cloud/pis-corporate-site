@@ -1,33 +1,70 @@
 ---
+/**
+ * Contact — two destinations, kept apart.
+ *
+ *   Organizations  the contact form (src/components/ContactForm.astro)
+ *   Developers     the public issue trackers of the SAF repositories
+ *
+ * The transport of the form is a build-time setting; see `contact` in
+ * src/data/site.ts and contact-endpoint/README.md.
+ */
 import BaseLayout from '../layouts/BaseLayout.astro';
-import Icon from '../components/Icon.astro';
-const email = 'partner@poesis.cloud';
+import ContactForm from '../components/ContactForm.astro';
+import { contactEmail, externalLinkAttributes, externalLinks } from '../data/site.ts';
+import { harness, organization, safLinks } from '../data/saf.ts';
+
+const title = "Let's talk about your transformation";
+const description = 'Tell Poesis which team, function or organization you want to transform, in a few lines. Developers: questions about SAF go to GitHub issues.';
 ---
 <BaseLayout
-  title="Let's talk"
-  description="Talk to Poesis about transformation, the Poesis stack, certification, or the GSM standard."
+  title={title}
+  description={description}
   pageType="Contact"
+  breadcrumbs={[{ label: 'Contact' }]}
+  jsonLd={[{ '@type': 'ContactPage', name: title, url: 'https://poesis.cloud/contact/', description }]}
 >
-  <section class="hero">
+  <section class="intro">
     <div class="container">
-      <p class="eyebrow">Contact</p>
-      <h1>Let's talk.</h1>
-      <p class="lead">Transformation engagements, the Poesis stack (SaaS or on-prem), certification, design partnerships, or the GSM standard — start the conversation.</p>
-      <p class="lead">Poesis is early, open, and ambitious. If you work on systemic governance, generative AI, enterprise architecture, or the kind of engineering that turns standards into running systems, we'd like to hear from you — even if there's no formal opening listed yet.</p>
-      <div class="hero-cta" style="margin-top:1.75rem">
-        <a class="btn btn-primary" href={`mailto:${email}`}><Icon name="mail" /> Email us</a>
-        <a class="btn btn-ghost" href={`mailto:${email}?subject=Joining%20Poesis`}><Icon name="user-plus" /> Introduce yourself</a>
-        <a class="btn btn-ghost" href="https://github.com/poesis-cloud" target="_blank" rel="noopener"><Icon name="github" /> GitHub</a>
-        <a class="btn btn-ghost" href="https://www.linkedin.com/company/poesis-cloud" target="_blank" rel="noopener"><Icon name="linkedin" /> LinkedIn</a>
-      </div>
+      <ol class="crumbs" aria-label="Breadcrumb">
+        <li><a href="/">Poesis</a></li>
+        <li aria-current="page">Contact</li>
+      </ol>
+      <h1>Let's talk about your transformation.</h1>
+      <p class="intro__lead">Describe the scope you have in mind and what you would want to see change. We reply with what a first step could look like, and say so if Poesis is not the right fit.</p>
     </div>
   </section>
 
-  <section class="section section--soft">
-    <div class="container">
-      <p class="eyebrow">What to expect</p>
-      <h2>A direct line to the people who built it.</h2>
-      <p class="lead">Tell us your context and goal. We'll respond with the shortest credible path — and be honest if Poesis isn't the right fit yet.</p>
+  <section class="band band--tight" aria-labelledby="brief-title">
+    <div class="container brief">
+      <div>
+        <h2 id="brief-title">Your request</h2>
+        <ContactForm source="contact" />
+      </div>
+
+      <aside class="brief-aside" aria-label="Other ways to reach Poesis">
+        <div>
+          <h2>Prefer to write directly?</h2>
+          <p>One address reaches the team:</p>
+          <p class="address"><a href={`mailto:${contactEmail}`} data-track="business_contact_intent" data-track-id="contact-direct-email">{contactEmail}</a></p>
+          <p>Requests are handled as described in the <a href="/legal/privacy">privacy policy</a>.</p>
+        </div>
+        <div>
+          <h2>Working with SAF on your own?</h2>
+          <p>Questions, bug reports and proposals about the open-source framework go to GitHub, in public. This is community support, with no response-time commitment.</p>
+          <ul class="plain-list">
+            <li><a href={harness.issues} {...externalLinkAttributes} data-track="developer_repo_click" data-track-id="contact-harness-issues">Harness issues</a></li>
+            <li><a href={organization.issues} {...externalLinkAttributes} data-track="developer_repo_click" data-track-id="contact-organization-issues">Organization issues</a></li>
+            <li><a href={safLinks.docs} {...externalLinkAttributes} data-track="developer_docs_click" data-track-id="contact-docs">SAF documentation</a></li>
+          </ul>
+        </div>
+        <div>
+          <h2>Elsewhere</h2>
+          <ul class="plain-list">
+            <li><a href={externalLinks.github} {...externalLinkAttributes}>Poesis on GitHub</a></li>
+            <li><a href={externalLinks.linkedin} {...externalLinkAttributes}>Poesis on LinkedIn</a></li>
+          </ul>
+        </div>
+      </aside>
     </div>
   </section>
 </BaseLayout>

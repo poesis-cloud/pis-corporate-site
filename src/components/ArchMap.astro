@@ -12,6 +12,7 @@ import { solutionQualities, productQualities, platformQualities, qualityHref } f
 import DeliveryStatus from './DeliveryStatus.astro';
 import ProductRoadmapMini from './ProductRoadmapMini.astro';
 import Icon from './Icon.astro';
+import { platformOverviewPath } from '../data/knowledge.ts';
 
 const stack = platformSolutions.filter((s) => s.slug !== 'saf');
 const framework = platformSolutions.find((s) => s.slug === 'saf')!;
@@ -29,13 +30,13 @@ const frameworkHref = solutionHref(framework);
         <span class="arch-icon"><Icon name="layers" size={16} /></span>
         <span class="tag tag--accent-2">{PLATFORM_TYPE_LABEL}</span>
       </div>
-      <h3 id="arch-platform-heading"><a href="/">Poesis</a></h3>
+      <h3 id="arch-platform-heading"><a href={platformOverviewPath}>Poesis</a></h3>
       <p>The cross-solution capstone: affordances realized by contributing capabilities across every solution, and the qualities the platform bears as a whole.</p>
       <details class="arch-group">
         <summary>Affordances</summary>
         <nav class="arch-comps" aria-label="Platform affordances">
           {affordances.map((a) => (
-            <a class:list={['arch-comp', plannedClass(affordanceStatus(a))]} href={`/#affordance-${a.slug}`}>{a.name} <DeliveryStatus state={affordanceStatus(a)} /></a>
+            <a class:list={['arch-comp', plannedClass(affordanceStatus(a))]} href={`${platformOverviewPath}#affordance-${a.slug}`}>{a.name} <DeliveryStatus state={affordanceStatus(a)} /></a>
           ))}
         </nav>
       </details>

@@ -1,0 +1,241 @@
+---
+/**
+ * Open Source — the developer path through SAF: what it is, the two products,
+ * what exists today, how it works, install, first workflow, community,
+ * contribution, and the way back to the Poesis service. The in-page order is
+ * that path: understand, check the state, install, run, take part. Every
+ * command and status comes from src/data/saf.ts.
+ */
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Icon from '../components/Icon.astro';
+import CommandBlock from '../components/CommandBlock.astro';
+import ProductPanel from '../components/ProductPanel.astro';
+import { cliVersionNote, firstRunCommand, harness, installCommands, knownLimits, latestPreRelease, marketplace, maturity, maturityLabel, orchestrators, organization, organizationInventory, prerequisites, safLinks, safProducts, supportedHost, verifiedOn, type SafProduct } from '../data/saf.ts';
+import { externalLinkAttributes, externalLinks } from '../data/site.ts';
+import { formatDate } from '../data/format.ts';
+
+const title = 'SAF, the open-source Systemic Agentic Framework';
+const description = 'SAF is an open-source framework for running agentic organizations: a deterministic harness and a first organization for scaled agile delivery. Alpha preview, Apache-2.0, for GitHub Copilot.';
+
+const loop = [
+  { title: 'The organization declares', body: 'Agents, workflows, instructions, skills, model profiles, access rules and artifact schemas are files in the organization plugin.' },
+  { title: 'The harness resolves', body: 'From that configuration and the recorded outcomes, it names the next eligible step, its model profile and the instructions and skills to load.' },
+  { title: 'The agent host runs the step', body: 'The host dispatches the step to an agent. The agent writes its artifact with the host’s own file tools.' },
+  { title: 'The harness checks and commits', body: 'The write is authorized against the agent’s grants, validated against its schema, and committed to Git. The call is journaled.' },
+  { title: 'A person decides', body: 'When no step is left, the orchestrator returns the main artifacts of the workflow. A person reads them and accepts, raises concerns or rejects.', gov: true },
+];
+
+const sourceCode = (product: SafProduct) => ({
+  '@type': 'SoftwareSourceCode',
+  name: product.name,
+  alternateName: product.technicalName,
+  description: product.summary,
+  codeRepository: product.repository,
+  license: 'https://www.apache.org/licenses/LICENSE-2.0',
+  author: { '@type': 'Organization', name: 'Poesis', url: 'https://poesis.cloud/' },
+});
+---
+<BaseLayout
+  title={title}
+  description={description}
+  pageType="Open Source"
+  breadcrumbs={[{ label: 'Open Source' }]}
+  jsonLd={safProducts.map(sourceCode)}
+>
+  <section class="intro">
+    <div class="container">
+      <ol class="crumbs" aria-label="Breadcrumb">
+        <li><a href="/">Poesis</a></li>
+        <li aria-current="page">Open Source</li>
+      </ol>
+      <h1>SAF, the open-source Systemic Agentic Framework.</h1>
+      <p class="intro__lead">SAF runs an organization of AI agents the way an organization actually works: roles with responsibilities, workflows that link them, artifacts that are checked, and people who decide. It is a framework for organizations, not a team of bots.</p>
+      <p class="intro__note">{maturityLabel}, under the Apache License 2.0, for {supportedHost.name} today.</p>
+      <div class="actions">
+        <a class="btn btn-primary btn-lg" href="#install" data-track="developer_install_click" data-track-id="oss-intro">Install SAF</a>
+        <a class="btn btn-ghost btn-lg" href={externalLinks.github} {...externalLinkAttributes} data-track="developer_repo_click" data-track-id="oss-intro"><Icon name="github" /> Poesis on GitHub</a>
+        <a class="btn btn-quiet" href={safLinks.docs} {...externalLinkAttributes} data-track="developer_docs_click" data-track-id="oss-intro">Read the documentation</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="band band--raised" id="products" aria-labelledby="products-title">
+    <div class="container">
+      <div class="band-head">
+        <h2 id="products-title">Harness and organization: an engine, and what runs on it.</h2>
+        <p>The two are released separately and installed together. The harness carries no methodology; the organization carries no engine. You can replace the organization with one of your own.</p>
+      </div>
+      <div class="products">
+        {safProducts.map((product) => <ProductPanel product={product} trackId="oss-products" />)}
+      </div>
+      <dl class="spec stack-gap">
+        <div>
+          <dt>Status</dt>
+          <dd>{maturityLabel}. Latest pre-release of both: <a href={harness.releases} {...externalLinkAttributes}>{latestPreRelease.version}</a>, {formatDate(latestPreRelease.publishedOn)}. No final 1.0 release has been published; the organization repository also carries a v0.1.0 release from June 2026, which predates the plugins.</dd>
+        </div>
+        <div>
+          <dt>Licence</dt>
+          <dd>Apache License 2.0 for both products and for the marketplace. The Poesis names and marks are not covered by the licence.</dd>
+        </div>
+        <div>
+          <dt>Depends on</dt>
+          <dd>An agent host with its own licence and terms, and the models that host gives access to. They are prerequisites, not part of SAF.</dd>
+        </div>
+        <div>
+          <dt>In the organization</dt>
+          <dd>{organizationInventory.agents} agents, {organizationInventory.skills} skills and {organizationInventory.workflows} workflows on the <code>main</code> branch, counted on {formatDate(verifiedOn)}. It is shaped after scaled agile practice at portfolio, program and team level.</dd>
+        </div>
+      </dl>
+    </div>
+  </section>
+
+  <section class="band" id="status" aria-labelledby="status-title">
+    <div class="container">
+      <div class="band-head">
+        <h2 id="status-title">What exists today, and what does not.</h2>
+        <p>SAF is an alpha preview. It is meant to be tried, read and criticised, not to run unattended. This is the state of things on {formatDate(verifiedOn)}.</p>
+      </div>
+      <dl class="spec">
+        <div>
+          <dt>Published</dt>
+          <dd><ul class="plain-list">{maturity.published.map((item) => <li>{item}</li>)}</ul></dd>
+        </div>
+        <div>
+          <dt>Implemented in the harness</dt>
+          <dd><ul class="plain-list">{maturity.implemented.map((item) => <li>{item}</li>)}</ul></dd>
+        </div>
+        <div>
+          <dt>In progress</dt>
+          <dd><ul class="plain-list">{maturity.partial.map((item) => <li>{item}</li>)}</ul></dd>
+        </div>
+        <div>
+          <dt>Not there yet</dt>
+          <dd><ul class="plain-list">{maturity.planned.map((item) => <li>{item}</li>)}</ul></dd>
+        </div>
+        <div>
+          <dt>Known limits of the alpha</dt>
+          <dd>
+            <ul class="plain-list">{knownLimits.map((item) => <li>{item}</li>)}</ul>
+            <p class="fineprint">The project keeps the full list: <a href={safLinks.limitations} {...externalLinkAttributes} data-track="developer_docs_click" data-track-id="oss-limitations">known alpha limitations</a>.</p>
+          </dd>
+        </div>
+      </dl>
+    </div>
+  </section>
+
+  <section class="band band--raised" id="how" aria-labelledby="how-title">
+    <div class="container">
+      <div class="band-head">
+        <h2 id="how-title">How one step of work goes through SAF.</h2>
+        <p>The harness decides nothing about your business. It applies, the same way every time, what the organization declared.</p>
+      </div>
+      <ol class="flow">
+        {loop.map((step) => (
+          <li class={step.gov ? 'flow__gov' : undefined}><strong>{step.title}</strong>{step.body}</li>
+        ))}
+      </ol>
+      <p class="flow__loop">In the alpha, the human gate is the end of each workflow: the harness neither records nor authenticates the decision. The full contract is in the <a href={`${harness.repository}/blob/main/def/core/spec.md`} {...externalLinkAttributes} data-track="developer_repo_click" data-track-id="oss-how-spec">harness core specification</a>.</p>
+    </div>
+  </section>
+
+  <section class="band" id="install" aria-labelledby="install-title">
+    <div class="container">
+      <div class="band-head">
+        <h2 id="install-title">Install.</h2>
+        <p>Both products are plugins for {supportedHost.name}. They are installed from the <a href={marketplace.repository} {...externalLinkAttributes} data-track="developer_repo_click" data-track-id="oss-install-marketplace">Poesis SAF marketplace</a>, on its preview channel while SAF is in alpha.</p>
+      </div>
+      <div class="split split--flush">
+        <div>
+          <CommandBlock label="GitHub Copilot CLI, preview channel" commands={installCommands} trackId="oss-install" />
+          <p class="command__note">These commands are the ones documented in the <a href={safLinks.quickstart} {...externalLinkAttributes} data-track="developer_docs_click" data-track-id="oss-install-quickstart">Quickstart</a> and in the organization’s README. The stable channel (<code>{marketplace.stable.id}</code>) is reserved for final releases and listed no plugin on {formatDate(verifiedOn)}. A one-line installer is described in the Quickstart.</p>
+          <p class="command__note">{cliVersionNote}</p>
+        </div>
+        <div>
+          <h3>You need</h3>
+          <ul class="plain-list">
+            {prerequisites.map((item) => <li>{item}</li>)}
+          </ul>
+          <h3 class="stack-gap">Supported today</h3>
+          <ul class="plain-list">
+            {supportedHost.surfaces.map((surface) => <li>{surface}</li>)}
+          </ul>
+          <p class="fineprint">{supportedHost.notSupported} No other agent host is supported yet. Host bindings are separate adapters, so others can follow.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="band band--raised" id="first-workflow" aria-labelledby="first-title">
+    <div class="container">
+      <div class="band-head">
+        <h2 id="first-title">Your first workflow.</h2>
+        <p>The harness governs a SAF workspace: a Git repository that holds a committed <code>.saf/workspace.yaml</code>. Start on a repository where experiments are welcome.</p>
+      </div>
+      <ol class="steps steps--three">
+        <li>
+          <h3>Open a trusted folder</h3>
+          <p>Open the repository in a folder your host trusts. In an untrusted folder the harness hooks do not run.</p>
+        </li>
+        <li>
+          <h3>Initialise the workspace</h3>
+          <p>Start a Copilot session and ask it to initialise the repository as a SAF workspace. The <code>init</code> skill writes and commits the workspace files.</p>
+        </li>
+        <li>
+          <h3>Pick an orchestrator</h3>
+          <p>Start a new session with one of {orchestrators.length} orchestrators: {orchestrators.map((name, index) => <><code>{name}</code>{index < orchestrators.length - 1 ? ', ' : '.'}</>)} It names the next workflow at each return.</p>
+        </li>
+      </ol>
+      <div class="split">
+        <div>
+          <CommandBlock label="Start the portfolio orchestrator" commands={[firstRunCommand]} trackId="oss-first-run" />
+        </div>
+        <div>
+          <p>The documentation is the reference from here: it describes each workflow, what the orchestrators expect from you, and the known alpha limitations.</p>
+          <div class="actions">
+            <a class="btn btn-ghost" href={safLinks.quickstart} {...externalLinkAttributes} data-track="developer_docs_click" data-track-id="oss-first-quickstart">Open the Quickstart</a>
+            <a class="btn btn-quiet" href={safLinks.usage} {...externalLinkAttributes} data-track="developer_docs_click" data-track-id="oss-first-usage">Running workflows</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="band" id="community" aria-labelledby="community-title">
+    <div class="container">
+      <div class="band-head">
+        <h2 id="community-title">Support, community and contribution.</h2>
+        <p>SAF is built in the open. The public channel is GitHub.</p>
+      </div>
+      <div class="products">
+        <article class="product">
+          <h3>Ask, report, propose</h3>
+          <p>Questions, bug reports and proposals go to the issue tracker of the repository concerned. Issues are public and carry no response-time commitment: this is community support, not a support contract.</p>
+          <div class="product__links">
+            <a href={harness.issues} {...externalLinkAttributes} data-track="developer_repo_click" data-track-id="oss-community-harness-issues"><Icon name="github" size={18} /> Harness issues</a>
+            <a href={organization.issues} {...externalLinkAttributes} data-track="developer_repo_click" data-track-id="oss-community-organization-issues"><Icon name="github" size={18} /> Organization issues</a>
+          </div>
+        </article>
+        <article class="product">
+          <h3>Star, fork, contribute</h3>
+          <p>Contributions are accepted under Apache-2.0. Commits are signed off under the <a href={safLinks.developerCertificate} {...externalLinkAttributes}>Developer Certificate of Origin</a>, and each repository states its conventions in <code>CONTRIBUTING.md</code>.</p>
+          <div class="product__links">
+            <a href={safLinks.repositories} {...externalLinkAttributes} data-track="developer_repo_click" data-track-id="oss-community-star"><Icon name="github" size={18} /> Star the repositories</a>
+            <a href={harness.contributing} {...externalLinkAttributes} data-track="developer_repo_click" data-track-id="oss-community-harness-contributing">Contribute to the harness</a>
+            <a href={organization.contributing} {...externalLinkAttributes} data-track="developer_repo_click" data-track-id="oss-community-organization-contributing">Contribute to the organization</a>
+          </div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="closing" aria-labelledby="closing-title">
+    <div class="container">
+      <h2 id="closing-title">Need help transforming an organization with it?</h2>
+      <p>Poesis, the team that builds SAF, offers one service: guiding the agentic transformation of an organization or of one of its parts, from scoping to an evidence-backed pilot.</p>
+      <div class="actions">
+        <a class="btn btn-primary btn-lg" href="/transformation/">See the transformation service</a>
+        <a class="btn btn-quiet" href="/contact/" data-track="business_contact_intent" data-track-id="oss-closing">Discuss your transformation</a>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
