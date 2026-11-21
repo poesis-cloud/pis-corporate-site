@@ -8,6 +8,7 @@
  * transformation method, on SAF.
  */
 import BaseLayout from '../layouts/BaseLayout.astro';
+import ContactSection from '../components/ContactSection.astro';
 import Faq from '../components/Faq.astro';
 import { faqLd, pilotFaq } from '../data/faq.ts';
 import { maturityLabel } from '../data/saf.ts';
@@ -35,21 +36,21 @@ const isNot = [
   title={title}
   description={description}
   pageType="Pilot"
-  breadcrumbs={[{ label: 'Transformation', href: '/transformation/' }, { label: 'Pilot' }]}
+  breadcrumbs={[{ label: 'How It Works', href: '/how-it-works/' }, { label: 'Pilot' }]}
   jsonLd={[faqLd(pilotFaq)]}
 >
   <section class="intro">
     <div class="container">
       <ol class="crumbs" aria-label="Breadcrumb">
         <li><a href="/">Poesis</a></li>
-        <li><a href="/transformation/">Transformation</a></li>
+        <li><a href="/how-it-works/">How It Works</a></li>
         <li aria-current="page">Pilot</li>
       </ol>
       <h1>A first pilot of agentic transformation.</h1>
-      <p class="intro__lead">A pilot is the third step of the Poesis method: the model of one perimeter, run on SAF under human review, and judged on the evidence it produces. It is how a transformation starts small and earns its next step.</p>
+      <p class="intro__lead">A pilot is the fourth step of the Poesis method: the model of one perimeter, run on SAF under human review, and judged on the evidence it produces. It is how a transformation starts small and earns its next step.</p>
       <div class="actions">
-        <a class="btn btn-primary btn-lg" href="/contact/" data-track="business_contact_intent" data-track-id="pilot-intro">Discuss a pilot for your organization</a>
-        <a class="btn btn-quiet" href="/transformation/#method">See the whole method</a>
+        <a class="btn btn-primary btn-lg" href="#contact" data-track="business_contact_intent" data-track-id="pilot-intro">Discuss a pilot for your organization</a>
+        <a class="btn btn-quiet" href="/how-it-works/">See the whole journey</a>
       </div>
     </div>
   </section>
@@ -91,16 +92,9 @@ const isNot = [
     </div>
   </section>
 
-  <section class="closing" aria-labelledby="closing-title">
-    <div class="container">
-      <h2 id="closing-title">Tell us the perimeter you would start with.</h2>
-      <p>A few lines are enough: the team or process, what hurts in it today, and what you would want to see at the end of a pilot.</p>
-      <div class="actions">
-        <a class="btn btn-primary btn-lg" href="/contact/" data-track="business_contact_intent" data-track-id="pilot-closing">Discuss a pilot for your organization</a>
-        <a class="btn btn-quiet" href="/case-studies/">How pilots are documented</a>
-      </div>
-    </div>
-  </section>
+  <ContactSection source="pilot" title="Tell us the perimeter you would start with.">
+    <p>A few lines are enough: the team or process, what hurts in it today, and what you would want to see at the end of a pilot.</p>
+  </ContactSection>
 </BaseLayout>
 
 <script is:inline>

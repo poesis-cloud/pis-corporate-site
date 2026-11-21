@@ -1,0 +1,29 @@
+---
+/**
+ * ContactSection — the last section of a commercial page: why write, what
+ * happens next, and the form itself. A reader who reached the end of the page
+ * can act without leaving it.
+ */
+import ContactForm from './ContactForm.astro';
+
+interface Props {
+  /** Placement name carried by the request and the measurement events. */
+  source: string;
+  title: string;
+}
+const { source, title } = Astro.props;
+---
+<section class="closing closing--form" id="contact" aria-labelledby="contact-title">
+  <div class="container closing__grid">
+    <div>
+      <h2 id="contact-title">{title}</h2>
+      <slot />
+      <ol class="next-steps">
+        <li>You describe the perimeter in a few lines.</li>
+        <li>We reply with what a first step could look like, or say that Poesis is not the right fit.</li>
+        <li>If we go on, scope and terms are agreed in writing before any work starts.</li>
+      </ol>
+    </div>
+    <ContactForm source={source} />
+  </div>
+</section>

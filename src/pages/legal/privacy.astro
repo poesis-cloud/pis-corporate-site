@@ -1,5 +1,6 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import { contact } from '../../data/site.ts';
 const email = 'partner@poesis.cloud';
 ---
 
@@ -40,11 +41,11 @@ const email = 'partner@poesis.cloud';
         </li>
       </ul>
       <p>
-        The sites have no accounts and no newsletters. The brief on the
-        <a href="/contact/">Contact page</a> runs entirely in your browser: it
-        prepares an email in your own mail application and transmits nothing to us
-        until you choose to send that email. No other personal data is collected
-        through the sites themselves.
+        The sites have no accounts and no newsletters.
+        {contact
+          ? <>The contact form sends what you enter (your name, work email, organization and request) to Poesis through {contact.processor}, which processes it on our behalf for the sole purpose of delivering it to us. We use it to answer your request.</>
+          : <>The contact form runs entirely in your browser: it prepares an email in your own mail application and transmits nothing to us until you choose to send that email.</>}
+        {' '}No other personal data is collected through the sites themselves.
       </p>
 
       <h2>Purpose and legal basis</h2>

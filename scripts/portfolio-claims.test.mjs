@@ -69,10 +69,11 @@ const elements = (node, predicate) => [...(predicate(node) ? [node] : []), ...(n
 const hasClass = (node, name) => attribute(node, 'class')?.split(/\s+/).includes(name) ?? false;
 
 test('the primary menu is four destinations and one call to action, with no Platform or Partnerships entry', () => {
+  // Case Studies joins the menu with the first published case, and not before.
   assert.deepEqual(siteNavigation, [
     { href: '/transformation/', label: 'Transformation' },
+    { href: '/how-it-works/', label: 'How It Works' },
     { href: '/open-source/', label: 'Open Source' },
-    { href: '/case-studies/', label: 'Case Studies' },
     { href: '/knowledge/', label: 'Knowledge' },
   ]);
   assert.deepEqual(navigationCta, { href: '/contact/', label: "Let's talk" });

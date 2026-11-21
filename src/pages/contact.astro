@@ -2,24 +2,19 @@
 /**
  * Contact — two destinations, kept apart.
  *
- *   Organizations  a short brief that becomes an email in the visitor's own mail app
+ *   Organizations  the contact form (src/components/ContactForm.astro)
  *   Developers     the public issue trackers of the SAF repositories
  *
- * The site is static and has no approved endpoint to receive a form. The brief
- * therefore sends nothing by itself: it composes an email to the one address
- * Poesis publishes, and says so. Without JavaScript the form falls back to the
- * browser's own mailto handling. To connect a real endpoint later, see the
- * "Contact form" section of the README.
+ * The transport of the form is a build-time setting; see `contact` in
+ * src/data/site.ts and contact-endpoint/README.md.
  */
 import BaseLayout from '../layouts/BaseLayout.astro';
-import Icon from '../components/Icon.astro';
+import ContactForm from '../components/ContactForm.astro';
 import { contactEmail, externalLinkAttributes, externalLinks } from '../data/site.ts';
 import { harness, organization, safLinks } from '../data/saf.ts';
 
 const title = "Let's talk about your transformation";
-const description = 'Tell Poesis which team, function or organization you want to transform. A short brief becomes an email you send yourself. Developers: SAF questions go to GitHub issues.';
-/** "Not sure yet" comes first: an untouched field must not read as a deliberate choice. */
-const scopes = ['Not sure yet', 'A whole organization', 'A department or business unit', 'A team', 'A function', 'A process', 'Something else'];
+const description = 'Tell Poesis which team, function or organization you want to transform, in a few lines. Developers: questions about SAF go to GitHub issues.';
 ---
 <BaseLayout
   title={title}
@@ -35,67 +30,15 @@ const scopes = ['Not sure yet', 'A whole organization', 'A department or busines
         <li aria-current="page">Contact</li>
       </ol>
       <h1>Let's talk about your transformation.</h1>
-      <p class="intro__lead">Describe the scope you have in mind and what you would want to see change. We will reply with what a first step could look like, and say so if Poesis is not the right fit.</p>
+      <p class="intro__lead">Describe the scope you have in mind and what you would want to see change. We reply with what a first step could look like, and say so if Poesis is not the right fit.</p>
     </div>
   </section>
 
   <section class="band band--tight" aria-labelledby="brief-title">
     <div class="container brief">
       <div>
-        <h2 id="brief-title">Your brief</h2>
-        <form
-          class="brief-form"
-          id="brief-form"
-          action={`mailto:${contactEmail}?subject=Transformation%20brief`}
-          method="post"
-          enctype="text/plain"
-          data-email={contactEmail}
-        >
-          <p class="brief-form__how" id="brief-how">This form does not send anything by itself. It prepares an email in your own mail app, addressed to <strong>{contactEmail}</strong>. You read it and send it. Nothing you type is transmitted or stored by this page.</p>
-
-          <div class="field-row">
-            <div>
-              <label for="brief-name">Name</label>
-              <input id="brief-name" name="Name" type="text" autocomplete="name" maxlength="120" required aria-describedby="brief-name-error" />
-              <p class="field-error" id="brief-name-error" hidden>Enter your name.</p>
-            </div>
-            <div>
-              <label for="brief-email">Work email</label>
-              <input id="brief-email" name="Work email" type="email" autocomplete="email" inputmode="email" maxlength="254" required aria-describedby="brief-email-error" />
-              <p class="field-error" id="brief-email-error" hidden>Enter an email address we can reply to, such as name@company.com.</p>
-            </div>
-          </div>
-
-          <div class="field-row">
-            <div>
-              <label for="brief-organization">Organization <span class="optional">(optional)</span></label>
-              <input id="brief-organization" name="Organization" type="text" autocomplete="organization" maxlength="160" />
-            </div>
-            <div>
-              <label for="brief-scope">Scope</label>
-              <select id="brief-scope" name="Scope">
-                {scopes.map((scope) => <option>{scope}</option>)}
-              </select>
-            </div>
-          </div>
-
-          <div>
-            <label for="brief-goal">What would you like to transform?</label>
-            <textarea id="brief-goal" name="What we would like to transform" rows="4" maxlength="2000" required aria-describedby="brief-goal-error"></textarea>
-            <p class="field-error" id="brief-goal-error" hidden>Describe, in a sentence or two, what you would like to transform.</p>
-          </div>
-
-          <div>
-            <label for="brief-challenge">Current challenge <span class="optional">(optional)</span></label>
-            <textarea id="brief-challenge" name="Current challenge" rows="3" maxlength="2000"></textarea>
-          </div>
-
-          <div class="actions">
-            <button class="btn btn-primary btn-lg" type="submit"><Icon name="mail" /> Prepare my email</button>
-            <button class="btn btn-ghost" type="button" id="brief-copy" hidden><Icon name="copy" /> Copy the brief</button>
-          </div>
-          <p class="brief-form__status" id="brief-status" role="status" aria-live="polite"></p>
-        </form>
+        <h2 id="brief-title">Your request</h2>
+        <ContactForm source="contact" />
       </div>
 
       <aside class="brief-aside" aria-label="Other ways to reach Poesis">
@@ -103,7 +46,7 @@ const scopes = ['Not sure yet', 'A whole organization', 'A department or busines
           <h2>Prefer to write directly?</h2>
           <p>One address reaches the team:</p>
           <p class="address"><a href={`mailto:${contactEmail}`} data-track="business_contact_intent" data-track-id="contact-direct-email">{contactEmail}</a></p>
-          <p>Emails are handled as described in the <a href="/legal/privacy">privacy policy</a>.</p>
+          <p>Requests are handled as described in the <a href="/legal/privacy">privacy policy</a>.</p>
         </div>
         <div>
           <h2>Working with SAF on your own?</h2>
@@ -125,61 +68,3 @@ const scopes = ['Not sure yet', 'A whole organization', 'A department or busines
     </div>
   </section>
 </BaseLayout>
-
-<script>
-  import { composeBrief, briefMailto } from '../scripts/contact-brief.ts';
-
-  const form = document.querySelector<HTMLFormElement>('#brief-form');
-  const status = document.querySelector<HTMLElement>('#brief-status');
-  const copy = document.querySelector<HTMLButtonElement>('#brief-copy');
-
-  if (form && status && copy) {
-    const email = form.dataset.email ?? '';
-    // With JavaScript the page shows its own messages; without it, the browser's native validation applies.
-    form.noValidate = true;
-    const required = [...form.querySelectorAll<HTMLInputElement | HTMLTextAreaElement>('[required]')];
-    const errorOf = (field: HTMLElement) => document.getElementById(`${field.id}-error`);
-    const check = (field: HTMLInputElement | HTMLTextAreaElement): boolean => {
-      // Spaces alone are not an answer: the brief is built from trimmed values.
-      const valid = field.value.trim() !== '' && field.checkValidity();
-      field.setAttribute('aria-invalid', String(!valid));
-      const error = errorOf(field);
-      if (error) error.hidden = valid;
-      return valid;
-    };
-    const values = () => Object.fromEntries([...new FormData(form).entries()].map(([key, value]) => [key, String(value).trim()]));
-    const validate = (): boolean => {
-      const invalid = required.filter((field) => !check(field));
-      invalid[0]?.focus();
-      if (invalid.length) status.textContent = invalid.length === 1 ? 'One field needs your attention.' : `${invalid.length} fields need your attention.`;
-      return invalid.length === 0;
-    };
-
-    for (const field of required) field.addEventListener('blur', () => { if (field.getAttribute('aria-invalid') === 'true') check(field); });
-
-    form.addEventListener('submit', (event) => {
-      event.preventDefault();
-      if (!validate()) return;
-      const { href, shortened } = briefMailto(email, values());
-      // Counted here, once a draft is really prepared, not on every click of the button.
-      (window as unknown as { gtag?: (...parameters: unknown[]) => void }).gtag?.('event', 'business_contact_intent', { cta_id: 'contact-brief', link_url: `mailto:${email}`, page_path: location.pathname });
-      window.location.href = href;
-      status.textContent = shortened
-        ? `Your mail app should now show a shortened brief addressed to ${email}: the full text was too long for a mail link. Use "Copy the brief" and paste it into the email. Nothing is sent until you send it.`
-        : `Your mail app should now show the brief, addressed to ${email}. Nothing is sent until you send it there. If no mail app opened, use "Copy the brief" and email it to ${email}.`;
-    });
-
-    if (navigator.clipboard) {
-      copy.hidden = false;
-      copy.addEventListener('click', async () => {
-        if (!validate()) return;
-        try {
-          await navigator.clipboard.writeText(composeBrief(values()));
-          status.textContent = `Brief copied. Paste it into an email to ${email}.`;
-        } catch {
-          status.textContent = `The brief could not be copied. Write to ${email} directly.`;
-        }
-      });
-    }
-  }
-</script>

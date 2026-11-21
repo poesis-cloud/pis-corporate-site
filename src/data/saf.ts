@@ -124,7 +124,53 @@ export const safLinks = {
   docs: 'https://docs.poesis.cloud/saf/',
   quickstart: 'https://docs.poesis.cloud/saf/quickstart/',
   usage: 'https://docs.poesis.cloud/saf/usage/',
+  limitations: 'https://docs.poesis.cloud/saf/agentic-harness/limitations/',
   /** The SAF repositories of the organization, listed together so a visitor can star them. */
   repositories: 'https://github.com/orgs/poesis-cloud/repositories?q=saf',
   developerCertificate: 'https://developercertificate.org/',
 } as const;
+
+/**
+ * What exists today and what does not, kept apart on purpose.
+ * Sources: the releases and READMEs of the two repositories, the marketplace
+ * manifests, and the delivery states recorded in the site's own catalog.
+ */
+export const maturity: { published: string[]; implemented: string[]; partial: string[]; planned: string[] } = {
+  published: [
+    `Both plugins as pre-release ${latestPreRelease.version}, on the preview channel of the marketplace`,
+    'The source code, specifications and tests of both, in public repositories',
+  ],
+  implemented: [
+    'Resolution of the next workflow step from configuration and recorded outcomes',
+    'Selection of a model profile by task capability and configured cost ranking',
+    'Delivery of each role’s instructions and skills when its session opens',
+    'Authorization of agent writes against declared grants',
+    'Validation of written artifacts against their schemas (structured data and Markdown metadata)',
+    'A journal of harness calls for each session, and validated writes committed to Git',
+  ],
+  partial: [
+    'The ready-made organization: its agents and instructions are complete; checks of skills, workflows and artifact templates are still in progress',
+  ],
+  planned: [
+    'Authenticated human approval: today a review is a step of the workflow, not a verified signature',
+    'A final release on the stable channel: none has been published',
+    'Agent hosts other than GitHub Copilot: none is supported',
+  ],
+};
+
+/** Limitations the project itself publishes for the alpha (see `safLinks.limitations`). */
+export const knownLimits: string[] = [
+  'If a harness hook times out or cannot start, the host lets the call through: that control fails open.',
+  'One workflow instance per orchestrator session, and no concurrent workflow instances.',
+  'Journals are local to a machine: a workflow instance cannot be continued on another one.',
+  'Deleting or moving a governed artifact is not supported.',
+  'In the Copilot app and CLI, shell commands are guarded by their text only.',
+  'The project has not yet verified marketplace installs on the Copilot CLI live, nor the CLI on macOS and Windows with real models.',
+];
+
+/**
+ * Observed on 2026-11-21, not taken from the documentation: Copilot CLI 0.0.423
+ * (March 2026) rejects the `#preview` marketplace reference. The SAF sources
+ * state no minimum version, so the page asks for a current one.
+ */
+export const cliVersionNote = 'Use a current version of the Copilot CLI. An early one (0.0.423) does not understand the #preview reference of the first command.';

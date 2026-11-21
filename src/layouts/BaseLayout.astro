@@ -47,6 +47,13 @@ const {
 const site = Astro.site ?? new URL('https://poesis.cloud');
 const canonical = new URL(Astro.url.pathname, site).href;
 const knowledge = knowledgeContext(Astro.url.pathname);
+/**
+ * An archived offer stays online for whoever follows an old link, but is no longer
+ * offered to search engines: it would compete with the one service sold today.
+ * `follow` keeps its links counted. Nothing in robots.txt hides these pages, or
+ * a crawler could never read this directive.
+ */
+const indexable = !noindex && !knowledge.archive;
 const conversionDescription = 'Poesis guides the agentic transformation of organizations, from one team to the whole enterprise, with SAF, its open-source Systemic Agentic Framework, as the method and the engine.';
 /** Knowledge pages without their own description keep the wording they were published with. */
 const knowledgeDescription = 'Poesis develops GSM specification content, SIE definition foundations, SIS contribution intake, local SAF controls, planned OIP workflows and early-stage SIM model work. Availability and integration are stated per scope.';
@@ -117,7 +124,7 @@ const serialize = (value: unknown) => JSON.stringify(value).replace(/</g, '\\u00
     {preloadImage && <link rel="preload" as="image" href={preloadImage.href} media={preloadImage.media} type={preloadImage.type} fetchpriority="high" />}
     <title>{fullTitle}</title>
     <meta name="description" content={resolvedDescription} />
-    {noindex ? <meta name="robots" content="noindex" /> : <link rel="canonical" href={canonical} />}
+    {indexable ? <link rel="canonical" href={canonical} /> : <meta name="robots" content="noindex, follow" />}
     <meta property="og:type" content={article ? 'article' : 'website'} />
     <meta property="og:title" content={fullTitle} />
     <meta property="og:description" content={resolvedDescription} />

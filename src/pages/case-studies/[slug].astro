@@ -1,51 +1,63 @@
 ---
 /**
- * One published case study. A page is generated only for records whose status
- * is `published`; with none, this route builds no page at all.
+ * One case study.
+ *
+ * A page is generated for each record whose status is `published`. While none
+ * is, a page is generated for the fictional example instead: it uses the same
+ * template, carries a notice that it is fiction, reports no result, and is kept
+ * out of search engines.
  */
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import { evidenceKinds, publishedCaseStudies, type CaseStudy } from '../../data/case-studies.ts';
+import { evidenceKinds, fictionalNotice, publishedCaseStudies, shownExample, type CaseStudy, type IllustrativeExample } from '../../data/case-studies.ts';
 import { formatDate } from '../../data/format.ts';
+import { externalLinkAttributes } from '../../data/site.ts';
 
 export function getStaticPaths() {
-  return publishedCaseStudies.map((study) => ({ params: { slug: study.slug }, props: { study } }));
+  return [
+    ...publishedCaseStudies.map((study) => ({ params: { slug: study.slug }, props: { study } })),
+    ...(shownExample ? [{ params: { slug: shownExample.slug }, props: { example: shownExample } }] : []),
+  ];
 }
 
 interface Props {
-  study: CaseStudy;
+  study?: CaseStudy;
+  example?: IllustrativeExample;
 }
-const { study } = Astro.props;
-const kind = evidenceKinds[study.kind];
+const { study, example } = Astro.props;
+const record = (study ?? example)!;
+const kind = study ? evidenceKinds[study.kind] : null;
 const sections: [string, string][] = [
-  ['Context', study.context],
-  ['Problem', study.problem],
-  ['Scope', study.scope],
-  ['Method', study.method],
-  ['Agents and workflows', study.agentsAndWorkflows],
-  ['Human controls', study.humanControls],
-  ['Period', study.period],
-  ['Limits', study.limits],
-  ['Learnings', study.learnings],
-  ['Next step', study.nextStep],
+  ['Context', record.context],
+  ['Problem', record.problem],
+  ['Scope', record.scope],
+  ['Method', record.method],
+  ['Agents and workflows', record.agentsAndWorkflows],
+  ['Human controls', record.humanControls],
+  ['Period', record.period],
+  ['Limits', record.limits],
+  ['Learnings', record.learnings],
+  ['Next step', record.nextStep],
 ];
 ---
 <BaseLayout
-  title={study.title}
-  description={study.summary}
+  title={record.title}
+  description={record.summary}
   pageType="Case Study"
-  breadcrumbs={[{ label: 'Case Studies', href: '/case-studies/' }, { label: study.title }]}
+  noindex={!study}
+  breadcrumbs={study ? [{ label: 'Case Studies', href: '/case-studies/' }, { label: record.title }] : undefined}
 >
   <section class="intro intro--with-status">
     <div class="container">
       <ol class="crumbs" aria-label="Breadcrumb">
         <li><a href="/">Poesis</a></li>
-        <li><a href="/case-studies/">Case Studies</a></li>
-        <li aria-current="page">{study.title}</li>
+        <li><a href="/case-studies/">{study ? 'Case Studies' : 'Documenting pilots'}</a></li>
+        <li aria-current="page">{record.title}</li>
       </ol>
-      <span class="status status--verified">{kind.label}</span>
-      <h1>{study.title}</h1>
-      <p class="intro__lead">{study.summary}</p>
-      <p class="fineprint">{kind.meaning} Cleared for publication by {study.publicationClearance.clearedBy} on {formatDate(study.publicationClearance.clearedOn)}.</p>
+      {!study && <p class="fiction-notice" role="note">{fictionalNotice}</p>}
+      {kind && <span class="status status--verified">{kind.label}</span>}
+      <h1>{record.title}</h1>
+      <p class="intro__lead">{record.summary}</p>
+      {study && kind && <p class="fineprint">{kind.meaning} Cleared for publication by {study.publicationClearance.clearedBy} on {formatDate(study.publicationClearance.clearedOn)}.</p>}
     </div>
   </section>
 
@@ -62,13 +74,13 @@ const sections: [string, string][] = [
     </div>
   </section>
 
-  {study.measuredResults.length > 0 && (
-    <section class="band band--raised band--tight" aria-labelledby="results-title">
-      <div class="container">
-        <div class="band-head">
-          <h2 id="results-title">Measured results</h2>
-          <p>Only what was measured, with how it was measured.</p>
-        </div>
+  <section class="band band--raised band--tight" aria-labelledby="results-title">
+    <div class="container">
+      <div class="band-head">
+        <h2 id="results-title">Measured results</h2>
+        <p>{study ? 'Only what was measured, with how it was measured.' : 'None. A real case reports here only what was measured, with its method. An invented example has nothing to report.'}</p>
+      </div>
+      {study && study.measuredResults.length > 0 && (
         <dl class="spec">
           {study.measuredResults.map((result) => (
             <div>
@@ -77,21 +89,22 @@ const sections: [string, string][] = [
             </div>
           ))}
         </dl>
-      </div>
-    </section>
-  )}
+      )}
+    </div>
+  </section>
 
   <section class="band band--tight" aria-labelledby="evidence-title">
     <div class="container">
       <div class="band-head">
-        <h2 id="evidence-title">Evidence</h2>
+        <h2 id="evidence-title">{study ? 'Evidence' : 'What you can inspect'}</h2>
+        {!study && <p>The scenario is invented; the parts of SAF it names are not.</p>}
       </div>
       <ul class="plain-list">
-        {study.evidence.map((link) => <li><a href={link.href} target="_blank" rel="noopener noreferrer">{link.label}</a></li>)}
+        {record.evidence.map((link) => <li><a href={link.href} {...externalLinkAttributes}>{link.label}</a></li>)}
       </ul>
       <div class="actions">
         <a class="btn btn-primary" href="/contact/" data-track="business_contact_intent" data-track-id="case-study">Discuss a pilot for your organization</a>
-        <a class="btn btn-quiet" href="/case-studies/">All case studies</a>
+        <a class="btn btn-quiet" href="/case-studies/">{study ? 'All case studies' : 'How pilots are documented'}</a>
       </div>
     </div>
   </section>

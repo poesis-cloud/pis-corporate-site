@@ -570,31 +570,25 @@ h3.stack-gap {
   font-weight: 600;
 }
 
-.doors {
+.hero-actions {
   display: flex;
   flex-wrap: wrap;
-  gap: 1.25rem 2rem;
+  align-items: center;
+  gap: .9rem 1.75rem;
   margin-top: 2.2rem;
 }
 
-.door {
-  display: grid;
-  gap: .55rem;
-  align-content: start;
-  justify-items: start;
+.hero-actions .btn-quiet {
+  min-height: 44px;
+  font-size: 1rem;
 }
 
-.door p {
-  max-width: 17rem;
-  margin: 0;
-  font-size: .88rem;
+.hero-actions__note {
+  max-width: 34rem;
+  margin: 1.1rem 0 0;
+  font-size: .9rem;
   line-height: 1.5;
   color: var(--muted);
-}
-
-.door p a {
-  color: var(--ink-soft);
-  text-decoration: underline;
 }
 
 /* The still shown in the text column where the film is veiled or absent. */
@@ -712,18 +706,14 @@ h3.stack-gap {
   }
 }
 
-@media (max-width: 767px) {
-  .doors {
+@media (max-width: 559px) {
+  .hero-actions {
     flex-direction: column;
-    gap: 1.25rem;
+    align-items: stretch;
   }
 
-  .door {
-    justify-items: stretch;
-  }
-
-  .door p {
-    max-width: none;
+  .hero-actions .btn-quiet {
+    justify-content: center;
   }
 }
 
@@ -925,16 +915,38 @@ h3.stack-gap {
   grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
+.steps--five {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: clamp(1rem, 1.8vw, 2rem);
+}
+
+.steps--five h3 {
+  font-size: 1.05rem;
+  line-height: 1.3;
+}
+
+.steps--five p {
+  font-size: .94rem;
+}
+
+@media (max-width: 1199px) {
+  .steps--five {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
 @media (max-width: 959px) {
   .steps,
-  .steps--three {
+  .steps--three,
+  .steps--five {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
 @media (max-width: 559px) {
   .steps,
-  .steps--three {
+  .steps--three,
+  .steps--five {
     grid-template-columns: minmax(0, 1fr);
   }
 
@@ -948,6 +960,76 @@ h3.stack-gap {
     grid-row: span 3;
     margin: 0;
     font-size: 2.1rem;
+  }
+}
+
+/* ---- journey: the steps of How It Works, each with who does what -------------- */
+.journey {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: journey;
+}
+
+.journey__step {
+  counter-increment: journey;
+  display: grid;
+  grid-template-columns: 3.5rem minmax(0, 1fr) minmax(0, 1.15fr);
+  gap: 1rem clamp(1.5rem, 4vw, 4rem);
+  padding-block: clamp(2rem, 4vw, 3rem);
+  border-top: 1px solid var(--line-strong);
+}
+
+.journey__step::before {
+  content: counter(journey);
+  font-family: var(--font-display);
+  font-size: 3rem;
+  line-height: 1;
+  color: var(--flow-ink);
+}
+
+.journey__head h3 {
+  margin: 0 0 .7rem;
+  font-family: var(--font-display);
+  font-size: clamp(1.4rem, 1.15rem + .9vw, 1.8rem);
+  font-weight: 400;
+  line-height: 1.2;
+}
+
+.journey__head p {
+  margin: 0;
+}
+
+.journey__facts {
+  display: grid;
+  gap: 1rem;
+  margin: 0;
+}
+
+.journey__facts dt {
+  margin-bottom: .2rem;
+  font-size: .85rem;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.journey__facts dd {
+  margin: 0;
+  font-size: .98rem;
+  color: var(--ink-soft);
+}
+
+@media (max-width: 959px) {
+  .journey__step {
+    grid-template-columns: 2.5rem minmax(0, 1fr);
+  }
+
+  .journey__step::before {
+    font-size: 2.2rem;
+  }
+
+  .journey__facts {
+    grid-column: 2;
   }
 }
 
@@ -1259,6 +1341,24 @@ h3.stack-gap {
   font-weight: 400;
 }
 
+/* Fiction is announced before anything else is read, in the colour of what is not established. */
+.fiction-notice {
+  max-width: var(--measure);
+  margin: 0 0 1.25rem;
+  padding: .8rem 1rem;
+  border-left: 3px solid var(--alpha);
+  background: var(--alpha-soft);
+  font-size: .95rem;
+  font-weight: 600;
+  line-height: 1.5;
+  color: var(--alpha);
+}
+
+.case-card--fiction {
+  border-style: dashed;
+  background: transparent;
+}
+
 .spec {
   margin: 0;
   border-top: 1px solid var(--line-strong);
@@ -1280,6 +1380,10 @@ h3.stack-gap {
 .spec dd {
   margin: 0;
   color: var(--ink-soft);
+}
+
+.spec dd .fineprint {
+  margin-top: .9rem;
 }
 
 @media (max-width: 639px) {
@@ -1372,6 +1476,51 @@ h3.stack-gap {
 .closing p {
   max-width: var(--measure);
   font-size: 1.12rem;
+}
+
+/* The closing section that carries the contact form: the reason to write on one side, the form on the other. */
+.closing__grid {
+  display: grid;
+  grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr);
+  gap: clamp(2rem, 5vw, 5rem);
+  align-items: start;
+}
+
+.closing--form {
+  scroll-margin-top: calc(var(--header-h) + .5rem);
+}
+
+.next-steps {
+  display: grid;
+  gap: .9rem;
+  margin: 1.75rem 0 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: next;
+}
+
+.next-steps li {
+  counter-increment: next;
+  position: relative;
+  padding-left: 2.2rem;
+  color: var(--ink-soft);
+}
+
+.next-steps li::before {
+  content: counter(next);
+  position: absolute;
+  top: -.05em;
+  left: 0;
+  font-family: var(--font-display);
+  font-size: 1.4rem;
+  line-height: 1.3;
+  color: var(--flow-ink);
+}
+
+@media (max-width: 959px) {
+  .closing__grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }
 
 /* ---- page intro of the inner pages -------------------------------------------------------- */
@@ -1600,14 +1749,45 @@ h3.stack-gap {
   color: #fca5a5;
 }
 
-.brief-form__how {
+.brief-form .actions {
+  margin-top: .25rem;
+}
+
+.field-hint {
+  margin: .4rem 0 0;
+  font-size: .88rem;
+  color: var(--muted);
+}
+
+.brief-form__note {
   margin: 0;
-  padding: .9rem 1rem;
-  border: 1px solid var(--gov-line);
-  border-radius: var(--radius-sm);
-  background: var(--gov-soft);
-  font-size: .95rem;
+  font-size: .9rem;
+  line-height: 1.55;
+  color: var(--muted);
+}
+
+.brief-form__note strong {
   color: var(--ink-soft);
+  font-weight: 600;
+}
+
+/* The field a person never sees or reaches. Kept out of the page, the tab order and the accessibility tree. */
+.brief-form__trap {
+  position: absolute;
+  left: -9999px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
+.contact-form {
+  display: grid;
+  gap: 1rem;
+  min-width: 0;
+}
+
+.contact-form > .btn {
+  justify-self: start;
 }
 
 .brief-form__status {
@@ -1615,6 +1795,37 @@ h3.stack-gap {
   margin: 0;
   font-size: .95rem;
   color: var(--ink);
+}
+
+.brief-form__status:empty {
+  display: none;
+}
+
+.brief-form[aria-busy="true"] {
+  opacity: .75;
+}
+
+.brief-form__done {
+  padding: clamp(1.25rem, 3vw, 2rem);
+  border: 1px solid rgba(94, 234, 212, .38);
+  border-radius: var(--radius-lg);
+  background: var(--accent-soft);
+}
+
+.brief-form__done:focus {
+  outline: none;
+}
+
+.brief-form__done h3 {
+  margin: 0 0 .5rem;
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  font-weight: 400;
+}
+
+.brief-form__done p {
+  margin: 0;
+  font-size: 1rem;
 }
 
 .brief-aside {

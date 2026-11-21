@@ -94,6 +94,47 @@ export const caseStudies: CaseStudy[] = [];
 
 export const publishedCaseStudies = caseStudies.filter((study) => study.status === 'published');
 
+/** The fields of a case that an invented example can honestly fill: no result, no clearance, no kind of evidence. */
+export type IllustrativeExample = Omit<CaseStudy, 'status' | 'kind' | 'measuredResults' | 'publicationClearance'>;
+
+/** Printed wherever the example appears. It is the first thing a reader must know about it. */
+export const fictionalNotice = 'Fictional example. This organization does not exist and is not a client of Poesis. No engagement took place and nothing was measured. The page shows how a real case is documented.';
+
+/**
+ * An invented example, to show and test the format of a case while no real one
+ * is published. It is fiction and is handled as fiction everywhere:
+ *   - it is not in `caseStudies`, so it never counts as a published case: the menu,
+ *     the home page and the Transformation page ignore it;
+ *   - its card and its page carry `fictionalNotice`, and it reports no result;
+ *   - it is kept out of the sitemap and of search engines, and disappears from the
+ *     site as soon as a real case is published.
+ * What it names in SAF (agents, workflows) exists in the public repository.
+ * Set it to `null` to remove it.
+ */
+const organizationRepository = 'https://github.com/poesis-cloud/saf-agentic-organization';
+export const illustrativeExample: IllustrativeExample | null = {
+  slug: 'example-retail-bank-delivery-team',
+  title: 'Fictional example: a delivery team in a retail bank',
+  summary: 'An invented walk-through of how one software delivery team of a retail bank could run its backlog refinement and iteration planning as an agentic organization.',
+  context: 'A retail bank with a large in-house IT department, working in a scaled agile set-up. The team in this example maintains customer notification services. The bank, the team and the situation are invented.',
+  problem: 'Regulatory and product changes reach the team as long documents. Turning one of them into refined features and stories goes through several hands, and the reasons behind each decision are lost on the way. Planning starts from incomplete context.',
+  scope: 'One team and two recurring activities: refining features into stories, and planning an iteration. Left out: any change to production systems, anything that touches customer data, and every other team.',
+  method: 'The five steps of the Poesis method. The roles and handoffs of the team are mapped; refinement and planning are chosen as the first workflows; the ready-made SAF Agentic Organization is adapted to the team; the pilot runs on the team’s own repository; the evidence is reviewed with the team and its managers.',
+  agentsAndWorkflows: 'The program and team orchestrators of the SAF Agentic Organization, with its product owner, system architect, quality engineer and security expert agents. Workflows: feature backlog refinement, team backlog refinement, iteration planning and iteration review. Each step writes one artifact, checked against its schema and committed to the repository.',
+  humanControls: 'The team’s product owner reviews every refined feature before it enters planning, and a security reviewer reads anything that touches a control. Nothing is merged without a person. Because SAF does not yet authenticate an approval, the bank records who approved in its own tooling.',
+  period: 'None: the scenario is invented.',
+  evidence: [
+    { label: 'The workflows named above, in the public repository', href: `${organizationRepository}/tree/main/workflows` },
+    { label: 'The agents named above, in the public repository', href: `${organizationRepository}/tree/main/agents` },
+  ],
+  limits: 'This is not evidence of anything. It shows what a case describes, not what a client obtained. SAF is an alpha preview that runs on GitHub Copilot only, and a bank’s own security and compliance functions would have to accept it before any such pilot.',
+  learnings: 'A real case states here what the pilot taught, and what changed in the model as a result.',
+  nextStep: 'A real case states here the decision that was taken: extend, adjust or stop.',
+};
+
+/** The example is shown only while it cannot be mistaken for, or sit beside, a real case. */
+export const shownExample: IllustrativeExample | null = publishedCaseStudies.length === 0 ? illustrativeExample : null;
+
 export function validateCaseStudies(entries: CaseStudy[] = caseStudies): void {
   const slugs = entries.map((study) => study.slug);
   if (new Set(slugs).size !== slugs.length) throw new Error('Duplicate case study slug');

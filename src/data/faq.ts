@@ -86,6 +86,24 @@ export const dataAndTools: FaqItem = {
   ],
 };
 
+export const prerequisites: FaqItem = {
+  question: 'What do we need in place before starting?',
+  answer: [
+    'For the first three steps: the people who own the perimeter, and time for the conversations.',
+    `For the pilot: an agent host that SAF supports, which today means ${supportedHost.name}, and a Git repository for the work. Access and data handling are agreed before the pilot starts.`,
+  ],
+};
+
+export const whoDoesWhat: FaqItem = {
+  question: 'How much of this is automated?',
+  answer: [
+    'Less than the word "agentic" suggests, on purpose. Understanding the organization, choosing what to delegate, reviewing the work and judging the pilot are done by people.',
+    'What agents do is carry out the steps of the workflows that were designed for them, inside the limits the model sets, with each step checked and recorded.',
+  ],
+};
+
+export const howItWorksFaq: FaqItem[] = [whoDoesWhat, prerequisites, wholeCompany, commitment, productionReady];
+
 export const transformationFaq: FaqItem[] = [wholeCompany, firstPilot, versusAgents, dataAndTools, commitment, productionReady];
 
 export const pilotFaq: FaqItem[] = [firstPilot, wholeCompany, dataAndTools, productionReady];

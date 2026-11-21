@@ -14,12 +14,14 @@ import { createHash } from 'node:crypto';
 import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { parse } from 'parse5';
 import { siteNavigation, navigationCta, footerNavigation, legalNavigation } from '../src/data/site-navigation.ts';
-import { archivePrefixes, knowledgeContext, knowledgePrefixes, platformOverviewPath, thesisPath } from '../src/data/knowledge.ts';
-import { harness, installCommands, latestPreRelease, marketplace, maturityLabel, organization, safProducts, supportedHost, verifiedOn } from '../src/data/saf.ts';
-import { homeFaq, pilotFaq, transformationFaq, faqLd } from '../src/data/faq.ts';
-import { caseStudies, publicationChecklist, publishedCaseStudies, validateCaseStudies } from '../src/data/case-studies.ts';
-import { briefMailto, composeBrief, MAILTO_LIMIT } from '../src/scripts/contact-brief.ts';
-import { contactEmail } from '../src/data/site.ts';
+import { archivePaths, archivePrefixes, knowledgeContext, knowledgePrefixes, platformOverviewPath, thesisPath } from '../src/data/knowledge.ts';
+import { cliVersionNote, harness, installCommands, knownLimits, latestPreRelease, marketplace, maturity, maturityLabel, organization, safLinks, safProducts, supportedHost, verifiedOn } from '../src/data/saf.ts';
+import { homeFaq, howItWorksFaq, pilotFaq, transformationFaq, faqLd } from '../src/data/faq.ts';
+import { caseStudies, fictionalNotice, illustrativeExample, publicationChecklist, publishedCaseStudies, shownExample, validateCaseStudies } from '../src/data/case-studies.ts';
+import { briefMailto, buildPayload, composeBrief, contactFields, interpretResponse, MAILTO_LIMIT } from '../src/scripts/contact-brief.ts';
+import { LIMITS } from '../contact-endpoint/handler.mjs';
+import { methodSteps } from '../src/data/method.ts';
+import { contact, contactEmail, offerName } from '../src/data/site.ts';
 import { platformSolutions, solutionHref } from '../src/data/poesis-platform.ts';
 import { alternatives } from '../src/data/alternatives.ts';
 
@@ -46,7 +48,10 @@ const built = (pathname) => {
 };
 const mainOf = (document) => first(document, 'main');
 
-const conversionPages = ['/', '/transformation/', '/open-source/', '/case-studies/', '/pilot/', '/about/', '/contact/'];
+/** The pages that sell or explain the offer, all indexable. */
+const conversionPages = ['/', '/transformation/', '/how-it-works/', '/open-source/', '/pilot/', '/about/', '/contact/'];
+/** The pages that end with the contact form, or are it. */
+const formPages = ['/', '/transformation/', '/how-it-works/', '/pilot/', '/contact/'];
 const noteFiles = () => readdirSync(here('../src/content/insights/')).filter((file) => file.endsWith('.md'));
 
 // ---- 1. the Knowledge corpus is untouched -------------------------------------------------
@@ -70,7 +75,9 @@ test('Knowledge routes are classified without ambiguity', () => {
   for (const path of ['/knowledge/', '/knowledge/platform', '/catalog', '/catalog/usage', '/solutions/saf', '/usage/read-governance-model', '/insights/agentic-safe/', '/it/alternatives/leanix/']) {
     assert.deepEqual(knowledgeContext(path), { inKnowledge: true, archive: false, isHub: path === '/knowledge/' }, path);
   }
-  for (const path of ['/services/pilot', '/services/oip-saas/', '/partnerships/llm-vendor-value-proposal']) assert.equal(knowledgeContext(path).archive, true, path);
+  for (const path of ['/services/pilot', '/services/oip-saas/', '/partnerships/llm-vendor-value-proposal', '/catalog/services', '/catalog/services/']) assert.equal(knowledgeContext(path).archive, true, path);
+  assert.deepEqual([...archivePaths], ['/catalog/services']);
+  assert.equal(knowledgeContext('/catalog/servicesx').archive, false);
   for (const path of conversionPages) assert.equal(knowledgeContext(path).inKnowledge, false, path);
   // A prefix never swallows a sibling: /italy is not /it/, /servicesx is not /services.
   assert.equal(knowledgeContext('/italy/').inKnowledge, false);
@@ -94,6 +101,16 @@ test('SAF facts keep their alpha status, verified host and preview-channel insta
     'copilot plugin install poesis-saf-agentic-organization@poesis-saf-preview',
   ]);
   assert.notEqual(marketplace.preview.id, marketplace.stable.id);
+  // Published, implemented, in progress and planned are kept apart, and none of them oversells.
+  for (const list of [maturity.published, maturity.implemented, maturity.partial, maturity.planned, knownLimits]) {
+    assert.ok(list.length);
+    assert.doesNotMatch(list.join(' '), /production-ready|enterprise-ready|general availability|Claude|Cursor/i);
+  }
+  assert.ok(maturity.planned.some((item) => item.startsWith('Authenticated human approval')));
+  assert.ok(maturity.planned.some((item) => /stable channel/.test(item)));
+  assert.ok(maturity.published.some((item) => item.includes(latestPreRelease.version) && item.includes('preview channel')));
+  assert.ok(safLinks.limitations.startsWith('https://docs.poesis.cloud/saf/'));
+  assert.match(cliVersionNote, /current version of the Copilot CLI/);
   assert.equal(supportedHost.name, 'GitHub Copilot');
   assert.deepEqual(safProducts, [harness, organization]);
   for (const product of safProducts) {
@@ -116,12 +133,24 @@ test('FAQ covers the questions buyers and developers ask, and structured data re
     'Which agent environments are supported today?',
     'Is the framework production-ready?',
   ]);
-  for (const set of [homeFaq, transformationFaq, pilotFaq]) {
+  for (const set of [homeFaq, transformationFaq, pilotFaq, howItWorksFaq]) {
     const ld = faqLd(set);
     assert.equal(ld['@type'], 'FAQPage');
     assert.deepEqual(ld.mainEntity.map((entry) => entry.name), set.map((item) => item.question));
     for (const [index, entry] of ld.mainEntity.entries()) assert.equal(entry.acceptedAnswer.text, set[index].answer.join(' '));
   }
+  // One journey, told the same way everywhere: five steps, each saying who does the work.
+  assert.deepEqual(methodSteps.map((step) => step.title), [
+    'Understand your organization',
+    'Identify high-value workflows',
+    'Design an agentic organization with SAF',
+    'Run a governed pilot',
+    'Evaluate, improve and evolve',
+  ]);
+  for (const step of methodSteps) for (const key of ['summary', 'what', 'who', 'saf', 'result']) assert.ok(step[key].trim(), `${step.title}: ${key}`);
+  // No duration, price or result is promised by the method.
+  assert.doesNotMatch(JSON.stringify(methodSteps), /\b\d+\s*(weeks?|days?|months?|%|x)\b|ROI|guarantee/i);
+  assert.equal(offerName, 'Agentic Organization Transformation');
   const readiness = homeFaq.at(-1).answer.join(' ');
   assert.match(readiness, /^No\./);
   assert.ok(readiness.includes(latestPreRelease.version));
@@ -131,6 +160,16 @@ test('no case study is published without evidence, stated limits and clearance',
   assert.equal(caseStudies.length, 0, 'add a case only with its evidence and its publication clearance');
   assert.equal(publishedCaseStudies.length, 0);
   assert.ok(publicationChecklist.length >= 5);
+  // The invented example is not a case: it sits outside the register, announces itself as fiction and reports nothing.
+  assert.ok(illustrativeExample);
+  assert.equal(shownExample, illustrativeExample);
+  assert.ok(!caseStudies.includes(illustrativeExample));
+  assert.match(illustrativeExample.slug, /^example-/);
+  assert.match(illustrativeExample.title, /^Fictional example: /);
+  for (const key of ['measuredResults', 'publicationClearance', 'kind', 'status']) assert.equal(key in illustrativeExample, false, key);
+  for (const phrase of ['Fictional example.', 'does not exist', 'not a client of Poesis', 'nothing was measured']) assert.ok(fictionalNotice.includes(phrase), phrase);
+  assert.doesNotMatch(JSON.stringify(illustrativeExample), /\d+\s*%|€|\$|ROI|saved|faster/i);
+  for (const link of illustrativeExample.evidence) assert.ok(link.href.startsWith('https://github.com/poesis-cloud/'), link.href);
   const record = {
     slug: 'sample', status: 'published', kind: 'pilot', title: 't', summary: 's', context: 'c', problem: 'p', scope: 's', method: 'm',
     agentsAndWorkflows: 'a', humanControls: 'h', period: 'p', evidence: [{ label: 'e', href: 'https://example.org' }],
@@ -146,31 +185,47 @@ test('no case study is published without evidence, stated limits and clearance',
   assert.doesNotThrow(() => validateCaseStudies([{ ...record, status: 'draft', evidence: [], limits: '' }]));
 });
 
-test('the contact brief becomes an email to the published address and never a network call', () => {
-  const values = { Name: 'Ada Lovelace', 'Work email': 'ada@example.org', Organization: '', Scope: 'A team', 'What we would like to transform': 'Our release process.', 'Current challenge': '' };
+test('a contact request becomes an email draft or a payload, within the bounds the receiver enforces', () => {
+  const values = { name: 'Ada Lovelace', email: 'ada@example.org', company: '', goal: 'Our release process.', message: '' };
   const brief = composeBrief(values);
-  assert.ok(brief.startsWith('Transformation brief'));
-  assert.ok(brief.includes('Name: Ada Lovelace'));
+  assert.ok(brief.startsWith('Transformation request'));
+  assert.ok(brief.includes('Full name: Ada Lovelace'));
   assert.ok(brief.includes('Our release process.'));
-  assert.ok(!brief.includes('Organization:'), 'empty optional fields are left out');
-  assert.ok(!brief.includes('Current challenge'));
+  assert.ok(!brief.includes('Company'), 'empty optional fields are left out');
+  assert.ok(!brief.includes('Additional context'));
   const { href, shortened } = briefMailto(contactEmail, values);
   assert.equal(shortened, false);
   assert.ok(href.startsWith(`mailto:${contactEmail}?subject=`));
   assert.ok(decodeURIComponent(href).includes('Our release process.'));
-  const long = briefMailto(contactEmail, { ...values, 'What we would like to transform': 'x'.repeat(2000) });
+  const long = briefMailto(contactEmail, { ...values, goal: 'x'.repeat(2000) });
   assert.equal(long.shortened, true);
   assert.ok(long.href.length <= MAILTO_LIMIT);
   // Oversized short fields cannot push the link past the limit either.
-  const oversized = briefMailto(contactEmail, { ...values, Organization: 'o'.repeat(3000), 'What we would like to transform': 'x'.repeat(2000) });
+  const oversized = briefMailto(contactEmail, { ...values, company: 'o'.repeat(3000), goal: 'x'.repeat(2000) });
   assert.equal(oversized.shortened, true);
   assert.ok(oversized.href.length <= MAILTO_LIMIT);
-  assert.ok(oversized.href.startsWith(`mailto:${contactEmail}?subject=`));
   // A hostile value stays inert text inside the link.
-  const hostile = briefMailto(contactEmail, { ...values, Name: 'a&bcc=evil@example.org\r\nBcc: evil@example.org' });
+  const hostile = briefMailto(contactEmail, { ...values, name: 'a&bcc=evil@example.org\r\nBcc: evil@example.org' });
   assert.equal((hostile.href.match(/[?&]bcc=/gi) ?? []).length, 0);
   assert.equal(hostile.href.split('?').length, 2);
   assert.doesNotMatch(hostile.href, /[\r\n]/);
+
+  // The form and the receiver agree on names and bounds.
+  assert.deepEqual(contactFields.map((field) => field.key), ['name', 'email', 'company', 'goal', 'message']);
+  assert.deepEqual(contactFields.filter((field) => field.required).map((field) => field.key), ['name', 'email', 'goal']);
+  for (const field of contactFields) assert.equal(field.maxLength, LIMITS[field.key], field.key);
+  assert.deepEqual(buildPayload(values, { source: 'home', elapsedMs: 4321.6, trap: '' }), { ...values, source: 'home', elapsedMs: 4322, _gotcha: '' });
+
+  // "Sent" means the receiver said so, and nothing else does.
+  assert.deepEqual(interpretResponse(200, { ok: true }), { state: 'sent' });
+  for (const [status, body] of [[200, null], [200, {}], [200, { ok: 'true' }], [204, null], [302, { ok: true }], [500, { ok: true }], [0, null]]) {
+    assert.deepEqual(interpretResponse(status, body), { state: 'failed' }, `${status} ${JSON.stringify(body)}`);
+  }
+  assert.deepEqual(interpretResponse(429, { ok: false }), { state: 'throttled' });
+  assert.deepEqual(interpretResponse(422, { ok: false, errors: { email: 'invalid', nonsense: 'x' } }), { state: 'invalid', fields: ['email'] });
+  assert.deepEqual(interpretResponse(422, { ok: false, errors: {} }), { state: 'failed' });
+  // This build has no receiver configured: the form is an email draft, and the site says so.
+  assert.equal(contact, null);
 });
 
 test('menu, call to action, footer and legal links point at distinct, well-formed destinations', () => {
@@ -191,22 +246,36 @@ builtTest('every address the previous site served still resolves', () => {
   assert.deepEqual(missing, []);
 });
 
-builtTest('the home page states the hero message verbatim and opens both funnels', () => {
+builtTest('the home page states the hero message verbatim, says what is sold and has one dominant action', () => {
   const home = built('/');
   const main = mainOf(home);
   const headings = elements(home, (node) => node.tagName === 'h1');
   assert.equal(headings.length, 1);
   assert.equal(clean(text(headings[0])), HERO_MESSAGE);
   const hero = elements(main, (node) => hasClass(node, 'hero-seed'))[0];
+  // The offer is named, and said in plain words right under the statement.
+  assert.equal(clean(text(elements(hero, (node) => hasClass(node, 'hero-seed__kicker'))[0])), `${offerName}, by Poesis`);
+  const lead = clean(text(elements(hero, (node) => hasClass(node, 'hero-seed__lead'))[0]));
+  for (const phrase of ['your organization', 'a working organization of AI agents', 'your people keep the decisions', 'governed pilot']) assert.ok(lead.includes(phrase), phrase);
+  // One filled button for the prospect; the developer path is a quiet link, and no repository link competes in the hero.
   const actions = elements(hero, (node) => node.tagName === 'a' && hasClass(node, 'btn'));
-  assert.deepEqual(actions.map((node) => [clean(text(node)), attr(node, 'href')]), [['Discuss your transformation', '/contact/'], ['Get started with SAF', '/open-source/']]);
-  assert.ok(elements(hero, (node) => attr(node, 'href') === harness.repository).length, 'a direct repository link sits in the hero');
+  assert.deepEqual(actions.map((node) => [clean(text(node)), attr(node, 'href')]), [['Discuss your transformation', '/contact/'], ['Explore SAF open source', '/open-source/']]);
+  assert.ok(hasClass(actions[0], 'btn-primary') && hasClass(actions[0], 'btn-lg'));
+  assert.ok(hasClass(actions[1], 'btn-quiet') && !hasClass(actions[1], 'btn-primary'));
+  assert.equal(elements(hero, (node) => attr(node, 'href')?.startsWith('https://github.com')).length, 0);
   // The service is what is sold: the earlier platform positioning is not on the page.
   const copy = clean(text(main));
   for (const phrase of ['Organizational Intelligence Platform', 'OIP', 'Run a Pilot', 'Partnership']) assert.ok(!copy.includes(phrase), phrase);
   assert.ok(copy.includes('Alpha preview'));
-  assert.ok(copy.includes('Pilot case studies are being documented.'));
-  for (const id of ['why', 'method', 'strengths', 'saf', 'proof', 'open-source', 'faq']) assert.equal(elements(main, (node) => node.tagName === 'section' && attr(node, 'id') === id).length, 1, id);
+  // No case is published: the page shows no empty showcase and sends nobody to one.
+  assert.doesNotMatch(copy, /case stud/i);
+  assert.equal(elements(main, (node) => attr(node, 'href')?.startsWith('/case-studies')).length, 0);
+  for (const id of ['why', 'method', 'strengths', 'saf', 'faq', 'contact']) assert.equal(elements(main, (node) => node.tagName === 'section' && attr(node, 'id') === id).length, 1, id);
+  assert.equal(elements(main, (node) => attr(node, 'id') === 'proof').length, 0);
+  // The five steps, in order; install commands live on the open-source page, not here.
+  const method = elements(main, (node) => attr(node, 'id') === 'method')[0];
+  assert.deepEqual(elements(method, (node) => node.tagName === 'h3').slice(0, 5).map((node) => clean(text(node))), methodSteps.map((step) => step.title));
+  assert.equal(elements(main, (node) => node.tagName === 'pre').length, 0);
   // Anchors of the former homepage are not reused, so old deep links can be forwarded.
   for (const id of ['pains', 'affordances', 'usage', 'qualities', 'services', 'portfolio']) assert.equal(elements(home, (node) => attr(node, 'id') === id).length, 0, id);
   // An unknown anchor is looked up in the overview and followed only if it exists there.
@@ -258,8 +327,9 @@ builtTest('the hero film is local, silent, optional and has a still fallback', (
   assert.ok(hasAttr(toggle, 'hidden'), 'the pause control appears only when the film can play');
 });
 
-builtTest('every page carries the four-item menu and the call to action, and none carries the old groups', () => {
-  for (const route of [...conversionPages, '/knowledge/', platformOverviewPath, '/catalog/', '/solutions/saf/', '/services/oip-saas/', '/insights/agentic-safe/', '/usage/read-governance-model/', '/legal/privacy/', '/404.html']) {
+builtTest('every page carries the same short menu and the call to action, and none carries the old groups', () => {
+  assert.deepEqual(siteNavigation.map((item) => item.label), ['Transformation', 'How It Works', 'Open Source', 'Knowledge']);
+  for (const route of [...conversionPages, '/case-studies/', '/knowledge/', platformOverviewPath, '/catalog/', '/solutions/saf/', '/services/oip-saas/', '/insights/agentic-safe/', '/usage/read-governance-model/', '/legal/privacy/', '/404.html']) {
     const header = first(built(route), 'header');
     const nav = first(header, 'nav');
     assert.deepEqual(elements(nav, (node) => node.tagName === 'a').map((node) => [attr(node, 'href'), clean(text(node))]), siteNavigation.map((item) => [item.href, item.label]), route);
@@ -267,7 +337,9 @@ builtTest('every page carries the four-item menu and the call to action, and non
     assert.equal(cta.length, 1, route);
     assert.deepEqual([attr(cta[0], 'href'), clean(text(cta[0]))], [navigationCta.href, navigationCta.label], route);
     assert.equal(elements(header, (node) => node.tagName === 'button' && hasClass(node, 'nav-dropdown-trigger')).length, 0, route);
-    assert.doesNotMatch(clean(text(header)), /Platform|Partnership|Services|Run a Pilot/, route);
+    assert.doesNotMatch(clean(text(header)), /Platform|Partnership|Services|Run a Pilot|Case Studies/, route);
+    // A click towards the offer is measured as such.
+    assert.equal(attr(elements(nav, (node) => attr(node, 'href') === '/transformation/')[0], 'data-track'), 'business_transformation_click', route);
   }
 });
 
@@ -312,7 +384,7 @@ builtTest('Knowledge pages wear the envelope, archived offers say so, and only K
     assert.equal(elements(document, (node) => hasClass(node, 'kb-bar__archive')).length, 0, route);
     assert.ok(hasAttr(mainOf(document), 'data-pagefind-body'), route);
   }
-  for (const route of ['/services/pilot/', '/services/agentic-transformation/', '/services/oip-saas/', '/partnerships/llm-vendor-value-proposal/']) {
+  for (const route of ['/services/pilot/', '/services/agentic-transformation/', '/services/oip-saas/', '/partnerships/llm-vendor-value-proposal/', '/catalog/services/']) {
     const notice = elements(built(route), (node) => hasClass(node, 'kb-bar__archive'));
     assert.equal(notice.length, 1, route);
     assert.ok(clean(text(notice[0])).startsWith('Archived offer.'), route);
@@ -381,42 +453,60 @@ builtTest('external links of the conversion pages open safely and stay on approv
   assert.deepEqual([...hosts].sort(), ['developercertificate.org', 'docs.poesis.cloud', 'github.com', 'www.linkedin.com']);
 });
 
-builtTest('the contact page offers a brief that degrades to mailto and labels every field', () => {
-  const contact = built('/contact/');
-  const form = first(contact, 'form');
-  assert.equal(attr(form, 'action'), `mailto:${contactEmail}?subject=Transformation%20brief`);
-  assert.equal(attr(form, 'enctype'), 'text/plain');
-  assert.ok(!hasAttr(form, 'novalidate'), 'native validation applies without JavaScript');
-  const controls = elements(form, (node) => ['input', 'select', 'textarea'].includes(node.tagName));
-  assert.equal(controls.length, 6);
-  for (const control of controls) {
-    const id = attr(control, 'id');
-    assert.equal(elements(form, (node) => node.tagName === 'label' && attr(node, 'for') === id).length, 1, id);
-    assert.ok(attr(control, 'name'), id);
+builtTest('the contact form is short, labelled, honest about its transport, and present where a prospect decides', () => {
+  for (const route of formPages) {
+    const page = built(route);
+    const forms = elements(page, (node) => node.tagName === 'form' && hasAttr(node, 'data-contact-form'));
+    assert.equal(forms.length, 1, route);
+    const form = forms[0];
+    const controls = elements(form, (node) => ['input', 'select', 'textarea'].includes(node.tagName));
+    assert.deepEqual(controls.map((control) => attr(control, 'data-key')), contactFields.map((field) => field.key), route);
+    for (const [index, control] of controls.entries()) {
+      const id = attr(control, 'id');
+      assert.equal(elements(form, (node) => node.tagName === 'label' && attr(node, 'for') === id).length, 1, `${route} ${id}`);
+      assert.equal(Number(attr(control, 'maxlength')), contactFields[index].maxLength, `${route} ${id}`);
+      assert.equal(hasAttr(control, 'required'), contactFields[index].required, `${route} ${id}`);
+    }
+    assert.equal(elements(form, (node) => ['file', 'password', 'tel'].includes(attr(node, 'type'))).length, 0, route);
+    assert.equal(attr(form, 'data-source'), route === '/' ? 'home' : route.replaceAll('/', ''), route);
+    assert.ok(elements(form, (node) => attr(node, 'href') === '/legal/privacy').length, `${route}: privacy link`);
+    // Without JavaScript the form is the browser's own mailto, with native validation.
+    assert.equal(attr(form, 'action'), `mailto:${contactEmail}?subject=Transformation%20request`, route);
+    assert.equal(attr(form, 'enctype'), 'text/plain', route);
+    assert.ok(!hasAttr(form, 'novalidate'), route);
+    // The result of a submission is announced, and never pre-written as a success.
+    const scope = elements(page, (node) => hasClass(node, 'contact-form'))[0];
+    const status = elements(scope, (node) => hasAttr(node, 'data-contact-status'))[0];
+    assert.equal(attr(status, 'role'), 'status', route);
+    assert.equal(clean(text(status)), '', route);
+    // This build has no receiver: the form says it prepares an email, posts nowhere and shows no "sent" panel.
+    assert.ok(!hasAttr(form, 'data-endpoint'), route);
+    assert.equal(clean(text(elements(form, (node) => node.tagName === 'button' && attr(node, 'type') === 'submit')[0])), 'Prepare my email', route);
+    assert.ok(clean(text(form)).includes('This form prepares an email in your own mail app'), route);
+    assert.equal(elements(scope, (node) => hasAttr(node, 'data-contact-done')).length, 0, route);
+    assert.equal(elements(form, (node) => hasAttr(node, 'data-trap')).length, 0, route);
+    assert.doesNotMatch(clean(text(scope)), /has reached Poesis|Message sent|was sent\b/i, route);
   }
-  assert.deepEqual(controls.filter((control) => hasAttr(control, 'required')).map((control) => attr(control, 'id')), ['brief-name', 'brief-email', 'brief-goal']);
-  for (const control of controls.filter((candidate) => candidate.tagName !== 'select')) assert.ok(Number(attr(control, 'maxlength')) > 0, attr(control, 'id'));
-  // An untouched scope reads "Not sure yet", never a choice the visitor did not make.
-  assert.equal(clean(text(first(first(form, 'select'), 'option'))), 'Not sure yet');
-  // The intent event is sent by the page once a draft is prepared, not by a click on the button.
-  assert.ok(!hasAttr(elements(form, (node) => node.tagName === 'button' && attr(node, 'type') === 'submit')[0], 'data-track'));
-  assert.equal(elements(form, (node) => attr(node, 'type') === 'file' || attr(node, 'type') === 'password').length, 0);
-  const copy = clean(text(mainOf(contact)));
-  assert.ok(copy.includes('This form does not send anything by itself.'));
+  const contact = built('/contact/');
   for (const destination of [harness.issues, organization.issues]) assert.ok(elements(contact, (node) => attr(node, 'href') === destination).length, destination);
-  // No third-party form endpoint and no key in the page.
-  const html = read('../dist/contact/index.html');
-  assert.doesNotMatch(html, /formspree|getform|netlify|hubspot|typeform|api[_-]?key|secret/i);
+  // No third-party form service and no key in any page that carries the form.
+  for (const route of formPages) assert.doesNotMatch(read(distFile(route)), /formspree|getform|netlify|hubspot|typeform|web3forms|api[_-]?key|secret/i, route);
+  // The privacy policy describes the transport that was actually built.
+  assert.ok(clean(text(mainOf(built('/legal/privacy/')))).includes('The contact form runs entirely in your browser'));
 });
 
-builtTest('the open-source page shows the verified install commands, status and limits', () => {
+builtTest('the open-source page shows the verified install commands, and keeps what exists apart from what does not', () => {
   const page = built('/open-source/');
   const copy = clean(text(mainOf(page)));
   const blocks = elements(page, (node) => node.tagName === 'pre').map((node) => text(node));
   assert.ok(blocks.includes(installCommands.join('\n')));
-  for (const phrase of [maturityLabel, latestPreRelease.version, 'Apache License 2.0', 'GitHub Copilot', 'No other agent host is supported yet.', 'no response-time commitment']) assert.ok(copy.includes(phrase), phrase);
+  for (const phrase of [maturityLabel, latestPreRelease.version, 'Apache License 2.0', 'GitHub Copilot', 'No other agent host is supported yet.', 'no response-time commitment', 'What exists today, and what does not.', cliVersionNote]) assert.ok(copy.includes(phrase), phrase);
+  for (const item of [...maturity.published, ...maturity.implemented, ...maturity.partial, ...maturity.planned, ...knownLimits]) assert.ok(copy.includes(clean(item)), item);
+  assert.ok(elements(page, (node) => attr(node, 'href') === safLinks.limitations).length, 'link to the limitations the project publishes');
   assert.doesNotMatch(copy, /Claude Code|Cursor|production-ready|enterprise-ready|@poesis-saf(?!-preview)\b/);
-  for (const id of ['products', 'how', 'install', 'first-workflow', 'community']) assert.equal(elements(page, (node) => attr(node, 'id') === id).length, 1, id);
+  // No pill above the title: the status is a sentence.
+  assert.equal(elements(elements(page, (node) => hasClass(node, 'intro'))[0], (node) => hasClass(node, 'status')).length, 0);
+  for (const id of ['products', 'status', 'how', 'install', 'first-workflow', 'community']) assert.equal(elements(page, (node) => attr(node, 'id') === id).length, 1, id);
   for (const product of safProducts) for (const href of [product.repository, product.docs, product.issues, product.contributing]) assert.ok(elements(page, (node) => attr(node, 'href') === href).length, href);
   assert.ok(elements(page, (node) => attr(node, 'href') === '/transformation/').length, 'the way back to the service');
 });
@@ -439,18 +529,65 @@ builtTest('links that used to reach the former home page or the pilot builder st
 
 builtTest('llms.txt is generated from the SAF facts the pages use', () => {
   const llms = read('../dist/llms.txt');
-  for (const fact of [verifiedOn, latestPreRelease.version, latestPreRelease.publishedOn, supportedHost.name, maturityLabel.toLowerCase(), harness.repository, organization.repository, 'No client case study is published yet.']) assert.ok(llms.includes(fact), fact);
+  for (const fact of [verifiedOn, latestPreRelease.version, latestPreRelease.publishedOn, supportedHost.name, maturityLabel.toLowerCase(), harness.repository, organization.repository, 'No client case study is published yet.', offerName, 'https://poesis.cloud/how-it-works/']) assert.ok(llms.includes(fact), fact);
   assert.ok(llms.startsWith('# Poesis\n'));
-  assert.doesNotMatch(llms, /undefined|\[object|production-ready/);
+  assert.doesNotMatch(llms, /undefined|\[object|production-ready|\/case-studies\//);
 });
 
-builtTest('no case-study page exists while no case is published, and the sitemap keeps old and new routes', () => {
-  const directory = here('../dist/case-studies/');
-  assert.deepEqual(readdirSync(directory), ['index.html']);
-  const sitemap = read('../dist/sitemap-0.xml');
-  for (const route of [...conversionPages.filter((route) => route !== '/'), '/knowledge/', '/knowledge/platform/', '/knowledge/thesis/', '/catalog/', '/solutions/saf/', '/insights/agentic-safe/', '/services/agentic-transformation/', '/it/alternatives/leanix/']) {
-    assert.ok(sitemap.includes(`<loc>https://poesis.cloud${route}</loc>`), route);
+builtTest('without a published case, the register is a quiet page with one fictional example, and nothing presents it as proof', () => {
+  const register = built('/case-studies/');
+  assert.equal(clean(text(first(register, 'h1'))), 'How Poesis documents its pilots.');
+  assert.doesNotMatch(clean(text(mainOf(register))), /Published cases|being documented|No case study is published/);
+  // The example announces itself as fiction on its card and at the top of its page, and reports no result.
+  assert.deepEqual(readdirSync(here('../dist/case-studies/')).sort(), [illustrativeExample.slug, 'index.html']);
+  const card = elements(register, (node) => hasClass(node, 'case-card--fiction'));
+  assert.equal(card.length, 1);
+  assert.equal(clean(text(elements(card[0], (node) => hasClass(node, 'fiction-notice'))[0])), fictionalNotice);
+  const example = built(`/case-studies/${illustrativeExample.slug}/`);
+  const body = mainOf(example);
+  const notice = elements(body, (node) => hasClass(node, 'fiction-notice'))[0];
+  assert.equal(clean(text(notice)), fictionalNotice);
+  const order = elements(body, (node) => node.tagName === 'h1' || hasClass(node, 'fiction-notice'));
+  assert.ok(hasClass(order[0], 'fiction-notice'), 'the notice comes before the title');
+  assert.ok(clean(text(first(example, 'h1'))).startsWith('Fictional example: '));
+  assert.ok(clean(text(first(example, 'title'))).startsWith('Fictional example: '));
+  assert.ok(clean(text(body)).includes('None. A real case reports here only what was measured'));
+  assert.doesNotMatch(clean(text(body)), /Cleared for publication|\d+\s*%/);
+  // Neither page is offered to search engines, and no commercial page links to them.
+  for (const page of [register, example]) {
+    assert.equal(attr(elements(page, (node) => node.tagName === 'meta' && attr(node, 'name') === 'robots')[0], 'content'), 'noindex, follow');
+    assert.equal(elements(page, (node) => node.tagName === 'link' && attr(node, 'rel') === 'canonical').length, 0);
   }
-  assert.ok(sitemap.includes('<loc>https://poesis.cloud/</loc>'));
-  assert.doesNotMatch(sitemap, /404|\/oap-/);
+  for (const route of conversionPages) assert.equal(elements(built(route), (node) => attr(node, 'href')?.startsWith('/case-studies')).length, 0, route);
 });
+
+builtTest('the sitemap and the noindex directives agree, and archived offers are in neither index', () => {
+  const sitemap = read('../dist/sitemap-0.xml');
+  const listed = new Set([...sitemap.matchAll(/<loc>https:\/\/poesis\.cloud([^<]*)<\/loc>/g)].map((match) => match[1]));
+  const walk = (directory) => readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
+    const path = new URL(`${entry.name}${entry.isDirectory() ? '/' : ''}`, directory);
+    return entry.isDirectory() ? (entry.name === 'pagefind' || entry.name.startsWith('oap-') ? [] : walk(path)) : entry.name === 'index.html' ? [path] : [];
+  });
+  const root = here('../dist/');
+  const archived = [];
+  for (const file of walk(root)) {
+    const route = `/${file.pathname.slice(root.pathname.length).replace(/index\.html$/, '')}`;
+    const html = readFileSync(file, 'utf8');
+    const blocked = /<meta name="robots" content="noindex/.test(html);
+    assert.equal(listed.has(route), !blocked, `${route}: ${blocked ? 'noindex but in the sitemap' : 'indexable but missing from the sitemap'}`);
+    // An archived offer is a page that carries the archive notice (old redirect stubs under /services/ do not).
+    if (html.includes('kb-bar__archive')) {
+      assert.ok(blocked, `${route}: archived offer still offered to search engines`);
+      archived.push(route);
+    }
+  }
+  // Archived offers: seven service records, the partnership proposal and the list of services.
+  assert.equal(archived.length, 9);
+  assert.ok(archived.includes('/catalog/services/') && archived.includes('/services/agentic-transformation/') && archived.includes('/services/pilot/'));
+  // The current offer and the corpus stay indexed.
+  for (const route of [...conversionPages, '/knowledge/', '/knowledge/platform/', '/knowledge/thesis/', '/catalog/', '/catalog/usage/', '/solutions/saf/', '/insights/agentic-safe/', '/it/alternatives/leanix/']) assert.ok(listed.has(route), route);
+  assert.doesNotMatch(sitemap, /404|\/oap-|\/case-studies\//);
+  // Nothing in robots.txt hides a page: a crawler must be able to read the noindex directive.
+  assert.doesNotMatch(read('../dist/robots.txt'), /Disallow: \/\S/);
+});
+

@@ -841,7 +841,8 @@ test('built pilot builder keeps needs first, canonical links, safe projection an
   assert.ok(elements(orientation, (node) => attr(node, 'href') === '/contact/').length);
   const sitemap = readFileSync(new URL('../dist/sitemap-0.xml', import.meta.url), 'utf8');
   assert.ok(sitemap.includes('/pilot/</loc>'));
-  assert.ok(sitemap.includes('/services/pilot/</loc>'));
+  // The archived builder stays online but is no longer offered to search engines.
+  assert.ok(!sitemap.includes('/services/pilot/</loc>'));
 });
 
 test('built usage pages retain identity, derived badges, contextual links and SEO title identity', { skip: process.env.CHECK_BUILT_USAGE !== '1' }, () => {

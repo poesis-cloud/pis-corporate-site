@@ -5,13 +5,15 @@
  * and limits, questions, then one call to action.
  */
 import BaseLayout from '../layouts/BaseLayout.astro';
+import ContactSection from '../components/ContactSection.astro';
 import Faq from '../components/Faq.astro';
 import { faqLd, transformationFaq } from '../data/faq.ts';
 import { publishedCaseStudies } from '../data/case-studies.ts';
+import { methodSteps } from '../data/method.ts';
 import { maturityLabel, supportedHost } from '../data/saf.ts';
-import { externalLinks } from '../data/site.ts';
+import { offerName } from '../data/site.ts';
 
-const title = 'Agentic transformation of your organization';
+const title = offerName;
 const description = 'Poesis guides the agentic transformation of an organization or of one of its parts: scope, model of roles and workflows, pilot with SAF under human review, evidence review and next step.';
 
 const audiences = [
@@ -33,29 +35,6 @@ const difficulties = [
   { title: 'Knowledge that lives in a few heads', body: 'The prompts, the habits and the judgment that make AI useful stay with the people who found them. The second team starts from zero.' },
 ];
 
-const method = [
-  {
-    title: 'Discover and scope',
-    body: 'We work with the people who own the perimeter to clarify what it really covers, what hurts in it today and which results would count as success.',
-    output: 'A written scope and success criteria.',
-  },
-  {
-    title: 'Model the agentic seed',
-    body: 'We represent the roles, responsibilities, workflows and artifacts of the perimeter, and decide with you what is delegated to agents and where a person decides.',
-    output: 'A first model of the agentic organization, as files you can read.',
-  },
-  {
-    title: 'Pilot with SAF',
-    body: 'The model runs on the agreed scope with SAF. Each step is resolved, checked and recorded; people review at the points the workflow names.',
-    output: 'A pilot workflow in use, and the artifacts and journals it produced.',
-  },
-  {
-    title: 'Evaluate and evolve',
-    body: 'We review the evidence against the success criteria. You decide whether to extend the scope, adjust the model or stop.',
-    output: 'An evidence review and, if you go on, a roadmap.',
-  },
-];
-
 const terms = [
   { term: 'How it starts', detail: 'With a conversation about your scope. There is no form to qualify for and no standard package to pick.' },
   { term: 'How it is scoped', detail: 'By agreement: perimeter, access, responsibilities, timing and commercial terms are written down before any work begins.' },
@@ -70,7 +49,6 @@ const limits = [
   `One agent host is supported today: ${supportedHost.name}.`,
   'Authenticated human approval is planned. Today a review point is a step of the workflow, not a verified signature.',
   'Poesis publishes no price list and no committed duration. Both depend on the scope.',
-  'No client result is published yet. This page will link to case studies when they are cleared for publication.',
 ];
 ---
 <BaseLayout
@@ -81,7 +59,7 @@ const limits = [
   jsonLd={[
     {
       '@type': 'Service',
-      name: 'Agentic transformation',
+      name: offerName,
       serviceType: 'Agentic organizational transformation consulting',
       description,
       url: 'https://poesis.cloud/transformation/',
@@ -97,12 +75,12 @@ const limits = [
         <li><a href="/">Poesis</a></li>
         <li aria-current="page">Transformation</li>
       </ol>
-      <h1>Agentic transformation of your organization.</h1>
+      <h1>{offerName}.</h1>
       <p class="intro__lead">Poesis works with you to turn a part of your organization, or all of it, into an agentic organization: one where AI agents carry defined responsibilities inside explicit workflows, and people decide where it matters.</p>
       <p class="intro__lead">You do not buy a tool. You engage a team to model your perimeter, run it on SAF in a focused pilot, and judge the result on evidence.</p>
       <div class="actions">
-        <a class="btn btn-primary btn-lg" href="/contact/" data-track="business_contact_intent" data-track-id="transformation-intro">Discuss your transformation</a>
-        <a class="btn btn-quiet" href="#method">See the method</a>
+        <a class="btn btn-primary btn-lg" href="#contact" data-track="business_contact_intent" data-track-id="transformation-intro">Discuss your transformation</a>
+        <a class="btn btn-quiet" href="/how-it-works/">See how it works</a>
       </div>
     </div>
   </section>
@@ -152,46 +130,35 @@ const limits = [
     <div class="container">
       <div class="band-head">
         <h2 id="method-title">The method: plant a seed, then let evidence decide.</h2>
-        <p>The seed is a small, complete model of your perimeter as an agentic organization. It is planted on a real scope, observed, and changed by what the work shows. The four steps below are indicative, not contractual.</p>
+        <p>The seed is a small, complete model of your perimeter as an agentic organization. It is planted on a real scope, observed, and changed by what the work shows. Five steps get you there; they are indicative, not contractual.</p>
       </div>
-      <ol class="steps">
-        {method.map((step) => (
+      <ol class="steps steps--five">
+        {methodSteps.map((step) => (
           <li>
             <h3>{step.title}</h3>
-            <p>{step.body}</p>
-            <p class="steps__output">{step.output}</p>
+            <p>{step.summary}</p>
+            <p class="steps__output">{step.result}</p>
           </li>
         ))}
       </ol>
-      <p class="fineprint">The method rests on <a href="/open-source/">SAF, the Systemic Agentic Framework</a>: an open-source harness that resolves, checks and records each step, and a first ready-made organization for scaled agile delivery. You can read all of it before you talk to us.</p>
+      <div class="actions">
+        <a class="btn btn-ghost" href="/how-it-works/">Each step in detail</a>
+        <a class="btn btn-quiet" href="/open-source/" data-track="developer_docs_click" data-track-id="transformation-method">The framework it runs on</a>
+      </div>
     </div>
   </section>
 
-  <section class="band" id="proof" aria-labelledby="proof-title">
-    <div class="container">
-      <div class="band-head">
-        <h2 id="proof-title">Proof, when it can be shown.</h2>
-        <p>The relevance of this service is demonstrated by pilots that took place. Poesis publishes a case only when its evidence is traceable and the organization has cleared it.</p>
-      </div>
-      {publishedCaseStudies.length > 0 ? (
-        <div class="actions"><a class="btn btn-ghost" href="/case-studies/">Read the case studies</a></div>
-      ) : (
-        <div class="evidence-empty">
-          <div>
-            <h3>No case study is published yet.</h3>
-            <p>Pilot case studies are being documented. Rather than fill this space with illustrative numbers, we leave it empty until a real case is cleared.</p>
-          </div>
-          <div>
-            <p>What you can verify today is the framework itself: its code, its specifications and its releases are public.</p>
-            <div class="actions">
-              <a class="btn btn-ghost" href="/case-studies/">How cases are documented</a>
-              <a class="btn btn-quiet" href={externalLinks.github} target="_blank" rel="noopener noreferrer" data-track="developer_repo_click" data-track-id="transformation-proof">Poesis on GitHub</a>
-            </div>
-          </div>
+  {publishedCaseStudies.length > 0 && (
+    <section class="band" id="proof" aria-labelledby="proof-title">
+      <div class="container">
+        <div class="band-head">
+          <h2 id="proof-title">Proof you can inspect.</h2>
+          <p>Each case states whether it is a demonstration, a pilot or an operational deployment, and links to its evidence.</p>
         </div>
-      )}
-    </div>
-  </section>
+        <div class="actions"><a class="btn btn-ghost" href="/case-studies/">Read the case studies</a></div>
+      </div>
+    </section>
+  )}
 
   <section class="band band--raised" id="engagement" aria-labelledby="engagement-title">
     <div class="container">
@@ -226,14 +193,7 @@ const limits = [
     </div>
   </section>
 
-  <section class="closing" aria-labelledby="closing-title">
-    <div class="container">
-      <h2 id="closing-title">Start with the scope you have in mind.</h2>
-      <p>Describe the team, function or process, and what you would want to see change. We will tell you what a first step could look like, and whether Poesis is the right fit.</p>
-      <div class="actions">
-        <a class="btn btn-primary btn-lg" href="/contact/" data-track="business_contact_intent" data-track-id="transformation-closing">Discuss your transformation</a>
-        <a class="btn btn-quiet" href="/pilot/">What a first pilot involves</a>
-      </div>
-    </div>
-  </section>
+  <ContactSection source="transformation" title="Start with the scope you have in mind.">
+    <p>Describe the team, function or process, and what you would want to see change.</p>
+  </ContactSection>
 </BaseLayout>

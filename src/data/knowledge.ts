@@ -24,6 +24,9 @@ export const knowledgePrefixes = ['/knowledge', '/catalog', '/solutions', '/usag
  */
 export const archivePrefixes = ['/services', '/partnerships'] as const;
 
+/** A single page that lists archived offers, inside a family that is otherwise current. */
+export const archivePaths = ['/catalog/services'] as const;
+
 const within = (pathname: string, prefixes: readonly string[]) => {
   const path = pathname.endsWith('/') ? pathname : `${pathname}/`;
   return prefixes.some((prefix) => path.startsWith(prefix.endsWith('/') ? prefix : `${prefix}/`));
@@ -31,7 +34,8 @@ const within = (pathname: string, prefixes: readonly string[]) => {
 
 export function knowledgeContext(pathname: string): { inKnowledge: boolean; archive: boolean; isHub: boolean } {
   const isHub = pathname.replace(/\/$/, '') === '/knowledge';
-  return { inKnowledge: within(pathname, knowledgePrefixes), archive: within(pathname, archivePrefixes), isHub };
+  const exact = (archivePaths as readonly string[]).includes(pathname.replace(/\/$/, ''));
+  return { inKnowledge: within(pathname, knowledgePrefixes), archive: exact || within(pathname, archivePrefixes), isHub };
 }
 
 export interface ArchiveEntry {

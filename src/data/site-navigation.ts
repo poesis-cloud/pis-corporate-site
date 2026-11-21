@@ -7,6 +7,7 @@
  */
 import { contactEmail, externalLinks } from './site.ts';
 import { safLinks } from './saf.ts';
+import { publishedCaseStudies } from './case-studies.ts';
 
 export interface SiteNavigationItem {
   href: string;
@@ -45,11 +46,18 @@ export const portfolioViews: SiteNavigationItem[] = [
 /** Every catalog view, and the in-page nav of every catalog page. */
 export const catalogViews: SiteNavigationItem[] = [...needViews, ...coverageViews, ...portfolioViews];
 
+/**
+ * Case studies enter the menu and the footer with the first published case,
+ * and not before: an empty showcase is not a destination.
+ */
+const caseStudiesEntry: SiteNavigationItem[] = publishedCaseStudies.length ? [{ href: '/case-studies/', label: 'Case Studies' }] : [];
+
 /** The primary menu, in display order. */
 export const siteNavigation: SiteNavigationItem[] = [
   { href: '/transformation/', label: 'Transformation' },
+  { href: '/how-it-works/', label: 'How It Works' },
+  ...caseStudiesEntry,
   { href: '/open-source/', label: 'Open Source' },
-  { href: '/case-studies/', label: 'Case Studies' },
   { href: '/knowledge/', label: 'Knowledge' },
 ];
 
@@ -61,9 +69,9 @@ export const footerNavigation: FooterGroup[] = [
     label: 'Transformation',
     items: [
       { href: '/transformation/', label: 'Agentic transformation' },
-      { href: '/transformation/#method', label: 'Method' },
+      { href: '/how-it-works/', label: 'How it works' },
       { href: '/pilot/', label: 'Starting with a pilot' },
-      { href: '/case-studies/', label: 'Case studies' },
+      ...caseStudiesEntry,
     ],
   },
   {

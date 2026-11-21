@@ -8,12 +8,13 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import Icon from '../components/Icon.astro';
 import CommandBlock from '../components/CommandBlock.astro';
 import ProductPanel from '../components/ProductPanel.astro';
-import { firstRunCommand, harness, installCommands, latestPreRelease, marketplace, maturityLabel, orchestrators, organization, organizationInventory, prerequisites, safLinks, safProducts, supportedHost, verifiedOn, type SafProduct } from '../data/saf.ts';
+import { firstRunCommand, harness, cliVersionNote, installCommands, knownLimits, latestPreRelease, marketplace, maturity, maturityLabel, orchestrators, organization, organizationInventory, prerequisites, safLinks, safProducts, supportedHost, verifiedOn, type SafProduct } from '../data/saf.ts';
 import { externalLinkAttributes, externalLinks } from '../data/site.ts';
 import { formatDate } from '../data/format.ts';
 
 const title = 'SAF, the open-source Systemic Agentic Framework';
 const description = 'SAF is an open-source framework for running agentic organizations: a deterministic harness and a first organization for scaled agile delivery. Alpha preview, Apache-2.0, for GitHub Copilot.';
+/** In-page order, also the developer path: understand, check the state, install, run, take part. */
 
 const loop = [
   { title: 'The organization declares', body: 'Agents, workflows, instructions, skills, model profiles, access rules and artifact schemas are files in the organization plugin.' },
@@ -87,7 +88,41 @@ const sourceCode = (product: SafProduct) => ({
     </div>
   </section>
 
-  <section class="band" id="how" aria-labelledby="how-title">
+  <section class="band" id="status" aria-labelledby="status-title">
+    <div class="container">
+      <div class="band-head">
+        <h2 id="status-title">What exists today, and what does not.</h2>
+        <p>SAF is an alpha preview. It is meant to be tried, read and criticised, not to run unattended. This is the state of things on {formatDate(verifiedOn)}.</p>
+      </div>
+      <dl class="spec">
+        <div>
+          <dt>Published</dt>
+          <dd><ul class="plain-list">{maturity.published.map((item) => <li>{item}</li>)}</ul></dd>
+        </div>
+        <div>
+          <dt>Implemented in the harness</dt>
+          <dd><ul class="plain-list">{maturity.implemented.map((item) => <li>{item}</li>)}</ul></dd>
+        </div>
+        <div>
+          <dt>In progress</dt>
+          <dd><ul class="plain-list">{maturity.partial.map((item) => <li>{item}</li>)}</ul></dd>
+        </div>
+        <div>
+          <dt>Not there yet</dt>
+          <dd><ul class="plain-list">{maturity.planned.map((item) => <li>{item}</li>)}</ul></dd>
+        </div>
+        <div>
+          <dt>Known limits of the alpha</dt>
+          <dd>
+            <ul class="plain-list">{knownLimits.map((item) => <li>{item}</li>)}</ul>
+            <p class="fineprint">The project keeps the full list: <a href={safLinks.limitations} {...externalLinkAttributes} data-track="developer_docs_click" data-track-id="oss-limitations">known alpha limitations</a>.</p>
+          </dd>
+        </div>
+      </dl>
+    </div>
+  </section>
+
+  <section class="band band--raised" id="how" aria-labelledby="how-title">
     <div class="container">
       <div class="band-head">
         <h2 id="how-title">How one step of work goes through SAF.</h2>
@@ -102,7 +137,7 @@ const sourceCode = (product: SafProduct) => ({
     </div>
   </section>
 
-  <section class="band band--raised" id="install" aria-labelledby="install-title">
+  <section class="band" id="install" aria-labelledby="install-title">
     <div class="container">
       <div class="band-head">
         <h2 id="install-title">Install.</h2>
@@ -112,6 +147,7 @@ const sourceCode = (product: SafProduct) => ({
         <div>
           <CommandBlock label="GitHub Copilot CLI, preview channel" commands={installCommands} trackId="oss-install" />
           <p class="command__note">These commands are the ones documented in the <a href={safLinks.quickstart} {...externalLinkAttributes} data-track="developer_docs_click" data-track-id="oss-install-quickstart">Quickstart</a> and in the organization’s README. The stable channel (<code>{marketplace.stable.id}</code>) is reserved for final releases and listed no plugin on {formatDate(verifiedOn)}. A one-line installer is described in the Quickstart.</p>
+          <p class="command__note">{cliVersionNote}</p>
         </div>
         <div>
           <h3>You need</h3>
@@ -128,7 +164,7 @@ const sourceCode = (product: SafProduct) => ({
     </div>
   </section>
 
-  <section class="band" id="first-workflow" aria-labelledby="first-title">
+  <section class="band band--raised" id="first-workflow" aria-labelledby="first-title">
     <div class="container">
       <div class="band-head">
         <h2 id="first-title">Your first workflow.</h2>
@@ -163,7 +199,7 @@ const sourceCode = (product: SafProduct) => ({
     </div>
   </section>
 
-  <section class="band band--raised" id="community" aria-labelledby="community-title">
+  <section class="band" id="community" aria-labelledby="community-title">
     <div class="container">
       <div class="band-head">
         <h2 id="community-title">Support, community and contribution.</h2>

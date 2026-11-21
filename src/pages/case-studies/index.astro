@@ -1,35 +1,47 @@
 ---
 /**
- * Case Studies — the evidence register. It lists the cases that are published
- * and, when there is none, says so and shows how a case is documented.
+ * Case Studies — the evidence register.
+ *
+ * Two states, decided by src/data/case-studies.ts:
+ *   no published case   the page explains how Poesis documents a pilot. It is not
+ *                       presented as a collection, stays out of the menu, the
+ *                       sitemap and the search engines' index, and no commercial
+ *                       page sends traffic to it.
+ *   one case or more    the page lists the cases, and enters the menu and the index.
+ * The address never changes.
  */
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import { caseStudyTemplate, evidenceKinds, publicationChecklist, publishedCaseStudies, type EvidenceKind } from '../../data/case-studies.ts';
+import { caseStudyTemplate, evidenceKinds, fictionalNotice, publicationChecklist, publishedCaseStudies, shownExample, type EvidenceKind } from '../../data/case-studies.ts';
 import { harness, organization } from '../../data/saf.ts';
 import { externalLinkAttributes } from '../../data/site.ts';
 
-const title = 'Case studies of agentic transformation pilots';
-const description = 'How Poesis documents its pilots: what counts as evidence, how a demonstration differs from a pilot and from an operational deployment, and the cases cleared for publication.';
+const hasCases = publishedCaseStudies.length > 0;
+const title = hasCases ? 'Case studies of agentic transformation pilots' : 'How Poesis documents its pilots';
+const description = hasCases
+  ? 'Pilots of agentic transformation run with Poesis: context, scope, method, human controls, measured results and limits, each with evidence you can inspect.'
+  : 'What counts as evidence of an agentic transformation pilot, how a demonstration differs from a pilot and from an operational deployment, and what a case must contain before Poesis publishes it.';
 const kinds = Object.entries(evidenceKinds) as [EvidenceKind, { label: string; meaning: string }][];
 ---
-<BaseLayout title={title} description={description} pageType="Case Studies" breadcrumbs={[{ label: 'Case Studies' }]}>
+<BaseLayout title={title} description={description} pageType="Case Studies" noindex={!hasCases} breadcrumbs={[{ label: hasCases ? 'Case Studies' : 'Documenting pilots' }]}>
   <section class="intro">
     <div class="container">
       <ol class="crumbs" aria-label="Breadcrumb">
         <li><a href="/">Poesis</a></li>
-        <li aria-current="page">Case Studies</li>
+        <li aria-current="page">{hasCases ? 'Case Studies' : 'Documenting pilots'}</li>
       </ol>
-      <h1>Case studies of agentic transformation pilots.</h1>
-      <p class="intro__lead">Real work. Verifiable learning. A case is published here when the work took place, its evidence can be inspected, and the organization concerned has agreed to what is said.</p>
+      <h1>{title}.</h1>
+      {hasCases
+        ? <p class="intro__lead">Real work. Verifiable learning. Each case below took place, can be inspected, and was cleared by the organization concerned.</p>
+        : <p class="intro__lead">A pilot is worth publishing when the work took place, its evidence can be inspected, and the organization concerned has agreed to what is said. This is the standard Poesis holds a case to.</p>}
     </div>
   </section>
 
-  <section class="band band--tight" aria-labelledby="published-title">
-    <div class="container">
-      <div class="band-head">
-        <h2 id="published-title">Published cases</h2>
-      </div>
-      {publishedCaseStudies.length > 0 ? (
+  {hasCases && (
+    <section class="band band--tight" aria-labelledby="published-title">
+      <div class="container">
+        <div class="band-head">
+          <h2 id="published-title">Published cases</h2>
+        </div>
         <ul class="case-list">
           {publishedCaseStudies.map((study) => (
             <li class="case-card">
@@ -39,28 +51,31 @@ const kinds = Object.entries(evidenceKinds) as [EvidenceKind, { label: string; m
             </li>
           ))}
         </ul>
-      ) : (
-        <div class="evidence-empty">
-          <div>
-            <h3>Pilot case studies are being documented.</h3>
-            <p>No case study is published yet. Nothing on this site stands in for one: there are no sample clients, no illustrative figures and no logos.</p>
-          </div>
-          <div>
-            <p>If you are considering a pilot, the most useful thing we can do is discuss your scope and show you the framework at work.</p>
-            <div class="actions">
-              <a class="btn btn-primary" href="/contact/" data-track="business_contact_intent" data-track-id="case-studies-empty">Discuss a pilot for your organization</a>
-            </div>
-          </div>
+      </div>
+    </section>
+  )}
+
+  {shownExample && (
+    <section class="band band--tight" id="example" aria-labelledby="example-title">
+      <div class="container">
+        <div class="band-head">
+          <h2 id="example-title">What a case looks like.</h2>
+          <p>No real case is published yet. To show the format, here is one that is entirely invented.</p>
         </div>
-      )}
-    </div>
-  </section>
+        <article class="case-card case-card--fiction">
+          <p class="fiction-notice" role="note">{fictionalNotice}</p>
+          <h3><a href={`/case-studies/${shownExample.slug}/`}>{shownExample.title}</a></h3>
+          <p>{shownExample.summary}</p>
+        </article>
+      </div>
+    </section>
+  )}
 
   <section class="band band--raised" aria-labelledby="kinds-title">
     <div class="container">
       <div class="band-head">
         <h2 id="kinds-title">Three kinds of evidence, never confused.</h2>
-        <p>Every case states which of these it is. A demonstration is not presented as a client pilot, and a pilot is not presented as a deployment.</p>
+        <p>Every case states which of these it is. A demonstration is not presented as a client pilot, and a pilot is not presented as a deployment. An invented example is none of the three, and says so.</p>
       </div>
       <dl class="spec">
         {kinds.map(([, kind]) => (
@@ -106,11 +121,11 @@ const kinds = Object.entries(evidenceKinds) as [EvidenceKind, { label: string; m
 
   <section class="closing" aria-labelledby="closing-title">
     <div class="container">
-      <h2 id="closing-title">The next case could be yours.</h2>
-      <p>A pilot is a bounded scope, agreed success criteria and an evidence review. If it goes well and you agree, it becomes a case on this page.</p>
+      <h2 id="closing-title">A pilot starts with a conversation.</h2>
+      <p>A bounded scope, success criteria agreed first, and a review of the evidence at the end.</p>
       <div class="actions">
         <a class="btn btn-primary btn-lg" href="/contact/" data-track="business_contact_intent" data-track-id="case-studies-closing">Discuss a pilot for your organization</a>
-        <a class="btn btn-quiet" href="/pilot/">What a first pilot involves</a>
+        <a class="btn btn-quiet" href="/how-it-works/">How it works</a>
       </div>
     </div>
   </section>

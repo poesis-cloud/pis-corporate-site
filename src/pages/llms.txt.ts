@@ -7,6 +7,7 @@
 import type { APIRoute } from 'astro';
 import { harness, latestPreRelease, maturityLabel, organization, safLinks, supportedHost, verifiedOn } from '../data/saf.ts';
 import { publishedCaseStudies } from '../data/case-studies.ts';
+import { offerName } from '../data/site.ts';
 
 const site = 'https://poesis.cloud';
 const cases = publishedCaseStudies.length
@@ -19,7 +20,7 @@ const body = `# Poesis
 
 Names that are easy to confuse:
 
-- **Poesis** is the company. It sells one service: agentic transformation.
+- **Poesis** is the company. It sells one service: ${offerName}.
 - **SAF (Systemic Agentic Framework)** is the open-source framework Poesis builds. It is not SAFe, the Scaled Agile Framework, which is a trademark of Scaled Agile, Inc.
 - **${harness.name}** (\`${harness.technicalName}\`) is the deterministic engine: it resolves each workflow step, checks agent write grants and artifact schemas, and records what happened.
 - **${organization.name}** (\`${organization.technicalName}\`) is a first ready-made agentic organization for scaled agile delivery, run by the harness.
@@ -28,10 +29,10 @@ Status, read from the public repositories on ${verifiedOn}: both products are in
 
 ## Service
 
-- [Agentic transformation](${site}/transformation/): the service, its method in four steps, how an engagement is framed and its limits
+- [${offerName}](${site}/transformation/): the service, who it is for, how an engagement is framed and its limits
+- [How it works](${site}/how-it-works/): the five steps of a transformation, and who does what at each
 - [A first pilot](${site}/pilot/): what a pilot involves and what it is not
-- [Case studies](${site}/case-studies/): how pilots are documented; lists published cases when there are any
-- [Contact](${site}/contact/): how to reach Poesis
+${publishedCaseStudies.length ? `- [Case studies](${site}/case-studies/): published pilots, each with its evidence\n` : ''}- [Contact](${site}/contact/): how to reach Poesis
 
 ## Open source
 

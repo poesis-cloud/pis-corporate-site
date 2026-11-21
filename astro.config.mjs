@@ -1,11 +1,26 @@
 // @ts-check
 import { defineConfig } from 'astro/config';
 import sitemap from '@astrojs/sitemap';
+import { knowledgeContext } from './src/data/knowledge.ts';
+import { publishedCaseStudies } from './src/data/case-studies.ts';
+
+/**
+ * The sitemap lists what search engines are invited to index, and nothing else:
+ * archived offers and, while it has no case to show, the case-study register
+ * carry a `noindex` directive (see BaseLayout) and are left out here. A test
+ * checks that the two lists agree.
+ */
+const inSitemap = (page) => {
+  const { pathname } = new URL(page);
+  if (knowledgeContext(pathname).archive) return false;
+  if (pathname.startsWith('/case-studies/') && publishedCaseStudies.length === 0) return false;
+  return true;
+};
 
 // https://astro.build/config
 export default defineConfig({
   site: 'https://poesis.cloud',
-  integrations: [sitemap()],
+  integrations: [sitemap({ filter: inSitemap })],
   redirects: {
     '/insights/itip-compliance-proof': '/insights/continuous-regulatory-compliance',
     '/solutions/itip': '/solutions/oip',

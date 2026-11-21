@@ -1,6 +1,6 @@
 ---
 /**
- * Nav — four destinations and one call to action.
+ * Nav — a handful of destinations and one call to action.
  *
  * Without JavaScript every link is visible and the header simply wraps. With
  * JavaScript (the `js` class set in the document head), below 760px the links
@@ -27,7 +27,7 @@ const currentOf = (href: string): 'page' | 'true' | undefined => {
     <nav class="nav-links" id="primary-navigation" aria-label="Primary">
       <ul>
         {siteNavigation.map((item) => (
-          <li><a href={item.href} aria-current={currentOf(item.href)}>{item.label}</a></li>
+          <li><a href={item.href} aria-current={currentOf(item.href)} data-track={item.href === '/transformation/' ? 'business_transformation_click' : undefined} data-track-id={item.href === '/transformation/' ? 'header' : undefined}>{item.label}</a></li>
         ))}
       </ul>
     </nav>

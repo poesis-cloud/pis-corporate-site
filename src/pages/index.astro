@@ -1,17 +1,20 @@
 ---
 /**
  * Home — sells one thing: the agentic transformation of an organization, guided
- * by Poesis. SAF is shown as its method and engine, and as the open-source path
- * for developers. Every product statement comes from src/data/saf.ts.
+ * by Poesis. Its first job is a qualified conversation with a decision-maker.
+ * SAF is shown as what the method runs on, and as the way in for developers,
+ * without competing with that first job. Every product statement comes from
+ * src/data/saf.ts.
  */
 import BaseLayout from '../layouts/BaseLayout.astro';
-import Icon from '../components/Icon.astro';
-import CommandBlock from '../components/CommandBlock.astro';
+import ContactSection from '../components/ContactSection.astro';
 import ProductPanel from '../components/ProductPanel.astro';
 import Faq from '../components/Faq.astro';
 import { faqLd, homeFaq } from '../data/faq.ts';
 import { evidenceKinds, publishedCaseStudies } from '../data/case-studies.ts';
-import { installCommands, maturityLabel, latestPreRelease, safProducts, safLinks, marketplace, harness, organization, supportedHost } from '../data/saf.ts';
+import { maturityLabel, latestPreRelease, safProducts, safLinks, supportedHost } from '../data/saf.ts';
+import { deliverables, methodSteps, scopes } from '../data/method.ts';
+import { externalLinkAttributes, offerName } from '../data/site.ts';
 import { formatDate } from '../data/format.ts';
 
 const ledger = [
@@ -40,23 +43,6 @@ const ledger = [
     approach: 'Because the organization is declared in files, a change is a reviewed commit: scoped, reversible, and tried on one perimeter before the next.',
     value: 'Evolution by iteration, one perimeter at a time.',
   },
-];
-
-const method = [
-  { title: 'Discover and scope', body: 'Clarify the real perimeter, what hurts in it today, and the criteria by which you will judge the result.' },
-  { title: 'Model the agentic seed', body: 'Represent the roles, responsibilities and workflows of that perimeter, and the limits of what is delegated.' },
-  { title: 'Pilot with SAF', body: 'Run the model on the agreed scope, with guardrails and human review at the points you chose.' },
-  { title: 'Evaluate and evolve', body: 'Review the evidence the pilot produced, then decide: extend, adjust or stop.' },
-];
-
-const scopes = ['A whole organization', 'A business unit', 'A department', 'A function', 'A team', 'A process'];
-
-const deliverables = [
-  'An assessment of the scope and of its readiness',
-  'A first model of the agentic organization: the seed',
-  'A pilot workflow running on SAF',
-  'An evidence review of what the pilot showed',
-  'A roadmap for extending or adjusting',
 ];
 
 const qualities = [
@@ -133,22 +119,17 @@ const heroSources = [{ src: '/hero/seed.webm', type: 'video/webm' }, { src: '/he
       ></video>
     </div>
     <div class="container hero-seed__content">
-      <p class="hero-seed__kicker">Agentic transformation, guided by Poesis</p>
+      <p class="hero-seed__kicker">{offerName}, by Poesis</p>
       <h1 id="hero-title">
         Generate easily and rapidly a seed of an agentic organisation mirroring yours to automatize.
         <span class="hero-seed__turn">Plant it, and watch it to produce and evolve.</span>
       </h1>
-      <p class="hero-seed__lead">Start with a team, a function, or your entire organization. <strong>Poesis works with you</strong> to model responsibilities and workflows, introduce governed AI agents, and learn from a focused pilot before scaling. SAF, our open-source Systemic Agentic Framework, is the method and the engine underneath.</p>
-      <div class="doors">
-        <div class="door">
-          <a class="btn btn-primary btn-lg" href="/contact/" data-track="business_contact_intent" data-track-id="home-hero">Discuss your transformation</a>
-          <p>For organizations and the people leading their transformation</p>
-        </div>
-        <div class="door">
-          <a class="btn btn-ghost btn-lg" href="/open-source/" data-track="developer_docs_click" data-track-id="home-hero"><Icon name="github" /> Get started with SAF</a>
-          <p>For developers and architects. Open source, {maturityLabel.toLowerCase()}. <a href={harness.repository} target="_blank" rel="noopener noreferrer" data-track="developer_repo_click" data-track-id="home-hero">View on GitHub</a></p>
-        </div>
+      <p class="hero-seed__lead">Poesis turns the workflows, knowledge and governance of your organization into <strong>a working organization of AI agents</strong>. Start with one team, function or process: your people keep the decisions, and a governed pilot shows what works before you scale.</p>
+      <div class="hero-actions">
+        <a class="btn btn-primary btn-lg" href="/contact/" data-track="business_contact_intent" data-track-id="home-hero">Discuss your transformation</a>
+        <a class="btn btn-quiet" href="/open-source/" data-track="developer_docs_click" data-track-id="home-hero">Explore SAF open source</a>
       </div>
+      <p class="hero-actions__note">Built on SAF, our open-source Systemic Agentic Framework. You talk to the people who build it.</p>
       {/* Below 1100px there is no room for the film beside the words: the same picture is shown as a still, with its legend. */}
       <img class="hero-figure" src="/hero/seed-poster-portrait.webp" width="720" height="900" loading="lazy" decoding="async" alt="Diagram: a strand of DNA planted in the ground grows into a tree of AI agents. People review the work at gates on its branches, and checked documents leave its tips." />
       <ul class="hero-key" aria-label="Legend: a seed grows into an organization of AI agents, reviewed by people, producing checked outputs">
@@ -222,14 +203,14 @@ const heroSources = [{ src: '/hero/seed.webm', type: 'video/webm' }, { src: '/he
   <section class="band band--raised" id="method" aria-labelledby="method-title">
     <div class="container">
       <div class="band-head">
-        <h2 id="method-title">Four steps, on a scope you choose.</h2>
-        <p>The method is the same whether the scope is one process or a whole enterprise. It is indicative: scope, pace and terms are agreed for each engagement.</p>
+        <h2 id="method-title">Five steps, on a scope you choose.</h2>
+        <p>The method is the same for one process or a whole enterprise. It is indicative: scope, pace and terms are agreed for each engagement.</p>
       </div>
-      <ol class="steps">
-        {method.map((step) => (
+      <ol class="steps steps--five">
+        {methodSteps.map((step) => (
           <li>
             <h3>{step.title}</h3>
-            <p>{step.body}</p>
+            <p>{step.summary}</p>
           </li>
         ))}
       </ol>
@@ -249,7 +230,8 @@ const heroSources = [{ src: '/hero/seed.webm', type: 'video/webm' }, { src: '/he
         </div>
       </div>
       <div class="actions">
-        <a class="btn btn-ghost" href="/transformation/#method">See the method in detail</a>
+        <a class="btn btn-ghost" href="/how-it-works/">See how it works, step by step</a>
+        <a class="btn btn-quiet" href="/contact/" data-track="business_contact_intent" data-track-id="home-method">Discuss your transformation</a>
       </div>
     </div>
   </section>
@@ -277,23 +259,27 @@ const heroSources = [{ src: '/hero/seed.webm', type: 'video/webm' }, { src: '/he
   <section class="band band--raised" id="saf" aria-labelledby="saf-title">
     <div class="container">
       <div class="band-head">
-        <h2 id="saf-title">Two SAF products, for two kinds of people.</h2>
-        <p>SAF is the Systemic Agentic Framework. The harness is the engine; the organization is the first thing built to run on it. Both are plugins for a conversational agent host, not a hosted service you subscribe to.</p>
+        <h2 id="saf-title">Built on SAF, an open-source framework you can inspect.</h2>
+        <p>SAF, the Systemic Agentic Framework, is what the method runs on. Its code, specifications and releases are public: you can read all of it before you talk to us, and your teams can use it without us.</p>
       </div>
       <div class="products">
         {safProducts.map((product) => <ProductPanel product={product} trackId="home-saf" />)}
       </div>
-      <p class="fineprint">{maturityLabel}: the latest pre-release of both products is {latestPreRelease.version}, published on {formatDate(latestPreRelease.publishedOn)}. Interfaces may change before a final release. Supported today: {supportedHost.name} only.</p>
+      <p class="fineprint">{maturityLabel}: the latest pre-release of both products is {latestPreRelease.version}, published on {formatDate(latestPreRelease.publishedOn)}. They are plugins for an agent host, not a hosted service, and run on {supportedHost.name} only today. That is why an engagement starts with a pilot under human review.</p>
+      <div class="actions">
+        <a class="btn btn-ghost" href="/open-source/" data-track="developer_docs_click" data-track-id="home-saf">Explore SAF open source</a>
+        <a class="btn btn-quiet" href={safLinks.repositories} {...externalLinkAttributes} data-track="developer_repo_click" data-track-id="home-saf-star">Star the repositories on GitHub</a>
+      </div>
     </div>
   </section>
 
-  <section class="band" id="proof" aria-labelledby="proof-title">
-    <div class="container">
-      <div class="band-head">
-        <h2 id="proof-title">Real work. Verifiable learning.</h2>
-        <p>A method earns trust through pilots that took place, with evidence a reader can inspect. Poesis publishes a case only when it is traceable and cleared by the organization concerned.</p>
-      </div>
-      {publishedCaseStudies.length > 0 ? (
+  {publishedCaseStudies.length > 0 && (
+    <section class="band" id="proof" aria-labelledby="proof-title">
+      <div class="container">
+        <div class="band-head">
+          <h2 id="proof-title">Real work. Verifiable learning.</h2>
+          <p>Each case states whether it is a demonstration, a pilot or an operational deployment, and links to evidence you can inspect.</p>
+        </div>
         <ul class="case-list">
           {publishedCaseStudies.map((study) => (
             <li class="case-card">
@@ -303,61 +289,9 @@ const heroSources = [{ src: '/hero/seed.webm', type: 'video/webm' }, { src: '/he
             </li>
           ))}
         </ul>
-      ) : (
-        <div class="evidence-empty">
-          <div>
-            <h3>Pilot case studies are being documented.</h3>
-            <p>No case study is published yet. This page will show them when their evidence and publication clearance are in hand, and it will say plainly whether each one is a demonstration, a pilot or an operational deployment.</p>
-          </div>
-          <div>
-            <p>Until then, the open-source repositories are the evidence you can inspect yourself.</p>
-            <div class="actions">
-              <a class="btn btn-primary" href="/contact/" data-track="business_contact_intent" data-track-id="home-proof">Discuss a pilot for your organization</a>
-              <a class="btn btn-quiet" href="/case-studies/">How cases are documented</a>
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
-  </section>
-
-  <section class="band band--raised" id="open-source" aria-labelledby="oss-title">
-    <div class="container">
-      <div class="band-head">
-        <p class="for-whom">For developers and architects</p>
-        <h2 id="oss-title">Build your own agentic organization with SAF.</h2>
-        <p>You do not need Poesis to use SAF. Read the code, run it on a repository of your own, and tell us what breaks.</p>
       </div>
-      <ol class="steps steps--three">
-        <li>
-          <h3>Explore the code</h3>
-          <p>The <a href={harness.repository} target="_blank" rel="noopener noreferrer" data-track="developer_repo_click" data-track-id="home-oss-harness">harness</a>, the <a href={organization.repository} target="_blank" rel="noopener noreferrer" data-track="developer_repo_click" data-track-id="home-oss-organization">organization</a> and the <a href={marketplace.repository} target="_blank" rel="noopener noreferrer" data-track="developer_repo_click" data-track-id="home-oss-marketplace">plugin marketplace</a> are public on GitHub, under Apache-2.0.</p>
-        </li>
-        <li>
-          <h3>Install and run</h3>
-          <p>Three commands with the {supportedHost.name} CLI, from the preview channel. The <a href={safLinks.quickstart} target="_blank" rel="noopener noreferrer" data-track="developer_docs_click" data-track-id="home-oss-quickstart">Quickstart</a> takes you to a first workflow.</p>
-        </li>
-        <li>
-          <h3>Contribute</h3>
-          <p>Open an issue or a pull request. Contributions are accepted under Apache-2.0 with the Developer Certificate of Origin: see <a href={harness.contributing} target="_blank" rel="noopener noreferrer" data-track="developer_repo_click" data-track-id="home-oss-contributing">CONTRIBUTING.md</a>.</p>
-        </li>
-      </ol>
-      <div class="split">
-        <div>
-          <CommandBlock label="Install both plugins (preview channel)" commands={installCommands} trackId="home-oss" />
-          <p class="command__note">{maturityLabel}. The stable channel has no release yet. Requirements and host details are on the <a href="/open-source/#install">open-source page</a>.</p>
-        </div>
-        <div>
-          <h3>Help the project be found</h3>
-          <p>A star on GitHub is the simplest way to follow the work and to tell us it matters to you.</p>
-          <div class="actions">
-            <a class="btn btn-primary" href={safLinks.repositories} target="_blank" rel="noopener noreferrer" data-track="developer_repo_click" data-track-id="home-oss-star"><Icon name="github" /> Star the repositories</a>
-            <a class="btn btn-ghost" href="/open-source/">The full developer path</a>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
+    </section>
+  )}
 
   <section class="band" id="faq" aria-labelledby="faq-title">
     <div class="container">
@@ -368,16 +302,9 @@ const heroSources = [{ src: '/hero/seed.webm', type: 'video/webm' }, { src: '/he
     </div>
   </section>
 
-  <section class="closing" aria-labelledby="closing-title">
-    <div class="container">
-      <h2 id="closing-title">Let's explore your first agentic use case.</h2>
-      <p>Tell us the scope you have in mind and what you would want to see change. We will answer with what a first step could look like, and say so if Poesis is not the right fit.</p>
-      <div class="actions">
-        <a class="btn btn-primary btn-lg" href="/contact/" data-track="business_contact_intent" data-track-id="home-closing">Discuss your transformation</a>
-        <a class="btn btn-quiet" href="/open-source/" data-track="developer_docs_click" data-track-id="home-closing">Get started with SAF</a>
-      </div>
-    </div>
-  </section>
+  <ContactSection source="home" title="Let's explore your first agentic use case.">
+    <p>Tell us the scope you have in mind and what you would want to see change.</p>
+  </ContactSection>
 </BaseLayout>
 
 <script is:inline>

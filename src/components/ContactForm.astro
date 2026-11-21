@@ -1,0 +1,98 @@
+---
+/**
+ * ContactForm — the one way a prospect reaches Poesis from the site.
+ *
+ * Reused on the Contact page and at the end of the commercial pages. Its
+ * transport is decided at build time (see `contact` in src/data/site.ts):
+ * with a receiving endpoint it posts the request and confirms only what the
+ * endpoint confirmed; without one it prepares an email and says so. Both
+ * wordings are printed here, so the page never promises more than it does.
+ *
+ * One instance per page: the field ids are fixed.
+ */
+import Icon from './Icon.astro';
+import { contact, contactEmail } from '../data/site.ts';
+import { contactFields } from '../scripts/contact-brief.ts';
+
+interface Props {
+  /** Names the placement in the request and in the measurement events, e.g. `home` or `contact`. */
+  source: string;
+}
+const { source } = Astro.props;
+const limit = Object.fromEntries(contactFields.map((field) => [field.key, field.maxLength]));
+const posts = contact !== null;
+---
+<div class="contact-form">
+  <form
+    class="brief-form"
+    data-contact-form
+    data-endpoint={contact?.endpoint}
+    data-email={contactEmail}
+    data-source={source}
+    action={`mailto:${contactEmail}?subject=Transformation%20request`}
+    method="post"
+    enctype="text/plain"
+  >
+    <div class="field-row">
+      <div>
+        <label for="brief-name">Full name</label>
+        <input id="brief-name" name="Full name" data-key="name" type="text" autocomplete="name" maxlength={limit.name} required aria-describedby="brief-name-error" />
+        <p class="field-error" id="brief-name-error" hidden>Enter your name.</p>
+      </div>
+      <div>
+        <label for="brief-email">Work email</label>
+        <input id="brief-email" name="Work email" data-key="email" type="email" autocomplete="email" inputmode="email" maxlength={limit.email} required aria-describedby="brief-email-error" />
+        <p class="field-error" id="brief-email-error" hidden>Enter an email address we can reply to, such as name@company.com.</p>
+      </div>
+    </div>
+
+    <div>
+      <label for="brief-company">Company / Organization <span class="optional">(optional)</span></label>
+      <input id="brief-company" name="Company / Organization" data-key="company" type="text" autocomplete="organization" maxlength={limit.company} />
+    </div>
+
+    <div>
+      <label for="brief-goal">What would you like to transform?</label>
+      <textarea id="brief-goal" name="What we would like to transform" data-key="goal" rows="3" maxlength={limit.goal} required aria-describedby="brief-goal-hint brief-goal-error"></textarea>
+      <p class="field-hint" id="brief-goal-hint">A team, a function or a process, and what you would want to see change. Two lines are enough.</p>
+      <p class="field-error" id="brief-goal-error" hidden>Tell us, in a sentence or two, what you would like to transform.</p>
+    </div>
+
+    <div>
+      <label for="brief-message">Additional context <span class="optional">(optional)</span></label>
+      <textarea id="brief-message" name="Additional context" data-key="message" rows="3" maxlength={limit.message}></textarea>
+    </div>
+
+    {posts && (
+      <div class="brief-form__trap" aria-hidden="true">
+        <label for="brief-website">Leave this field empty</label>
+        <input id="brief-website" name="_gotcha" data-trap type="text" tabindex="-1" autocomplete="off" />
+      </div>
+    )}
+
+    <div class="actions">
+      {posts
+        ? <button class="btn btn-primary btn-lg" type="submit"><Icon name="message" /> Discuss your transformation</button>
+        : <button class="btn btn-primary btn-lg" type="submit"><Icon name="mail" /> Prepare my email</button>}
+      {!posts && <button class="btn btn-ghost" type="button" data-contact-copy hidden><Icon name="copy" /> Copy the request</button>}
+    </div>
+
+    {posts
+      ? <p class="brief-form__note">Your request goes to the Poesis team. We use these details only to answer you. See the <a href="/legal/privacy">privacy policy</a>.</p>
+      : <p class="brief-form__note">This form prepares an email in your own mail app, addressed to <strong>{contactEmail}</strong>. You read it and send it; this page transmits and stores nothing. See the <a href="/legal/privacy">privacy policy</a>.</p>}
+  </form>
+
+  <p class="brief-form__status" data-contact-status role="status" aria-live="polite"></p>
+  <a class="btn btn-ghost" data-contact-fallback data-track="business_contact_intent" data-track-id={`${source}-email-fallback`} href={`mailto:${contactEmail}`} hidden><Icon name="mail" /> Send it by email instead</a>
+
+  {posts && (
+    <div class="brief-form__done" data-contact-done tabindex="-1" hidden>
+      <h3>Your request has reached Poesis.</h3>
+      <p>Thank you. We will reply to the address you gave. For anything urgent, write to <a href={`mailto:${contactEmail}`}>{contactEmail}</a>.</p>
+    </div>
+  )}
+</div>
+
+<script>
+  import '../scripts/contact-form.ts';
+</script>
