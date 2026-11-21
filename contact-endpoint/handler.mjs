@@ -118,6 +118,8 @@ export function createHandler({
     if (!(request.headers.get('content-type') ?? '').toLowerCase().startsWith('application/json')) return reply(415, { ok: false, error: 'content-type' });
     if (throttled(clientKey(request))) return reply(429, { ok: false, error: 'rate' }, { 'retry-after': String(Math.ceil(rateLimit.windowMs / 1000)) });
 
+    // A declared size over the limit is refused before the body is read; the body is measured all the same.
+    if (Number(request.headers.get('content-length')) > MAX_BODY_BYTES) return reply(413, { ok: false, error: 'size' });
     const raw = await request.text();
     if (new TextEncoder().encode(raw).length > MAX_BODY_BYTES) return reply(413, { ok: false, error: 'size' });
     let body;

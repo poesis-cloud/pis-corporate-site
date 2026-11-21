@@ -1,0 +1,59 @@
+{
+  "$comment": "Geometry of the hero diagram, in pixels of each picture. One source for two readers: scripts/hero-film/film.html draws the picture from it, and src/pages/index.astro places the text over the picture from it, so text and picture cannot drift apart. `landscape` is the film and its still, shown on wide screens; `portrait` is the still shown on narrow screens. A title is positioned by the centre line of its first line (`y`), a tag by its own centre line; `x` is read according to `align`. After changing a position, render the pictures again (scripts/hero-film/README.md).",
+  "landscape": {
+    "width": 1080,
+    "height": 900,
+    "flow": "across",
+    "people": { "lead": [180, 232], "team": [[74, 372], [180, 372], [286, 372]], "process": [[94, 540], [180, 540], [266, 540]] },
+    "helix": { "from": [510, 172], "to": [510, 668], "amplitude": 46 },
+    "seed": [510, 776],
+    "agents": { "lead": [840, 232], "team": [[734, 372], [840, 372], [946, 372]] },
+    "rail": 472,
+    "gate": [840, 540],
+    "output": [840, 690],
+    "threads": [
+      { "before": [[220, 232], [450, 232]], "after": [[570, 232], [799, 232]] },
+      { "before": [[324, 372], [450, 372]], "after": [[570, 372], [698, 372]] },
+      { "before": [[300, 540], [450, 540]], "after": [[570, 540], [804, 540]] }
+    ],
+    "evidence": [[810, 708], [730, 800], [650, 810], [574, 784]],
+    "titles": [
+      { "id": "yours", "text": "Your organization", "sub": "People, roles and processes", "x": 180, "y": 84, "align": "center" },
+      { "id": "saf", "text": "Modelled with SAF", "sub": "Your organization's DNA", "x": 510, "y": 84, "align": "center" },
+      { "id": "agentic", "text": "Agentic organization", "sub": "AI agents, each with a role", "x": 840, "y": 84, "align": "center" }
+    ],
+    "tags": [
+      { "id": "oversight", "text": "Human oversight", "x": 886, "y": 540, "align": "left" },
+      { "id": "workflows", "text": "Governed workflows", "x": 928, "y": 438, "align": "right" },
+      { "id": "outputs", "text": "Checked outputs", "x": 878, "y": 690, "align": "left" },
+      { "id": "evolves", "text": "Evolves with evidence", "x": 706, "y": 840, "align": "center" }
+    ]
+  },
+  "portrait": {
+    "width": 800,
+    "height": 1250,
+    "flow": "down",
+    "people": { "lead": [400, 164], "team": [[236, 292], [400, 292], [564, 292]], "process": [] },
+    "helix": { "from": [262, 540], "to": [678, 540], "amplitude": 40 },
+    "seed": [170, 540],
+    "agents": { "lead": [400, 834], "team": [[236, 962], [400, 962], [564, 962]] },
+    "rail": 1068,
+    "gate": [150, 1150],
+    "output": [650, 1150],
+    "threads": [
+      { "before": [[400, 340], [400, 384]], "after": [[400, 592], [400, 668]] }
+    ],
+    "evidence": [[688, 1142], [786, 1110], [786, 540], [700, 540]],
+    "titles": [
+      { "id": "yours", "text": "Your organization", "sub": "People, roles and processes", "x": 400, "y": 36, "align": "center" },
+      { "id": "saf", "text": "Modelled with SAF", "sub": "Your organization's DNA", "x": 400, "y": 420, "align": "center" },
+      { "id": "agentic", "text": "Agentic organization", "sub": "AI agents, each with a role", "x": 400, "y": 704, "align": "center" }
+    ],
+    "tags": [
+      { "id": "evolves", "text": "Evolves with\nevidence", "x": 736, "y": 632, "align": "right" },
+      { "id": "workflows", "text": "Governed workflows", "x": 400, "y": 1036, "align": "center" },
+      { "id": "oversight", "text": "Human oversight", "x": 150, "y": 1221, "align": "center" },
+      { "id": "outputs", "text": "Checked outputs", "x": 650, "y": 1221, "align": "center" }
+    ]
+  }
+}

@@ -26,6 +26,11 @@ const server = createServer(async (request, response) => {
       response.writeHead(200, { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-store' });
       return response.end(await readFile(new URL('film.html', here)));
     }
+    if (request.method === 'GET' && url.pathname === '/layout.json') {
+      // The geometry the page also reads to place its labels: one source for both.
+      response.writeHead(200, { 'content-type': 'application/json', 'cache-control': 'no-store' });
+      return response.end(await readFile(new URL('../../src/data/hero-diagram.json', here)));
+    }
     if (request.method === 'GET' && url.pathname === '/poesis-logo.png') {
       response.writeHead(200, { 'content-type': 'image/png' });
       return response.end(await readFile(new URL('../../public/poesis-logo.png', here)));

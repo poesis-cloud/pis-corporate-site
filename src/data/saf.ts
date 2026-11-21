@@ -66,7 +66,7 @@ export const organization: SafProduct = {
   technicalName: 'saf-agentic-organization',
   plugin: 'poesis-saf-agentic-organization',
   audience: 'For teams and end users',
-  summary: 'A first ready-made agentic organization for scaled agile delivery: portfolio, program and team orchestrators with a specialist bench, run by the harness. You talk to an orchestrator; it sequences the work and names the next workflow.',
+  summary: 'A first ready-made agentic organization for scaled agile delivery: portfolio, program and team orchestrators with a specialist bench, run by the harness. You talk to an orchestrator; it dispatches the steps the harness resolves and names the next workflow.',
   provides: [
     'Three orchestrators (portfolio, program, team) and a bench of specialist agents for authoring, architecture, development, QA, security, operations, documentation and UX',
     'Workflows across the portfolio, program and team levels: planning, refinement, synchronization, review and retrospective',
@@ -152,7 +152,7 @@ export const maturity: { published: string[]; implemented: string[]; partial: st
     'The ready-made organization: its agents and instructions are complete; checks of skills, workflows and artifact templates are still in progress',
   ],
   planned: [
-    'Authenticated human approval: today a review is a step of the workflow, not a verified signature',
+    'Authenticated human approval: today every workflow ends by handing its results to a person, who accepts, raises concerns or rejects; the harness neither records nor verifies that decision',
     'A final release on the stable channel: none has been published',
     'Agent hosts other than GitHub Copilot: none is supported',
   ],
@@ -173,4 +173,4 @@ export const knownLimits: string[] = [
  * (March 2026) rejects the `#preview` marketplace reference. The SAF sources
  * state no minimum version, so the page asks for a current one.
  */
-export const cliVersionNote = 'Use a current version of the Copilot CLI. An early one (0.0.423) does not understand the #preview reference of the first command.';
+export const cliVersionNote = 'Use a current version of the Copilot CLI. An early one (0.0.423) does not understand the #preview reference of the first command; the project records its own tests against runtime 1.0.105.';

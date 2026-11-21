@@ -1,31 +1,42 @@
 <!doctype html>
 <!--
-  Poesis hero film — source of public/hero/seed.{mp4,webm} and of its posters.
+  Poesis hero film — source of public/hero/diagram.{mp4,webm} and of its two stills.
 
-  One deterministic function, draw(t) with t in [0, 1), paints a frame. The loop
-  closes exactly: frame 0 and the frame after the last one are the same picture.
+  The picture is a diagram, and it must be understood before it moves:
 
-  The film has to be understood at a glance, so it opens on the complete picture
-  (the poster is its first frame) and uses three signs only:
-    a ringed dot      an AI agent holding a role
-    a person, indigo  a human review: work waits there until it is released
-    a ticked page     an output that was checked
+      Your organization   →   Modelled with SAF   →   Agentic organization
+      people with roles,      its DNA: the helix,      AI agents with the same roles,
+      a team, a process       and the Poesis mark      a governed workflow, a person
+                                                       who oversees, checked outputs
 
-  Story, in timeline order (the file starts at START_T, in the middle of "produce"):
-    seed       a seed falls onto the outline of an existing organization
-    plant      it settles into the real Poesis mark (public/poesis-logo.png);
-               a double helix rises and roles branch from it
-    produce    work flows outward, waits at each human review, leaves checked outputs
-    evolve     evidence travels back to the mark, and the cycle starts again
+  An organization is recognisable at once: a lead, a team, a role on each member,
+  a process. The helix is not decoration: it is where that organization is
+  written down, and what the agentic organization is generated from. Each row of
+  the organization enters the helix at a lit base pair and leaves it on the other
+  side as its agentic counterpart, with the same role badges.
 
-  The outline that never fades is "your organization"; what grows over it, bright,
-  is the agentic organization mirroring it.
+  Every frame shows that whole picture. The film only adds, in turn, what a
+  sentence would: the organization is read into the helix and expressed as
+  agents; work then passes from agent to agent, waits for a person, and leaves
+  as a checked output; the evidence returns to the model, which people revise. Frame
+  0 is the picture at rest, and is also the still.
+
+  The film carries no text. Titles and labels are real text placed over it by
+  the page (src/pages/index.astro), from the same geometry this script reads:
+  src/data/hero-diagram.json. Change a position there and both follow.
+
+  Signs, each with one meaning:
+    a person             a human being: pale on the left, indigo where they oversee
+    a small robot head   an AI agent
+    a badge              a role: the same badge on a person and on the agent mirroring them
+    a ticked page        an output that was checked
 
   Open through capture-server.mjs:
-    /?play=1                 real-time preview, from the first frame of the file
-    /?t=0.42                 one frame, at that fraction of the cycle
-    /?capture=1              post every frame and the posters to the server
-    add &layout=portrait     for the narrow-screen poster
+    /?play=1                 real-time preview
+    /?t=0.5                  one frame, at that fraction of the loop
+    /?capture=1              post every frame and the still to the server
+    /?capture=still          post the still only
+    add &layout=portrait     the composition for narrow screens (still only)
 -->
 <html lang="en">
 <head>
@@ -38,106 +49,106 @@
 </head>
 <body>
 <canvas id="film"></canvas>
-<script>
+<script type="module">
 const query = new URLSearchParams(location.search);
 const FPS = 24;
-const SECONDS = 20;
+const SECONDS = 18;
 const FRAMES = FPS * SECONDS;
-/** Phases of one cycle, as [start, end] fractions of the loop. */
-const T = {
-  seedIn: [0, 0.02], fall: [0.01, 0.075], sink: [0.076, 0.094], ripple: [0.076, 0.16],
-  trunk: [0.085, 0.2],
-  branch: [0.14, 0.18, 0.22], branchSpan: 0.075, subSpan: 0.06,
-  crown: [0.25, 0.3],
-  work: [0.33, 0.38],
-  rest: [0.84, 0.9],
-  arc: [0.76, 0.8], evidence: [0.8, 0.915], receive: [0.915, 0.935],
-  fade: [0.93, 0.99],
-};
-/** First frame of the file and picture of the poster: the organization at work. */
-const START_T = 0.42;
 
-const LAYOUTS = {
-  landscape: { W: 1280, H: 720, cx: 986, ground: 526, s: 0.8 },
-  portrait: { W: 720, H: 900, cx: 400, ground: 520, s: 0.86 },
+/** Phases of one loop, as [start, end] fractions. Between them the picture rests. */
+const T = {
+  mirror: [0.03, 0.37],
+  work: [0.4, 0.74],
+  evolve: [0.76, 0.93],
 };
-const L = LAYOUTS[query.get('layout')] ?? LAYOUTS.landscape;
+
+const mode = query.get('layout') === 'portrait' ? 'portrait' : 'landscape';
+const L = (await (await fetch('/layout.json')).json())[mode];
+const across = L.flow === 'across';
 const canvas = document.getElementById('film');
-canvas.width = L.W;
-canvas.height = L.H;
+canvas.width = L.width;
+canvas.height = L.height;
 const ctx = canvas.getContext('2d');
 
 const INK = '#070a12';
+const PANEL = '#0b1322';
+const HUMAN = '#d7dfee';
 const TEAL = '#2dd4bf';
 const MINT = '#99f6e4';
 const CYAN = '#38bdf8';
 const PALE = '#e6fbff';
 const GOV = '#a5b4fc';
-const GHOST = '#7d92b4';
-const PERSON = '#e4e8ff';
 const TAU = Math.PI * 2;
+/** Node radius. The narrow composition is shown small, so its signs are drawn larger. */
+const R = across ? 30 : 37;
+const RLEAD = R * 1.16;
+/** One role per member of the team, in order: the person and the agent mirroring them carry the same badge. */
+const ROLES = ['analyse', 'build', 'write'];
 
 const clamp = (x) => (x < 0 ? 0 : x > 1 ? 1 : x);
 const ease = (x) => { const c = clamp(x); return c * c * (3 - 2 * c); };
-const span = (t, a, b) => ease((t - a) / (b - a));
 const frac = (x) => x - Math.floor(x);
-const px = (unit) => unit * L.s;
-
-// ---- the organization, in units relative to the planted seed -----------------
-const TRUNK = 430;
-const LEVELS = [
-  { y: -150, x: 156, at: T.branch[0], subs: [[232, -196]] },
-  { y: -250, x: 120, at: T.branch[1], subs: [[192, -302]] },
-  { y: -340, x: 80, at: T.branch[2], subs: [[136, -388]] },
-];
-/** Branches that carry a human gate: [level, side]. */
-const GATED = new Set(['0:1', '1:-1', '2:1']);
-
-const at = (x, y) => [L.cx + px(x), L.ground + px(y)];
-
-function bezier(p0, p1, p2, p3, u) {
+/** 0 → 1 → 0 over [a, b]: a moment of emphasis. */
+const pulse = (t, a, b) => (t <= a || t >= b ? 0 : Math.sin(Math.PI * (t - a) / (b - a)));
+/** Progress of a phase: below 0 before it, above 1 after it. */
+const within = (t, [a, b]) => (t - a) / (b - a);
+const lerp = (a, b, u) => [a[0] + (b[0] - a[0]) * u, a[1] + (b[1] - a[1]) * u];
+const cubic = (p0, p1, p2, p3, u) => {
   const v = 1 - u;
-  return [
-    v * v * v * p0[0] + 3 * v * v * u * p1[0] + 3 * v * u * u * p2[0] + u * u * u * p3[0],
-    v * v * v * p0[1] + 3 * v * v * u * p1[1] + 3 * v * u * u * p2[1] + u * u * u * p3[1],
-  ];
-}
-
-const branches = [];
-LEVELS.forEach((level, index) => {
-  for (const side of [-1, 1]) {
-    const attach = level.y + 48;
-    const curve = [at(0, attach), at(side * level.x * 0.36, attach - 8), at(side * level.x * 0.82, level.y + 36), at(side * level.x, level.y)];
-    const branch = { index, side, curve, start: level.at, gated: GATED.has(`${index}:${side}`), subs: [], phase: frac(index * 0.37 + (side > 0 ? 0.11 : 0.53)) };
-    level.subs.forEach(([sx, sy], subIndex) => {
-      const from = curve[3];
-      const to = at(side * sx, sy);
-      const mid = [(from[0] + to[0]) / 2 + side * px(10), (from[1] + to[1]) / 2 - px(14)];
-      branch.subs.push({ curve: [from, mid, mid, to], start: level.at + T.branchSpan, phase: frac(branch.phase + 0.29 + subIndex * 0.31) });
-    });
-    branches.push(branch);
+  return [v ** 3 * p0[0] + 3 * v * v * u * p1[0] + 3 * v * u * u * p2[0] + u ** 3 * p3[0], v ** 3 * p0[1] + 3 * v * v * u * p1[1] + 3 * v * u * u * p2[1] + u ** 3 * p3[1]];
+};
+/** A point at fraction u of a polyline, by length. */
+function along(points, u) {
+  const lengths = points.slice(1).map((point, index) => Math.hypot(point[0] - points[index][0], point[1] - points[index][1]));
+  let remaining = clamp(u) * lengths.reduce((sum, length) => sum + length, 0);
+  for (const [index, length] of lengths.entries()) {
+    if (remaining <= length || index === lengths.length - 1) return lerp(points[index], points[index + 1], length ? Math.min(1, remaining / length) : 0);
+    remaining -= length;
   }
-});
-const crown = at(0, -TRUNK);
-
-/** Lateral coordination between neighbouring roles, and from the crown down. */
-const links = [];
-for (const side of [-1, 1]) {
-  const column = branches.filter((branch) => branch.side === side).map((branch) => branch.curve[3]);
-  links.push([column[0], column[1]], [column[1], column[2]], [column[2], crown]);
+  return points.at(-1);
 }
 
-// Evolution loop: from the crown, around the outside, back to the planted mark.
-const arc = { cx: L.cx, cy: L.ground - px(TRUNK / 2) + px(12), rx: px(292), ry: px(TRUNK / 2 + 44) };
-const arcPoint = (u) => { const angle = -Math.PI / 2 + u * Math.PI; return [arc.cx + arc.rx * Math.cos(angle), arc.cy + arc.ry * Math.sin(angle)]; };
-const ARC_REVIEW = 0.5;
+// ---- geometry, all derived from the shared layout ---------------------------------
+const helix = L.helix;
+const people = [L.people.lead, ...L.people.team];
+const team = L.agents.team;
+const STEP = { w: 58, h: 30 };
+const PAGE = { w: across ? 44 : 58 };
+PAGE.h = PAGE.w * 1.26;
 
-// Deterministic motes: the same cloud on every run.
-let seedValue = 20261121;
-const random = () => { seedValue = (seedValue * 1664525 + 1013904223) % 4294967296; return seedValue / 4294967296; };
-const motes = Array.from({ length: 18 }, () => ({ x: (random() - 0.5) * 560, y: -random() * 470, r: 0.6 + random() * 1.2, laps: 1 + Math.floor(random() * 2), phase: random(), drift: 18 + random() * 40 }));
+/** Org-chart connector from a lead to one of its reports. */
+const reportLine = (lead, member) => {
+  const mid = (lead[1] + RLEAD + member[1] - R) / 2;
+  return [[lead[0], lead[1] + RLEAD], [lead[0], mid], [member[0], mid], [member[0], member[1] - R]];
+};
+const peopleLines = L.people.team.map((member) => reportLine(L.people.lead, member));
+const agentLines = team.map((member) => reportLine(L.agents.lead, member));
 
-// ---- the real Poesis mark, tinted ---------------------------------------------
+/** The governed workflow: work is handed from agent to agent, reaches the person who oversees it, then leaves as an output. */
+const handoffs = team.slice(1).map((member, index) => [[team[index][0] + R + 4, member[1]], [member[0] - R - 5, member[1]]]);
+const toGate = [[team.at(-1)[0], team.at(-1)[1] + R], [team.at(-1)[0], L.rail], [L.gate[0], L.rail], [L.gate[0], L.gate[1] - R - 4]];
+const toOutput = across
+  ? [[L.gate[0], L.gate[1] + R], [L.output[0], L.output[1] - PAGE.h / 2 - 4]]
+  : [[L.gate[0] + R, L.gate[1]], [L.output[0] - PAGE.w / 2 - 4, L.output[1]]];
+
+/** The organization passes through the helix: `before` reaches it, `after` leaves it. One thread per row when the picture reads across. */
+const threads = L.threads;
+/** Evidence returning from the output to the model: a cubic curve. */
+const evidence = L.evidence;
+
+/** The helix runs from one point to another, so it can stand (across) or lie (down). */
+const helixLength = Math.hypot(helix.to[0] - helix.from[0], helix.to[1] - helix.from[1]);
+const helixAxis = [(helix.to[0] - helix.from[0]) / helixLength, (helix.to[1] - helix.from[1]) / helixLength];
+const onHelix = (distance, offset) => [helix.from[0] + helixAxis[0] * distance - helixAxis[1] * offset, helix.from[1] + helixAxis[1] * distance + helixAxis[0] * offset];
+const helixCentre = onHelix(helixLength / 2, 0);
+/** Where each thread crosses the helix: the base pair that holds that part of the organization. */
+const genes = threads.map((thread) => {
+  const crossing = lerp(thread.before[1], thread.after[0], 0.5);
+  const distance = (crossing[0] - helix.from[0]) * helixAxis[0] + (crossing[1] - helix.from[1]) * helixAxis[1];
+  return { at: onHelix(distance, 0), rise: 1 - distance / helixLength };
+});
+
+// ---- the real Poesis mark, tinted -----------------------------------------------------
 const logo = new Image();
 const tinted = document.createElement('canvas');
 function tintLogo() {
@@ -150,421 +161,407 @@ function tintLogo() {
   paint.fillRect(0, 0, tinted.width, tinted.height);
 }
 
-// ---- drawing --------------------------------------------------------------------
-function glow(color, blur) { ctx.shadowColor = color; ctx.shadowBlur = blur; }
-function noGlow() { ctx.shadowColor = 'transparent'; ctx.shadowBlur = 0; }
+// ---- drawing primitives -----------------------------------------------------------------
+const glow = (color, blur) => { ctx.shadowColor = color; ctx.shadowBlur = blur; };
+const noGlow = () => { ctx.shadowColor = 'transparent'; ctx.shadowBlur = 0; };
 
-function strokeCurve(curve, reveal, steps = 30) {
-  if (reveal <= 0) return;
+function path(points) {
   ctx.beginPath();
-  ctx.moveTo(curve[0][0], curve[0][1]);
-  const last = Math.max(1, Math.round(steps * reveal));
-  for (let i = 1; i <= last; i++) {
-    const [x, y] = bezier(...curve, Math.min(reveal, i / steps));
-    ctx.lineTo(x, y);
-  }
+  ctx.moveTo(points[0][0], points[0][1]);
+  for (const point of points.slice(1)) ctx.lineTo(point[0], point[1]);
   ctx.stroke();
 }
-
-function helix(t, reveal) {
-  const height = px(TRUNK) * reveal;
-  if (height <= 1) return;
-  const turn = TAU * t;
-  const wave = Math.PI / px(62);
-  const amplitude = (rise) => px(24 - 10 * (rise / px(TRUNK)));
-  const strand = (sign) => {
-    ctx.beginPath();
-    for (let rise = 0; rise <= height; rise += 2) {
-      const x = L.cx + sign * amplitude(rise) * Math.sin(wave * rise + turn);
-      const y = L.ground - rise;
-      if (rise === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
-    }
-    ctx.stroke();
-  };
-  // Rungs first, so the strands sit on top of them.
-  const rungs = ctx.globalAlpha;
-  for (let rise = px(9); rise <= height; rise += px(15.5)) {
-    const swing = Math.sin(wave * rise + turn);
-    ctx.globalAlpha = rungs * (0.18 + 0.5 * Math.abs(swing));
-    ctx.beginPath();
-    ctx.moveTo(L.cx - amplitude(rise) * swing, L.ground - rise);
-    ctx.lineTo(L.cx + amplitude(rise) * swing, L.ground - rise);
-    ctx.stroke();
-  }
-  ctx.globalAlpha = rungs;
-  strand(1);
-  strand(-1);
-}
-
-function node(point, radius, grown, fill, ring) {
-  if (grown <= 0) return;
-  const r = radius * grown;
-  ctx.beginPath();
-  ctx.arc(point[0], point[1], r, 0, TAU);
-  ctx.fillStyle = INK;
-  ctx.fill();
-  ctx.lineWidth = px(1.8);
-  ctx.strokeStyle = ring;
-  ctx.stroke();
-  ctx.beginPath();
-  ctx.arc(point[0], point[1], r * 0.42, 0, TAU);
-  ctx.fillStyle = fill;
-  ctx.fill();
-}
-
-/** A human review: a person inside an indigo ring. `held` in [0, 1] lights it while work waits there. */
-function review(point, held) {
-  const radius = px(10.5);
+function arrowHead(tip, from, size, color) {
   ctx.save();
-  ctx.translate(point[0], point[1]);
-  glow(GOV, px(5 + 18 * held));
+  ctx.translate(tip[0], tip[1]);
+  ctx.rotate(Math.atan2(tip[1] - from[1], tip[0] - from[0]));
+  ctx.fillStyle = color;
   ctx.beginPath();
-  ctx.arc(0, 0, radius, 0, TAU);
-  ctx.fillStyle = INK;
-  ctx.fill();
-  ctx.lineWidth = px(1.9);
-  ctx.strokeStyle = GOV;
-  ctx.stroke();
-  noGlow();
-  ctx.fillStyle = PERSON;
-  ctx.beginPath();
-  ctx.arc(0, -radius * 0.26, radius * 0.27, 0, TAU);
-  ctx.fill();
-  ctx.beginPath();
-  ctx.arc(0, radius * 0.64, radius * 0.52, Math.PI, 0);
+  ctx.moveTo(0, 0);
+  ctx.lineTo(-size, -size * 0.55);
+  ctx.lineTo(-size, size * 0.55);
   ctx.closePath();
   ctx.fill();
   ctx.restore();
 }
-
-/** The whole structure in one colour: the organization as it already exists. */
-function outline(t) {
-  ctx.save();
-  ctx.globalAlpha = 0.17;
-  ctx.strokeStyle = GHOST;
-  ctx.lineWidth = px(1.2);
-  ctx.lineCap = 'round';
-  helix(t, 1);
-  for (const branch of branches) {
-    strokeCurve(branch.curve, 1);
-    for (const sub of branch.subs) strokeCurve(sub.curve, 1);
-  }
-  ctx.globalAlpha = 0.3;
-  for (const branch of branches) {
-    node(branch.curve[3], px(7), 1, GHOST, GHOST);
-    for (const sub of branch.subs) node(sub.curve[3], px(4.6), 1, GHOST, GHOST);
-  }
-  node(crown, px(10), 1, GHOST, GHOST);
-  ctx.restore();
-}
-
-function ground(t) {
-  const half = px(400);
-  const line = ctx.createLinearGradient(L.cx - half, 0, L.cx + half, 0);
-  line.addColorStop(0, 'rgba(125,146,180,0)');
-  line.addColorStop(0.5, 'rgba(153,246,228,.5)');
-  line.addColorStop(1, 'rgba(125,146,180,0)');
-  ctx.strokeStyle = line;
-  ctx.lineWidth = px(1.2);
-  ctx.beginPath();
-  ctx.moveTo(L.cx - half, L.ground);
-  ctx.lineTo(L.cx + half, L.ground);
-  ctx.stroke();
-  // strata
-  ctx.save();
-  ctx.setLineDash([px(2), px(9)]);
-  ctx.globalAlpha = 0.5;
-  for (const [depth, reach] of [[24, 300], [50, 210], [78, 120]]) {
-    const band = ctx.createLinearGradient(L.cx - px(reach), 0, L.cx + px(reach), 0);
-    band.addColorStop(0, 'rgba(125,146,180,0)');
-    band.addColorStop(0.5, 'rgba(125,146,180,.42)');
-    band.addColorStop(1, 'rgba(125,146,180,0)');
-    ctx.strokeStyle = band;
-    ctx.beginPath();
-    ctx.moveTo(L.cx - px(reach), L.ground + px(depth));
-    ctx.lineTo(L.cx + px(reach), L.ground + px(depth));
-    ctx.stroke();
-  }
-  ctx.restore();
-  // ripple when the seed lands
-  const ripple = (t - T.ripple[0]) / (T.ripple[1] - T.ripple[0]);
-  if (ripple > 0 && ripple < 1) {
+function disc(point, radius, ring, lit) {
+  if (lit > 0) {
+    // Whoever holds the moment stands in a halo: the eye finds the active step without reading.
+    const halo = ctx.createRadialGradient(point[0], point[1], radius * 0.8, point[0], point[1], radius * 2.1);
+    halo.addColorStop(0, ring);
+    halo.addColorStop(1, 'rgba(7,10,18,0)');
     ctx.save();
-    ctx.globalAlpha = (1 - ripple) * 0.7;
-    ctx.strokeStyle = MINT;
-    ctx.lineWidth = px(1.4);
-    ctx.beginPath();
-    ctx.ellipse(L.cx, L.ground, px(20 + 190 * ripple), px(4 + 16 * ripple), 0, 0, TAU);
-    ctx.stroke();
-    ctx.restore();
-  }
-}
-
-function backdrop(t) {
-  ctx.fillStyle = INK;
-  ctx.fillRect(0, 0, L.W, L.H);
-  const breath = 1 + 0.08 * Math.sin(TAU * t);
-  const life = ctx.createRadialGradient(L.cx, L.ground - px(210), 0, L.cx, L.ground - px(210), px(430));
-  life.addColorStop(0, `rgba(45,212,191,${0.105 * breath})`);
-  life.addColorStop(1, 'rgba(45,212,191,0)');
-  ctx.fillStyle = life;
-  ctx.fillRect(0, 0, L.W, L.H);
-  const sky = ctx.createRadialGradient(L.cx + px(210), L.ground - px(430), 0, L.cx + px(210), L.ground - px(430), px(360));
-  sky.addColorStop(0, 'rgba(129,140,248,.07)');
-  sky.addColorStop(1, 'rgba(129,140,248,0)');
-  ctx.fillStyle = sky;
-  ctx.fillRect(0, 0, L.W, L.H);
-}
-
-function drift(t, activity) {
-  ctx.save();
-  ctx.fillStyle = PALE;
-  for (const mote of motes) {
-    const life = frac(t * mote.laps + mote.phase);
-    const [x, y] = at(mote.x + Math.sin(TAU * life) * 8, mote.y - life * mote.drift);
-    ctx.globalAlpha = Math.sin(Math.PI * life) * (0.06 + 0.14 * activity);
-    ctx.beginPath();
-    ctx.arc(x, y, px(mote.r), 0, TAU);
-    ctx.fill();
-  }
-  ctx.restore();
-}
-
-function mark(t) {
-  if (!logo.complete || !logo.naturalWidth) return;
-  const size = px(96);
-  const [x, y] = at(0, 56);
-  const planted = span(t, T.sink[0], T.sink[1] + 0.03);
-  const receives = span(t, T.receive[0] - 0.015, T.receive[0]) * (1 - span(t, T.receive[1], T.receive[1] + 0.04));
-  const rest = 1 - span(t, T.fade[0] + 0.01, T.fade[1]);
-  const alpha = 0.3 + 0.62 * planted * rest + 0.08 * receives;
-  ctx.save();
-  ctx.globalAlpha = Math.min(1, alpha);
-  glow(TEAL, px(10 + 26 * Math.max(receives, planted * (1 - span(t, T.sink[1] + 0.03, T.trunk[1])))));
-  ctx.drawImage(tinted, x - size / 2, y - size / 2, size, size);
-  ctx.restore();
-}
-
-function seed(t) {
-  const fall = span(t, T.fall[0], T.fall[1]);
-  const visible = span(t, T.seedIn[0], T.seedIn[1]) * (1 - span(t, T.sink[0], T.sink[1]));
-  if (visible <= 0) return;
-  const [x, top] = at(0, -TRUNK - 46);
-  const y = top + (L.ground - top) * fall + px(56) * span(t, T.sink[0], T.sink[1]);
-  ctx.save();
-  ctx.globalAlpha = visible;
-  const trail = ctx.createLinearGradient(0, y - px(70), 0, y);
-  trail.addColorStop(0, 'rgba(153,246,228,0)');
-  trail.addColorStop(1, 'rgba(153,246,228,.5)');
-  ctx.strokeStyle = trail;
-  ctx.lineWidth = px(1.4);
-  ctx.beginPath();
-  ctx.moveTo(x, y - px(70) * fall);
-  ctx.lineTo(x, y);
-  ctx.stroke();
-  glow(MINT, px(22));
-  ctx.fillStyle = PALE;
-  ctx.beginPath();
-  ctx.ellipse(x, y, px(6.5), px(10), 0, 0, TAU);
-  ctx.fill();
-  ctx.restore();
-}
-
-/** Position of a flow along a branch, held at the gate when there is one. */
-function flowAlong(life, gated) {
-  if (!gated) return { u: ease(life), held: 0 };
-  if (life < 0.34) return { u: 0.52 * ease(life / 0.34), held: 0 };
-  if (life < 0.62) return { u: 0.52, held: Math.sin(Math.PI * ((life - 0.34) / 0.28)) };
-  return { u: 0.52 + 0.48 * ease((life - 0.62) / 0.38), held: 0 };
-}
-
-function artifact(point, side, life, alpha) {
-  if (life <= 0 || life >= 1) return;
-  const x = point[0] + side * px(30) * ease(life);
-  const y = point[1] - px(38) * ease(life);
-  const half = px(6);
-  ctx.save();
-  ctx.globalAlpha = alpha * Math.sin(Math.PI * life);
-  ctx.lineJoin = 'round';
-  ctx.lineCap = 'round';
-  ctx.fillStyle = INK;
-  ctx.strokeStyle = PALE;
-  ctx.lineWidth = px(1.5);
-  glow(CYAN, px(8));
-  ctx.beginPath();
-  ctx.rect(x - half, y - half * 1.3, half * 2, half * 2.6);
-  ctx.fill();
-  ctx.stroke();
-  noGlow();
-  ctx.strokeStyle = MINT;
-  ctx.lineWidth = px(1.7);
-  ctx.beginPath();
-  ctx.moveTo(x - half * 0.48, y + half * 0.05);
-  ctx.lineTo(x - half * 0.1, y + half * 0.5);
-  ctx.lineTo(x + half * 0.55, y - half * 0.45);
-  ctx.stroke();
-  ctx.restore();
-}
-
-function generation(t) {
-  const fade = 1 - span(t, T.fade[0], T.fade[1]);
-  if (fade <= 0) return;
-  const activity = span(t, T.work[0], T.work[1]) * (1 - span(t, T.rest[0], T.rest[1]));
-  ctx.save();
-  ctx.globalAlpha = fade;
-  ctx.lineCap = 'round';
-  ctx.lineJoin = 'round';
-
-  const rise = ctx.createLinearGradient(0, L.ground, 0, L.ground - px(TRUNK));
-  rise.addColorStop(0, TEAL);
-  rise.addColorStop(1, CYAN);
-
-  // evolution loop
-  const loop = span(t, T.arc[0], T.arc[1]);
-  if (loop > 0) {
-    ctx.save();
-    ctx.globalAlpha = fade * 0.5;
-    ctx.strokeStyle = GOV;
-    ctx.lineWidth = px(1.3);
-    ctx.setLineDash([px(2), px(8)]);
-    ctx.beginPath();
-    for (let i = 0; i <= Math.round(70 * loop); i++) { const [x, y] = arcPoint(i / 70); if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y); }
-    ctx.stroke();
-    ctx.restore();
-    const travel = (t - T.evidence[0]) / (T.evidence[1] - T.evidence[0]);
-    if (loop >= ARC_REVIEW) review(arcPoint(ARC_REVIEW), travel > 0 && travel < 1 ? Math.max(0, 1 - Math.abs(ease(travel) - ARC_REVIEW) / 0.12) : 0);
-    if (travel > 0 && travel < 1) {
-      const [x, y] = arcPoint(ease(travel));
-      ctx.save();
-      glow(GOV, px(18));
-      ctx.fillStyle = '#eef0ff';
-      ctx.beginPath();
-      ctx.arc(x, y, px(4.2), 0, TAU);
-      ctx.fill();
-      ctx.restore();
-    }
-  }
-
-  // trunk
-  ctx.strokeStyle = rise;
-  ctx.lineWidth = px(2);
-  glow(TEAL, px(12));
-  helix(t, span(t, T.trunk[0], T.trunk[1]));
-  noGlow();
-
-  // coordination links
-  if (activity > 0) {
-    ctx.save();
-    ctx.globalAlpha = fade * activity * 0.3;
-    ctx.strokeStyle = CYAN;
-    ctx.lineWidth = px(1.1);
-    ctx.setLineDash([px(3), px(6)]);
-    for (const [from, to] of links) { ctx.beginPath(); ctx.moveTo(from[0], from[1]); ctx.lineTo(to[0], to[1]); ctx.stroke(); }
-    ctx.restore();
-    links.forEach(([from, to], index) => {
-      const life = frac(t * 4 + index * 0.23);
-      ctx.save();
-      ctx.globalAlpha = fade * activity * Math.sin(Math.PI * life) * 0.9;
-      ctx.fillStyle = PALE;
-      ctx.beginPath();
-      ctx.arc(from[0] + (to[0] - from[0]) * ease(life), from[1] + (to[1] - from[1]) * ease(life), px(2.2), 0, TAU);
-      ctx.fill();
-      ctx.restore();
-    });
-  }
-
-  // branches, nodes, flows, artifacts, gates
-  for (const branch of branches) {
-    const grown = span(t, branch.start, branch.start + T.branchSpan);
-    ctx.strokeStyle = rise;
-    ctx.lineWidth = px(1.7);
-    glow(TEAL, px(9));
-    strokeCurve(branch.curve, grown);
-    for (const sub of branch.subs) strokeCurve(sub.curve, span(t, sub.start, sub.start + T.subSpan));
-    noGlow();
-
-    if (activity > 0) {
-      const life = frac(t * 5 + branch.phase);
-      const { u, held } = flowAlong(life, branch.gated);
-      const [x, y] = bezier(...branch.curve, u);
-      ctx.save();
-      ctx.globalAlpha = fade * activity * (life < 0.06 ? life / 0.06 : life > 0.94 ? (1 - life) / 0.06 : 1);
-      glow(held > 0.05 ? GOV : MINT, px(14));
-      ctx.fillStyle = PALE;
-      ctx.beginPath();
-      ctx.arc(x, y, px(3.1), 0, TAU);
-      ctx.fill();
-      ctx.restore();
-      artifact(branch.curve[3], branch.side, frac(life + 0.5) * 1.6, fade * activity);
-      for (const sub of branch.subs) {
-        const subLife = frac(t * 5 + sub.phase);
-        const [sx, sy] = bezier(...sub.curve, ease(subLife));
-        ctx.save();
-        ctx.globalAlpha = fade * activity * Math.sin(Math.PI * subLife) * 0.9;
-        ctx.fillStyle = PALE;
-        ctx.beginPath();
-        ctx.arc(sx, sy, px(2.2), 0, TAU);
-        ctx.fill();
-        ctx.restore();
-        artifact(sub.curve[3], branch.side, frac(subLife + 0.5) * 1.6, fade * activity);
-      }
-    }
-
-    glow(CYAN, px(8));
-    node(branch.curve[3], px(7.5), span(t, branch.start + T.branchSpan - 0.01, branch.start + T.branchSpan + 0.025), PALE, CYAN);
-    for (const sub of branch.subs) node(sub.curve[3], px(5), span(t, sub.start + T.subSpan - 0.01, sub.start + T.subSpan + 0.02), PALE, TEAL);
-    noGlow();
-    // The review sign sits on top of the flow, so work is seen to wait behind it.
-    if (branch.gated && grown > 0.6) {
-      ctx.save();
-      ctx.globalAlpha = fade * span(grown, 0.6, 0.9);
-      review(bezier(...branch.curve, 0.52), flowAlong(frac(t * 5 + branch.phase), true).held * activity);
-      ctx.restore();
-    }
-  }
-
-  // crown
-  const crowned = span(t, T.crown[0], T.crown[1]);
-  if (crowned > 0) {
-    ctx.save();
-    ctx.globalAlpha = fade * crowned * (0.22 + 0.1 * Math.sin(TAU * t * 3));
-    const halo = ctx.createRadialGradient(crown[0], crown[1], 0, crown[0], crown[1], px(46));
-    halo.addColorStop(0, 'rgba(56,189,248,.9)');
-    halo.addColorStop(1, 'rgba(56,189,248,0)');
+    ctx.globalAlpha = 0.34 * lit;
     ctx.fillStyle = halo;
     ctx.beginPath();
-    ctx.arc(crown[0], crown[1], px(46), 0, TAU);
+    ctx.arc(point[0], point[1], radius * 2.1, 0, TAU);
     ctx.fill();
     ctx.restore();
-    glow(CYAN, px(14));
-    node(crown, px(11), crowned, PALE, CYAN);
-    noGlow();
   }
+  ctx.beginPath();
+  ctx.arc(point[0], point[1], radius, 0, TAU);
+  ctx.fillStyle = PANEL;
+  ctx.fill();
+  ctx.lineWidth = 2.2 + 1.4 * lit;
+  ctx.strokeStyle = ring;
+  glow(ring, 6 + 20 * lit);
+  ctx.stroke();
+  noGlow();
+}
+/** A human being: head and shoulders. */
+function person(point, radius, color, lit = 0) {
+  disc(point, radius, color, lit);
+  ctx.fillStyle = color;
+  ctx.beginPath();
+  ctx.arc(point[0], point[1] - radius * 0.24, radius * 0.26, 0, TAU);
+  ctx.fill();
+  ctx.beginPath();
+  ctx.arc(point[0], point[1] + radius * 0.66, radius * 0.5, Math.PI, 0);
+  ctx.closePath();
+  ctx.fill();
+}
+/** An AI agent: a small robot head, with antenna and eyes. */
+function agent(point, radius, color, lit = 0) {
+  disc(point, radius, color, lit);
+  const w = radius * 0.94;
+  const h = radius * 0.7;
+  const x = point[0] - w / 2;
+  const y = point[1] - h / 2 + radius * 0.1;
+  ctx.fillStyle = color;
+  ctx.beginPath();
+  ctx.roundRect(x, y, w, h, radius * 0.2);
+  ctx.fill();
+  ctx.fillRect(point[0] - radius * 0.035, y - radius * 0.26, radius * 0.07, radius * 0.26);
+  ctx.beginPath();
+  ctx.arc(point[0], y - radius * 0.3, radius * 0.1, 0, TAU);
+  ctx.fill();
+  ctx.fillStyle = PANEL;
+  for (const side of [-1, 1]) {
+    ctx.beginPath();
+    ctx.arc(point[0] + side * w * 0.22, y + h * 0.44, radius * 0.11, 0, TAU);
+    ctx.fill();
+  }
+}
+/** A role, worn at the lower right of its holder: analyse (a lens), build (code brackets), write (lines of text). */
+function badge(holder, radius, role, color, lit = 0) {
+  const b = radius * 0.46;
+  const x = holder[0] + radius * 0.74;
+  const y = holder[1] + radius * 0.74;
+  ctx.beginPath();
+  ctx.arc(x, y, b, 0, TAU);
+  ctx.fillStyle = PANEL;
+  ctx.fill();
+  ctx.lineWidth = 1.7;
+  ctx.strokeStyle = color;
+  glow(color, 2 + 12 * lit);
+  ctx.stroke();
+  noGlow();
+  ctx.lineWidth = Math.max(1.7, b * 0.17);
+  if (role === 'analyse') {
+    ctx.beginPath();
+    ctx.arc(x - b * 0.12, y - b * 0.12, b * 0.34, 0, TAU);
+    ctx.stroke();
+    path([[x + b * 0.14, y + b * 0.14], [x + b * 0.5, y + b * 0.5]]);
+  } else if (role === 'build') {
+    path([[x - b * 0.14, y - b * 0.36], [x - b * 0.52, y], [x - b * 0.14, y + b * 0.36]]);
+    path([[x + b * 0.14, y - b * 0.36], [x + b * 0.52, y], [x + b * 0.14, y + b * 0.36]]);
+  } else {
+    for (const [row, reach] of [[-0.32, 0.44], [0, 0.44], [0.32, 0.12]]) path([[x - b * 0.44, y + b * row], [x + b * reach, y + b * row]]);
+  }
+}
+/** An output that was checked: a page with a tick. `drawn` in [0, 1] is how much of the tick is written. */
+function output(point, lit, drawn = 1) {
+  const { w, h } = PAGE;
+  const x = point[0] - w / 2;
+  const y = point[1] - h / 2;
+  ctx.fillStyle = PANEL;
+  ctx.strokeStyle = PALE;
+  ctx.lineWidth = 2.2;
+  glow(CYAN, 6 + 22 * lit);
+  ctx.beginPath();
+  ctx.roundRect(x, y, w, h, 4);
+  ctx.fill();
+  ctx.stroke();
+  noGlow();
+  ctx.strokeStyle = 'rgba(230,251,255,.45)';
+  ctx.lineWidth = 1.6;
+  for (const row of [0.22, 0.36]) path([[x + w * 0.2, y + h * row], [x + w * 0.8, y + h * row]]);
+  const tick = [[x + w * 0.26, y + h * 0.64], [x + w * 0.44, y + h * 0.8], [x + w * 0.76, y + h * 0.5]];
+  const written = clamp(drawn) * 2;
+  if (written <= 0) return;
+  ctx.strokeStyle = MINT;
+  ctx.lineWidth = 3.4;
+  glow(MINT, 4 + 14 * lit);
+  path([tick[0], lerp(tick[0], tick[1], Math.min(1, written)), ...(written > 1 ? [lerp(tick[1], tick[2], written - 1)] : [])]);
+  noGlow();
+}
+/** A light travelling along a line: where the eye should go next. */
+function glint(point, color, size = 4.2, alpha = 1) {
+  ctx.save();
+  ctx.globalAlpha *= alpha;
+  glow(color, 10 + size * 3);
+  ctx.fillStyle = PALE;
+  ctx.beginPath();
+  ctx.arc(point[0], point[1], size, 0, TAU);
+  ctx.fill();
   ctx.restore();
-  return activity;
+}
+
+// ---- the picture ----------------------------------------------------------------------------
+function backdrop(t) {
+  ctx.fillStyle = INK;
+  ctx.fillRect(0, 0, L.width, L.height);
+  const breath = 1 + 0.07 * Math.sin(TAU * t);
+  const life = ctx.createRadialGradient(...helixCentre, 0, ...helixCentre, across ? 430 : 360);
+  life.addColorStop(0, `rgba(45,212,191,${0.13 * breath})`);
+  life.addColorStop(0.55, 'rgba(56,189,248,.035)');
+  life.addColorStop(1, 'rgba(45,212,191,0)');
+  ctx.fillStyle = life;
+  ctx.fillRect(0, 0, L.width, L.height);
+}
+
+/**
+ * The helix: two strands and their base pairs, turning once per loop. The far strand is drawn
+ * first, thin and dim; the near one last, wide and bright. `wave` in (0, 1] is a brightness
+ * travelling from the far end back to the start: evidence changing the model.
+ */
+function drawHelix(t, wave) {
+  const turn = TAU * t;
+  const pitch = Math.PI / (across ? 80 : 66);
+  const step = 4;
+  const samples = [];
+  for (let distance = 0; distance <= helixLength; distance += step) {
+    const angle = pitch * distance + turn;
+    const taper = 0.7 + 0.3 * Math.sin(Math.PI * distance / helixLength);
+    samples.push({ distance, swing: helix.amplitude * taper * Math.sin(angle), depth: Math.cos(angle), rise: 1 - distance / helixLength });
+  }
+  const lifted = (rise) => (wave > 0 ? Math.max(0, 1 - Math.abs(rise - wave) / 0.16) : 0);
+  const strand = (side, front) => {
+    for (let index = 1; index < samples.length; index++) {
+      const a = samples[index - 1];
+      const b = samples[index];
+      const depth = side * (a.depth + b.depth) / 2;
+      if ((depth >= 0) !== front) continue;
+      const near = (depth + 1) / 2;
+      const lift = lifted(b.rise);
+      ctx.globalAlpha = 0.3 + 0.7 * near;
+      ctx.lineWidth = 1.5 + 3 * near + 1.4 * lift;
+      ctx.strokeStyle = lift > 0.3 ? PALE : near > 0.6 ? '#bff3ff' : CYAN;
+      glow(CYAN, front ? 9 + 16 * lift : 0);
+      path([onHelix(a.distance, side * a.swing), onHelix(b.distance, side * b.swing)]);
+    }
+  };
+  ctx.save();
+  ctx.lineCap = 'round';
+  strand(1, false);
+  strand(-1, false);
+  // Base pairs: the rungs between the two strands.
+  noGlow();
+  for (let index = 2; index < samples.length - 2; index += 5) {
+    const sample = samples[index];
+    if (Math.abs(sample.swing) < 6) continue;
+    const lift = lifted(sample.rise);
+    ctx.globalAlpha = 0.4 + 0.3 * Math.abs(sample.swing) / helix.amplitude + 0.3 * lift;
+    ctx.lineWidth = 1.5 + lift;
+    ctx.strokeStyle = lift > 0.3 ? PALE : CYAN;
+    path([onHelix(sample.distance, sample.swing * 0.86), onHelix(sample.distance, -sample.swing * 0.86)]);
+  }
+  strand(1, true);
+  strand(-1, true);
+  ctx.restore();
+}
+
+/** The base pair where a thread crosses the helix: pale where the organization enters, teal where its agentic form leaves. */
+function gene(index, lit) {
+  const { at } = genes[index];
+  const half = helix.amplitude * 0.62;
+  const direction = across ? [1, 0] : [0, 1];
+  const from = [at[0] - direction[0] * half, at[1] - direction[1] * half];
+  const to = [at[0] + direction[0] * half, at[1] + direction[1] * half];
+  const tint = ctx.createLinearGradient(...from, ...to);
+  tint.addColorStop(0, HUMAN);
+  tint.addColorStop(1, TEAL);
+  ctx.save();
+  ctx.lineCap = 'round';
+  ctx.strokeStyle = tint;
+  ctx.lineWidth = 5 + 2 * lit;
+  ctx.globalAlpha = 0.82 + 0.18 * lit;
+  glow(TEAL, 8 + 26 * lit);
+  path([from, to]);
+  ctx.fillStyle = PALE;
+  ctx.globalAlpha = 0.5 + 0.5 * lit;
+  ctx.beginPath();
+  ctx.arc(at[0], at[1], 2.6 + 2.2 * lit, 0, TAU);
+  ctx.fill();
+  ctx.restore();
+}
+
+function seed(lit) {
+  const size = across ? 92 : 104;
+  const halo = ctx.createRadialGradient(L.seed[0], L.seed[1], 0, L.seed[0], L.seed[1], size * 0.95);
+  halo.addColorStop(0, `rgba(45,212,191,${0.22 + 0.3 * lit})`);
+  halo.addColorStop(1, 'rgba(45,212,191,0)');
+  ctx.fillStyle = halo;
+  ctx.fillRect(L.seed[0] - size, L.seed[1] - size, size * 2, size * 2);
+  if (!logo.complete || !logo.naturalWidth) return;
+  ctx.save();
+  glow(TEAL, 12 + 30 * lit);
+  ctx.drawImage(tinted, L.seed[0] - size / 2, L.seed[1] - size / 2, size, size);
+  ctx.restore();
 }
 
 function draw(t) {
   backdrop(t);
-  ground(t);
-  outline(t);
-  const activity = generation(t) ?? 0;
-  drift(t, activity);
-  mark(t);
-  seed(t);
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+
+  const mirror = within(t, T.mirror);
+  const work = within(t, T.work);
+  const evolve = within(t, T.evolve);
+  /** Each thread has its turn: its source lights, a light enters the helix, its base pair lights, a light leaves, its mirror lights. */
+  const turnOf = (row) => (mirror - row / threads.length) * threads.length;
+  const sourceLit = (row) => pulse(turnOf(row), 0, 0.5);
+  const geneLit = (row) => pulse(turnOf(row), 0.35, 0.85);
+  const mirrorLit = (row) => pulse(turnOf(row), 0.55, 1.1);
+  const teamRow = Math.min(1, threads.length - 1);
+  /** Work in progress. Each agent of the team is lit while it holds the work. */
+  const leadLit = pulse(work, 0, 0.14);
+  const holding = (index) => pulse(work, 0.1 + index * 0.12, 0.3 + index * 0.12);
+  const held = pulse(work, 0.54, 0.84);
+  const released = pulse(work, 0.8, 1.1);
+  /** Evidence reaches the model, then travels through it. */
+  const wave = evolve > 0.5 && evolve < 1.3 ? (evolve - 0.5) / 0.65 : 0;
+
+  // ---- lines, at rest --------------------------------------------------------------
+  ctx.lineWidth = 1.8;
+  ctx.strokeStyle = 'rgba(215,223,238,.42)';
+  for (const line of peopleLines) path(line);
+  ctx.strokeStyle = 'rgba(45,212,191,.5)';
+  for (const line of agentLines) path(line);
+  // the governed workflow: agent to agent, to the person, to the output
+  ctx.strokeStyle = 'rgba(45,212,191,.85)';
+  ctx.lineWidth = 2;
+  for (const line of [...handoffs, toGate, toOutput]) {
+    path(line);
+    arrowHead(line.at(-1), line.at(-2), 10, TEAL);
+  }
+
+  // the process of the organization as it is
+  const steps = L.people.process;
+  if (steps.length) {
+    ctx.lineWidth = 1.8;
+    ctx.strokeStyle = 'rgba(215,223,238,.42)';
+    path([[L.people.team[1][0], L.people.team[1][1] + R], [steps[1][0], steps[1][1] - STEP.h / 2]]);
+    for (const [index, step] of steps.entries()) {
+      ctx.strokeStyle = `rgba(215,223,238,${0.75 + 0.25 * sourceLit(2)})`;
+      ctx.fillStyle = PANEL;
+      ctx.beginPath();
+      ctx.roundRect(step[0] - STEP.w / 2, step[1] - STEP.h / 2, STEP.w, STEP.h, 7);
+      ctx.fill();
+      ctx.stroke();
+      if (!index) continue;
+      const from = [steps[index - 1][0] + STEP.w / 2, step[1]];
+      const to = [step[0] - STEP.w / 2, step[1]];
+      ctx.strokeStyle = 'rgba(215,223,238,.42)';
+      path([from, to]);
+      arrowHead(to, from, 8, 'rgba(215,223,238,.75)');
+    }
+  }
+
+  // the organization, entering the helix and leaving it as its agentic form
+  for (const [row, thread] of threads.entries()) {
+    const lit = Math.max(sourceLit(row), mirrorLit(row));
+    const tint = ctx.createLinearGradient(thread.before[0][0], thread.before[0][1], thread.after[1][0], thread.after[1][1]);
+    tint.addColorStop(0, `rgba(215,223,238,${0.52 + 0.35 * lit})`);
+    tint.addColorStop(1, `rgba(45,212,191,${0.72 + 0.28 * lit})`);
+    ctx.strokeStyle = tint;
+    ctx.lineWidth = 1.8;
+    ctx.setLineDash([3, 8]);
+    path(thread.before);
+    path(thread.after);
+    ctx.setLineDash([]);
+    arrowHead(thread.after[1], thread.after[0], 11, TEAL);
+    // Read downwards, each thread points at the title of the next block, so both halves end in an arrow.
+    if (!across) arrowHead(thread.before[1], thread.before[0], 11, 'rgba(215,223,238,.8)');
+    // Always a light on its way: the direction of the picture is readable on any frame.
+    const drift = frac(t * 6 + row * 0.31);
+    for (const [segment, offset] of [[thread.before, 0], [thread.after, 0.5]]) {
+      glint(along(segment, frac(drift + offset)), TEAL, 2.6, 0.5);
+      const u = (turnOf(row) - offset) * 2;
+      if (u > 0 && u < 1) glint(along(segment, ease(u)), offset ? TEAL : HUMAN, 6.5);
+    }
+  }
+
+  // evidence returning to the model
+  ctx.strokeStyle = `rgba(165,180,252,${0.62 + 0.38 * pulse(evolve, 0, 0.7)})`;
+  ctx.lineWidth = 1.8;
+  ctx.setLineDash([3, 8]);
+  ctx.beginPath();
+  for (let i = 0; i <= 50; i++) { const [x, y] = cubic(...evidence, i / 50); if (i) ctx.lineTo(x, y); else ctx.moveTo(x, y); }
+  ctx.stroke();
+  ctx.setLineDash([]);
+  arrowHead(cubic(...evidence, 1), cubic(...evidence, 0.94), 11, GOV);
+  if (evolve > 0 && evolve < 0.6) glint(cubic(...evidence, ease(evolve / 0.6)), GOV, 6.5);
+
+  // ---- the model: the helix, the base pairs that hold the organization, the mark ------------
+  drawHelix(t, wave);
+  for (const index of genes.keys()) gene(index, Math.max(geneLit(index), wave > 0 ? Math.max(0, 1 - Math.abs(genes[index].rise - wave) / 0.16) : 0));
+  seed(clamp(pulse(evolve, 0.5, 1) + 0.25 * pulse(mirror, 0, 1)));
+
+  // ---- your organization ---------------------------------------------------------------------
+  for (const [index, point] of people.entries()) {
+    const lit = sourceLit(index ? teamRow : 0);
+    person(point, index ? R : RLEAD, HUMAN, lit);
+    if (index) badge(point, R, ROLES[index - 1], HUMAN, lit);
+  }
+
+  // ---- the agentic organization ----------------------------------------------------------------
+  agent(L.agents.lead, RLEAD, CYAN, Math.max(mirrorLit(0), leadLit));
+  for (const [index, point] of team.entries()) {
+    const lit = Math.max(mirrorLit(teamRow), holding(index));
+    agent(point, R, TEAL, lit);
+    badge(point, R, ROLES[index], MINT, lit);
+  }
+
+  // work in progress: the lead hands it to the first agent, each agent to the next, the last to the person
+  if (work > 0 && work < 1.05) {
+    const stage = (start, length) => (work - start) / length;
+    const moves = [
+      [agentLines[0], stage(0.02, 0.1), CYAN],
+      ...handoffs.map((line, index) => [line, stage(0.22 + index * 0.12, 0.08), MINT]),
+      [toGate, stage(0.44, 0.12), MINT],
+      [toOutput, stage(0.8, 0.1), MINT],
+    ];
+    for (const [line, u, color] of moves) if (u > 0 && u < 1) glint(along(line, ease(u)), color, 6.5);
+  }
+
+  // human oversight: work waits here, and the ring closes as the person decides
+  person(L.gate, R, GOV, Math.max(held, threads.length > 2 ? mirrorLit(2) : 0));
+  if (held > 0) {
+    ctx.save();
+    ctx.strokeStyle = PALE;
+    ctx.lineWidth = 3;
+    glow(GOV, 14);
+    ctx.beginPath();
+    ctx.arc(L.gate[0], L.gate[1], R + 7, -Math.PI / 2, -Math.PI / 2 + TAU * clamp((work - 0.57) / 0.22));
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  // a checked output: always a ticked page; the tick is written again each time work is released
+  output(L.output, Math.max(released, pulse(evolve, 0, 0.3)), work > 0.88 && work < 1.02 ? (work - 0.88) / 0.14 : 1);
 }
 
-// ---- modes ----------------------------------------------------------------------
+// ---- modes --------------------------------------------------------------------------------------
 const blobOf = (type, quality) => new Promise((resolve) => canvas.toBlob(resolve, type, quality));
-const post = (path, blob) => fetch(path, { method: 'POST', body: blob }).then((response) => { if (!response.ok) throw new Error(`${path}: ${response.status}`); });
+const post = (target, blob) => fetch(target, { method: 'POST', body: blob }).then((response) => { if (!response.ok) throw new Error(`${target}: ${response.status}`); });
 
 async function capture() {
-  const suffix = query.get('layout') === 'portrait' ? '-portrait' : '';
-  draw(START_T);
-  await post(`/still?name=seed-poster${suffix}.png`, await blobOf('image/png'));
-  if (!suffix) {
+  draw(0);
+  await post(`/still?name=diagram${across ? '' : '-portrait'}.png`, await blobOf('image/png'));
+  if (across && query.get('capture') !== 'still') {
     for (let frame = 0; frame < FRAMES; frame++) {
-      draw(frac(frame / FRAMES + START_T));
+      draw(frame / FRAMES);
       await post(`/frame?i=${frame}`, await blobOf('image/jpeg', 0.95));
       if (frame % FPS === 0) document.title = `frame ${frame} / ${FRAMES}`;
     }
@@ -578,9 +575,9 @@ logo.onload = () => {
   if (query.has('capture')) capture().catch((error) => { document.title = `capture failed: ${error.message}`; document.body.dataset.state = 'failed'; });
   else if (query.has('play')) {
     const started = performance.now();
-    const tick = (now) => { draw(frac((now - started) / 1000 / SECONDS + START_T)); requestAnimationFrame(tick); };
+    const tick = (now) => { draw(frac((now - started) / 1000 / SECONDS)); requestAnimationFrame(tick); };
     requestAnimationFrame(tick);
-  } else draw(Number(query.get('t') ?? START_T));
+  } else draw(Number(query.get('t') ?? 0));
   document.body.dataset.ready = 'true';
 };
 logo.src = '/poesis-logo.png';

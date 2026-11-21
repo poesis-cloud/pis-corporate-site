@@ -22,7 +22,7 @@ const loop = [
   { title: 'The harness resolves', body: 'From that configuration and the recorded outcomes, it names the next eligible step, its model profile and the instructions and skills to load.' },
   { title: 'The agent host runs the step', body: 'The host dispatches the step to an agent. The agent writes its artifact with the host’s own file tools.' },
   { title: 'The harness checks and commits', body: 'The write is authorized against the agent’s grants, validated against its schema, and committed to Git. The call is journaled.' },
-  { title: 'A person reviews', body: 'At the points the workflow names, a person reads the artifact and decides whether the work advances.', gov: true },
+  { title: 'A person decides', body: 'When no step is left, the orchestrator returns the main artifacts of the workflow. A person reads them and accepts, raises concerns or rejects.', gov: true },
 ];
 
 const sourceCode = (product: SafProduct) => ({
@@ -71,7 +71,7 @@ const sourceCode = (product: SafProduct) => ({
       <dl class="spec stack-gap">
         <div>
           <dt>Status</dt>
-          <dd>{maturityLabel}. Latest pre-release of both: <a href={harness.releases} {...externalLinkAttributes}>{latestPreRelease.version}</a>, {formatDate(latestPreRelease.publishedOn)}. No final release has been published.</dd>
+          <dd>{maturityLabel}. Latest pre-release of both: <a href={harness.releases} {...externalLinkAttributes}>{latestPreRelease.version}</a>, {formatDate(latestPreRelease.publishedOn)}. No final 1.0 release has been published; the organization repository also carries a v0.1.0 release from June 2026, which predates the plugins.</dd>
         </div>
         <div>
           <dt>Licence</dt>
@@ -134,7 +134,7 @@ const sourceCode = (product: SafProduct) => ({
           <li class={step.gov ? 'flow__gov' : undefined}><strong>{step.title}</strong>{step.body}</li>
         ))}
       </ol>
-      <p class="flow__loop">In the alpha, the review point is a step of the workflow: the harness does not yet authenticate the person who approves. The full contract is in the <a href={`${harness.repository}/blob/main/def/core/spec.md`} {...externalLinkAttributes} data-track="developer_repo_click" data-track-id="oss-how-spec">harness core specification</a>.</p>
+      <p class="flow__loop">In the alpha, the human gate is the end of each workflow: the harness neither records nor authenticates the decision. The full contract is in the <a href={`${harness.repository}/blob/main/def/core/spec.md`} {...externalLinkAttributes} data-track="developer_repo_click" data-track-id="oss-how-spec">harness core specification</a>.</p>
     </div>
   </section>
 
@@ -234,7 +234,7 @@ const sourceCode = (product: SafProduct) => ({
       <p>Poesis, the team that builds SAF, offers one service: guiding the agentic transformation of an organization or of one of its parts, from scoping to an evidence-backed pilot.</p>
       <div class="actions">
         <a class="btn btn-primary btn-lg" href="/transformation/">See the transformation service</a>
-        <a class="btn btn-quiet" href="/contact/" data-track="business_contact_intent" data-track-id="oss-closing">Talk to Poesis</a>
+        <a class="btn btn-quiet" href="/contact/" data-track="business_contact_intent" data-track-id="oss-closing">Discuss your transformation</a>
       </div>
     </div>
   </section>

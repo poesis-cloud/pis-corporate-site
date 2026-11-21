@@ -25,8 +25,16 @@ import { contact, contactEmail, contactTransport, offerName } from '../src/data/
 import { platformSolutions, solutionHref } from '../src/data/poesis-platform.ts';
 import { alternatives } from '../src/data/alternatives.ts';
 
-/** The hero message, verbatim. Changing a word of it is a decision for Poesis, not for a refactor. */
-const HERO_MESSAGE = 'Generate easily and rapidly a seed of an agentic organisation mirroring yours to automatize. Plant it, and watch it to produce and evolve.';
+/** Geometry of the hero diagram: the film is drawn from it and the page places its words from it. */
+const heroDiagram = JSON.parse(readFileSync(new URL('../src/data/hero-diagram.json', import.meta.url), 'utf8'));
+
+/**
+ * Clément Cazaud's decision of 21 November 2026: the title of the home page says what Poesis
+ * offers, and his own sentence becomes the signature of Poesis, in italics, beside the picture.
+ * Both are held here word for word: changing either is a decision for Poesis, not for a refactor.
+ */
+const HERO_TITLE = 'Transform your organization with governed AI agents.';
+const HERO_SIGNATURE = 'Generate easily and rapidly a seed of an agentic organisation mirroring yours to automatize. Plant it, and watch it to produce and evolve.';
 
 const here = (path) => new URL(path, import.meta.url);
 const read = (path) => readFileSync(here(path), 'utf8');
@@ -264,20 +272,32 @@ builtTest('every address the previous site served still resolves', () => {
   assert.deepEqual(missing, []);
 });
 
-builtTest('the home page states the hero message verbatim, says what is sold and has one dominant action', () => {
+builtTest('the home page says what is sold in its title, keeps the founder\'s sentence as a signature, and has one dominant action', () => {
   const home = built('/');
   const main = mainOf(home);
   const headings = elements(home, (node) => node.tagName === 'h1');
   assert.equal(headings.length, 1);
-  assert.equal(clean(text(headings[0])), HERO_MESSAGE);
+  assert.equal(clean(text(headings[0])), HERO_TITLE);
   const hero = elements(main, (node) => hasClass(node, 'hero-seed'))[0];
-  // The offer is named, and said in plain words right under the statement.
+  // The founder's sentence is on the page once, word for word, as a paragraph in the hero: never as a heading.
+  const signatures = elements(home, (node) => hasClass(node, 'hero-signature'));
+  assert.equal(signatures.length, 1);
+  assert.equal(signatures[0].tagName, 'p');
+  assert.equal(clean(text(signatures[0])), HERO_SIGNATURE);
+  assert.equal(elements(hero, (node) => node === signatures[0]).length, 1);
+  assert.equal(clean(text(home)).split(HERO_SIGNATURE).length - 1, 1);
+  for (const heading of elements(home, (node) => /^h[1-6]$/.test(node.tagName ?? ''))) assert.ok(!clean(text(heading)).includes('Generate easily'), clean(text(heading)));
+  // The offer is named, and said in two short sentences: what Poesis does with SAF, and how to start.
   assert.equal(clean(text(elements(hero, (node) => hasClass(node, 'hero-seed__kicker'))[0])), `${offerName}, by Poesis`);
   const lead = clean(text(elements(hero, (node) => hasClass(node, 'hero-seed__lead'))[0]));
-  for (const phrase of ['your organization', 'a working organization of AI agents', 'your people keep the decisions', 'governed pilot']) assert.ok(lead.includes(phrase), phrase);
-  // One filled button for the prospect; the developer path is a quiet link, and no repository link competes in the hero.
+  for (const phrase of ['design and evolve an agentic organization that mirrors yours', 'SAF, our open-source framework', 'one team or one workflow', 'under human oversight']) assert.ok(lead.includes(phrase), phrase);
+  assert.ok(lead.split(/\.\s/).length <= 2 && lead.length < 200, 'two short sentences');
+  // Nothing in the hero promises an organization that runs itself.
+  assert.doesNotMatch(clean(text(hero)), /fully automat|autonomous|without (people|humans)|no human/i);
+  // One filled button for the prospect; the developer path is a quiet link, no line of small print under them, and no repository link competes in the hero.
   const actions = elements(hero, (node) => node.tagName === 'a' && hasClass(node, 'btn'));
-  assert.deepEqual(actions.map((node) => [clean(text(node)), attr(node, 'href')]), [['Discuss your transformation', '/contact/'], ['Explore SAF open source', '/open-source/']]);
+  assert.deepEqual(actions.map((node) => [clean(text(node)), attr(node, 'href')]), [['Discuss your transformation', '/contact/'], ['Explore SAF', '/open-source/']]);
+  assert.equal(elements(hero, (node) => hasClass(node, 'hero-actions__note')).length, 0);
   assert.ok(hasClass(actions[0], 'btn-primary') && hasClass(actions[0], 'btn-lg'));
   assert.ok(hasClass(actions[1], 'btn-quiet') && !hasClass(actions[1], 'btn-primary'));
   assert.equal(elements(hero, (node) => attr(node, 'href')?.startsWith('https://github.com')).length, 0);
@@ -288,7 +308,14 @@ builtTest('the home page states the hero message verbatim, says what is sold and
   // No case is published: the page shows no empty showcase and sends nobody to one.
   assert.doesNotMatch(copy, /case stud/i);
   assert.equal(elements(main, (node) => attr(node, 'href')?.startsWith('/case-studies')).length, 0);
-  for (const id of ['why', 'method', 'strengths', 'saf', 'faq', 'contact']) assert.equal(elements(main, (node) => node.tagName === 'section' && attr(node, 'id') === id).length, 1, id);
+  for (const id of ['why', 'method', 'saf', 'faq', 'contact']) assert.equal(elements(main, (node) => node.tagName === 'section' && attr(node, 'id') === id).length, 1, id);
+  // The opening table opposes work without a frame to work with SAF, on what SAF ships today, and the page says where it stops.
+  const why = elements(main, (node) => attr(node, 'id') === 'why')[0];
+  assert.deepEqual(elements(why, (node) => node.tagName === 'h3').map((node) => clean(text(node))), ['Quality', 'Traceability', 'Human decision', 'Separation of roles', 'Ownership', 'Improvement']);
+  assert.doesNotMatch(clean(text(why)), /2 days|two days|Claude Code|scorecard|guarantee/i);
+  const saf = elements(main, (node) => attr(node, 'id') === 'saf')[0];
+  for (const phrase of [maturityLabel, latestPreRelease.version, supportedHost.name, 'not yet recorded or authenticated']) assert.ok(clean(text(saf)).includes(phrase), phrase);
+  assert.equal(elements(saf, (node) => attr(node, 'href') === '/open-source/#status').length, 1);
   assert.equal(elements(main, (node) => attr(node, 'id') === 'proof').length, 0);
   // The five steps, in order; install commands live on the open-source page, not here.
   const method = elements(main, (node) => attr(node, 'id') === 'method')[0];
@@ -300,10 +327,53 @@ builtTest('the home page states the hero message verbatim, says what is sold and
   const html = read('../dist/index.html');
   assert.ok(html.includes("fetch('/knowledge/platform/')"));
   assert.ok(html.includes("location.replace('/knowledge/platform/#' + hash)"));
-  // The picture comes with its legend: four signs, in the reading order of the film.
-  const key = elements(hero, (node) => hasClass(node, 'hero-key'))[0];
-  assert.deepEqual(elements(key, (node) => node.tagName === 'strong').map((node) => clean(text(node))), ['Seed', 'AI agents', 'People', 'Outputs']);
-  assert.equal(elements(key, (node) => node.tagName === 'svg' && attr(node, 'aria-hidden') === 'true').length, 4);
+});
+
+builtTest('the hero diagram says the transformation in words: your organization, modelled with SAF, agentic organization', () => {
+  const hero = elements(built('/'), (node) => hasClass(node, 'hero-seed'))[0];
+  const figure = elements(hero, (node) => node.tagName === 'figure' && hasClass(node, 'hero-diagram'))[0];
+  // Described once for readers who do not see it; the picture itself is then silent.
+  const caption = elements(figure, (node) => node.tagName === 'figcaption')[0];
+  assert.equal(attr(figure, 'aria-labelledby'), attr(caption, 'id'));
+  for (const phrase of ['your organization', 'modelled with SAF', 'agentic organization', 'governed workflow', 'a person who oversees', 'output checked against its schema', 'people then revise', 'evolves']) assert.ok(clean(text(caption)).includes(phrase), phrase);
+  // Two compositions, wide and narrow, each with the same words, placed from the geometry the picture was drawn from.
+  const lists = elements(figure, (node) => hasClass(node, 'hero-diagram__labels'));
+  assert.deepEqual(lists.map((list) => attr(list, 'class').split(' ').at(-1)), ['hero-diagram__labels--landscape', 'hero-diagram__labels--portrait']);
+  for (const [index, name] of ['landscape', 'portrait'].entries()) {
+    const view = heroDiagram[name];
+    const titles = elements(lists[index], (node) => hasClass(node, 'hero-diagram__title'));
+    // The reading order is the transformation itself.
+    assert.deepEqual(titles.map((node) => clean(text(first(node, 'strong')))), ['Your organization', 'Modelled with SAF', 'Agentic organization'], name);
+    assert.deepEqual(titles.map((node) => clean(text(first(node, 'span')))), ['People, roles and processes', "Your organization's DNA", 'AI agents, each with a role'], name);
+    const tags = elements(lists[index], (node) => hasClass(node, 'hero-diagram__tag'));
+    assert.deepEqual(tags.map((node) => clean(text(node))).sort(), ['Checked outputs', 'Evolves with evidence', 'Governed workflows', 'Human oversight'], name);
+    // Every word sits inside the picture.
+    for (const [node, item] of [...titles.map((node, at) => [node, view.titles[at]]), ...tags.map((node, at) => [node, view.tags[at]])]) {
+      const [, left, top] = attr(node, 'style').match(/^left:([\d.]+)%;top:([\d.]+)%$/);
+      assert.ok(Math.abs(Number(left) - (100 * item.x) / view.width) < 0.01 && Number(left) > 0 && Number(left) < 100, `${name} ${item.id} left`);
+      assert.ok(Math.abs(Number(top) - (100 * item.y) / view.height) < 0.01 && Number(top) > 0 && Number(top) < 100, `${name} ${item.id} top`);
+    }
+  }
+  // One step in practice, shown as the chat it is: the Poesis mark, the visitor, the agent, the harness's receipt, the decision.
+  const step = elements(figure, (node) => hasClass(node, 'hero-chat'))[0];
+  assert.equal(attr(first(step, 'img'), 'src'), '/poesis-logo.png');
+  assert.equal(clean(text(elements(step, (node) => hasClass(node, 'hero-chat__head'))[0])), 'Poesis SAF agent in your agent host');
+  const lines = elements(step, (node) => node.tagName === 'li');
+  assert.deepEqual(lines.map((node) => clean(text(first(node, 'b')))), ['You', 'Agent', 'Harness', 'You']);
+  assert.deepEqual(lines.map((node) => attr(node, 'data-role')), ['you', 'agent', 'harness', 'gate']);
+  assert.deepEqual(elements(lines[3], (node) => node.tagName === 'span').map((node) => clean(text(node))), ['Accept', 'Concerns', 'Reject']);
+  // An illustration, not a control: nothing in it can be clicked or focused.
+  assert.equal(elements(step, (node) => ['a', 'button', 'input'].includes(node.tagName) || hasAttr(node, 'tabindex')).length, 0);
+  for (const line of lines) assert.ok(clean(text(line)).length <= 34, clean(text(line)));
+  // The film brings each line forward in turn: the windows follow one another inside its "work" phase.
+  const windows = lines.map((node) => [Number(attr(node, 'data-from')), Number(attr(node, 'data-to'))]);
+  for (const [index, [from, to]] of windows.entries()) assert.ok(from < to && from >= 0.4 && to <= 0.76 && (index === 0 || from === windows[index - 1][1]), `window ${index}`);
+  // The stage reserves the picture's place before it loads: no layout shift.
+  const stage = elements(figure, (node) => hasClass(node, 'hero-diagram__stage'))[0];
+  assert.equal(attr(stage, 'style'), `--portrait:${heroDiagram.portrait.width} / ${heroDiagram.portrait.height};--landscape:${heroDiagram.landscape.width} / ${heroDiagram.landscape.height}`);
+  // The film carries no words of its own, and the diagram promises nothing SAF does not ship.
+  const words = clean(text(figure));
+  for (const claim of ['autonomous', 'guarantee', 'unchecked', 'Claude', 'self-']) assert.ok(!words.toLowerCase().includes(claim.toLowerCase()), claim);
 });
 
 builtTest('the hero film is local, silent, optional and has a still fallback', () => {
@@ -312,6 +382,8 @@ builtTest('the hero film is local, silent, optional and has a still fallback', (
   for (const name of ['autoplay', 'muted', 'loop', 'playsinline']) assert.ok(hasAttr(video, name), name);
   assert.equal(attr(video, 'preload'), 'none');
   assert.ok(!hasAttr(video, 'controls'));
+  assert.equal(attr(video, 'aria-hidden'), 'true');
+  assert.equal(attr(video, 'tabindex'), '-1');
   // No source in the markup: nothing is fetched until the page has checked width, motion and data preferences.
   assert.equal(elements(video, (node) => node.tagName === 'source').length, 0);
   assert.ok(!hasAttr(video, 'src'));
@@ -320,29 +392,34 @@ builtTest('the hero film is local, silent, optional and has a still fallback', (
   for (const source of sources) {
     assert.match(source.src, /^\/hero\//);
     const size = statSync(here(`../dist${source.src}`)).size;
-    assert.ok(size > 100_000 && size < 2_500_000, `${source.src}: ${size} bytes`);
+    assert.ok(size > 100_000 && size < 2_000_000, `${source.src}: ${size} bytes`);
   }
-  const still = elements(hero, (node) => hasClass(node, 'hero-seed__poster'))[0];
-  assert.equal(attr(still, 'alt'), '');
-  assert.ok(Number(attr(still, 'width')) > 0 && Number(attr(still, 'height')) > 0);
   // The still is an image under the film, not a `poster` attribute: a poster would be fetched
-  // even on screens that never play the film. Below 1100px the stage is not displayed, so the
-  // picture is offered only above that width and the image itself is an empty pixel.
+  // even on screens that never play the film. One picture element serves both compositions, so
+  // a screen downloads only the one it shows.
   assert.ok(!hasAttr(video, 'poster'));
-  assert.ok(attr(still, 'src').startsWith('data:image/gif;base64,'));
+  const still = elements(hero, (node) => hasClass(node, 'hero-diagram__still'))[0];
+  assert.equal(attr(still, 'alt'), '', 'the figure is described by its caption and its labels');
+  // On the first screen of tablets and laptops: not lazy.
+  assert.ok(!hasAttr(still, 'loading'));
+  assert.deepEqual([attr(still, 'width'), attr(still, 'height')], [String(heroDiagram.portrait.width), String(heroDiagram.portrait.height)]);
   const wide = first(hero, 'source');
-  assert.equal(attr(wide, 'media'), '(min-width: 1100px)');
-  // Narrow screens get the same picture as a visible still, described for non-sighted readers.
-  const figure = elements(hero, (node) => hasClass(node, 'hero-figure'))[0];
-  assert.ok(attr(figure, 'alt').length > 40);
-  assert.equal(attr(figure, 'loading'), 'lazy');
-  for (const picture of [attr(wide, 'srcset'), attr(figure, 'src')]) {
+  assert.equal(attr(wide, 'media'), '(min-width: 720px)');
+  assert.deepEqual([attr(wide, 'width'), attr(wide, 'height')], [String(heroDiagram.landscape.width), String(heroDiagram.landscape.height)]);
+  for (const picture of [attr(wide, 'srcset'), attr(still, 'src')]) {
     assert.match(picture, /^\/hero\//);
     assert.ok(statSync(here(`../dist${picture}`)).size < 60_000, picture);
   }
-  const toggle = elements(hero, (node) => hasClass(node, 'hero-seed__toggle'))[0];
+  // Where the diagram is on the first screen, its still is fetched early.
+  const preload = elements(built('/'), (node) => node.tagName === 'link' && attr(node, 'rel') === 'preload' && attr(node, 'as') === 'image')[0];
+  assert.deepEqual([attr(preload, 'href'), attr(preload, 'media')], [attr(wide, 'srcset'), '(min-width: 1100px)']);
+  // The film can be paused: a real button with a name, shown only when the film can play.
+  const toggle = elements(hero, (node) => hasClass(node, 'hero-diagram__toggle'))[0];
   assert.equal(toggle.tagName, 'button');
+  assert.equal(attr(toggle, 'aria-label'), 'Pause animation');
   assert.ok(hasAttr(toggle, 'hidden'), 'the pause control appears only when the film can play');
+  // No leftover of the previous film.
+  assert.ok(!existsSync(here('../dist/hero/seed.mp4')) && !existsSync(here('../dist/hero/seed-poster.webp')));
 });
 
 builtTest('every page carries the same short menu and the call to action, and none carries the old groups', () => {
@@ -368,10 +445,11 @@ builtTest('conversion pages have one H1, a matching title, a unique description 
     const headings = elements(document, (node) => node.tagName === 'h1');
     assert.equal(headings.length, 1, route);
     const title = clean(text(first(document, 'title')));
-    assert.ok(title.endsWith(' · Poesis'), route);
+    // Every title carries the name once: as a suffix, or because the title already ends with it.
+    assert.ok(title.endsWith(' · Poesis') || /\bPoesis$/.test(title), route);
+    assert.ok(!title.includes('Poesis · Poesis'), route);
     // Title and H1 are the same words (SEO register, rule 12). The home page is the one
-    // documented exception: its H1 is the imposed hero message.
-    if (route !== '/') assert.equal(title.replace(/ · Poesis$/, ''), clean(text(headings[0])).replace(/\.$/, ''), route);
+    assert.equal(title.replace(/ · Poesis$/, ''), clean(text(headings[0])).replace(/\.$/, ''), route);
     const description = attr(elements(document, (node) => node.tagName === 'meta' && attr(node, 'name') === 'description')[0], 'content');
     assert.ok(description.length >= 70 && description.length <= 200, `${route}: ${description.length}`);
     assert.ok(!descriptions.has(description), `${route}: duplicate description`);
@@ -512,7 +590,7 @@ builtTest('the contact form is short, labelled, honest about its transport, and 
       assert.ok(elements(form, (node) => node.tagName === 'noscript').length, `${route}: wording for visitors without scripts`);
     } else {
       // No receiver: the form says it prepares an email, posts nowhere and has no "sent" panel at all.
-      assert.equal(button, 'Prepare my email', route);
+      assert.equal(button, 'Open in my email app', route);
       assert.ok(clean(text(form)).includes('This form prepares an email in your own mail app'), route);
       assert.equal(done.length, 0, route);
       assert.doesNotMatch(clean(text(scope)), /has reached Poesis|Message sent|was sent\b/i, route);
@@ -553,10 +631,15 @@ builtTest('links that used to reach the former home page or the pilot builder st
   }
   const map = elements(built(platformOverviewPath), (node) => attr(node, 'id') === 'arch-platform-heading')[0];
   assert.equal(attr(first(map, 'a'), 'href'), platformOverviewPath);
-  // Archived service pages lead to the pilot record they describe; a brief's selection link is forwarded to the builder.
+  // An archived offer is not sold: its page sells nothing of its own. Its actions lead to the current offer,
+  // and the pilot record it described stays one link away, in the list of archived services.
   const service = built('/services/oip-saas/');
-  assert.ok(elements(mainOf(service), (node) => attr(node, 'href') === '/services/pilot').length >= 2);
+  const actions = elements(mainOf(service), (node) => node.tagName === 'a' && hasClass(node, 'btn')).map((node) => [clean(text(node)), attr(node, 'href')]);
+  assert.deepEqual(actions, [['See what Poesis offers today', '/transformation/'], ['Discuss your transformation', '/contact/'], ['See the current offer', '/transformation/']]);
+  assert.doesNotMatch(clean(text(mainOf(service))), /Discuss future requirements|Start with a Pilot|Shape your Pilot/);
+  assert.ok(elements(mainOf(service), (node) => attr(node, 'href') === '/services/pilot').length >= 1);
   assert.equal(elements(mainOf(service), (node) => attr(node, 'href') === '/pilot').length, 0);
+  // A brief's selection link is forwarded to the builder.
   assert.ok(read('../dist/pilot/index.html').includes("location.replace('/services/pilot/' + location.search)"));
 });
 

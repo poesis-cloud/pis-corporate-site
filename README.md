@@ -66,11 +66,12 @@ src/
     saf.ts                     every SAF fact the conversion pages state, with its check date
     method.ts                  the five steps, used by every page that tells the journey
     faq.ts  case-studies.ts  site.ts  knowledge.ts  format.ts
+    hero-diagram.json          geometry of the hero diagram: read by the film and by the page
     catalog/*.json and the other modules: the Knowledge corpus data
   styles/
     global.css                 Deep Field tokens and the Knowledge components
     site.css                   conversion system: roles of colour, type, components
-public/hero/                   background film and posters of the home page
+public/hero/                   film and stills of the hero diagram
 contact-endpoint/              reference receiver of the contact form, and its contract
 scripts/
   *.test.mjs  fixtures/        tests
@@ -176,10 +177,12 @@ An element opts in with `data-track` and `data-track-id`.
 
 ## SEO
 
-- One H1 per page; title and H1 are the same words on every conversion page except the home
-  page, whose H1 is the imposed hero message and whose title names the offer. This is a
-  deliberate exception to rule 12 of the SEO register (`strategy/seo.md` in the `poesis`
-  repository); the register itself must be updated by its owner for the new keyword owners:
+- One H1 per page; title and H1 are the same words on every conversion page, the home page
+  included (rule 12 of the SEO register, `strategy/seo.md` in the `poesis` repository). The home
+  page's H1 says what is sold, "Transform your organization with governed AI agents."; the
+  founder's sentence, formerly the H1, is kept word for word as the signature of the hero, in
+  italics, and is never a heading (decision of Clément Cazaud, 21 November 2026; a test holds
+  both). The register itself must be updated by its owner for the new keyword owners:
   `/` and `/transformation/` (agentic transformation), `/open-source/` (Systemic Agentic
   Framework), `/knowledge/platform/` (Organizational Intelligence Platform, formerly `/`).
 - Structured data: `Organization` everywhere; `WebSite` and `FAQPage` on the home page; `Service`
@@ -208,14 +211,15 @@ status badge (`test:usage`, "built catalog cards…").
 flow. Workspace checks (`CHECK_WORKSPACE_PORTFOLIO=1`) need the sibling strategy and
 documentation repositories.
 
-## Hero film
+## Hero diagram and film
 
-See [`scripts/hero-film/README.md`](scripts/hero-film/README.md). The film is drawn from the
-real Poesis mark, served locally, silent and paused on request. It opens on the complete
-picture, and the home page prints a four-line legend: the seed, and the three signs of the
-film (AI agent, human review, checked output). It plays only from 1100 px, where it has room beside the words, and never when the
-visitor asks for reduced motion or data; below that width the page shows the same picture as a
-still.
+See [`scripts/hero-film/README.md`](scripts/hero-film/README.md). The hero of the home page shows
+a diagram, readable before it moves: your organization, modelled with SAF, agentic
+organization. Its words are real text laid over the picture; picture and words take their
+positions from `src/data/hero-diagram.json`. The mark at the foot of the helix is the real
+Poesis logo. The still is the default for everyone; the film, the same picture in motion, is
+served locally, silent, and plays only from 1100 px, never when the visitor asks for reduced
+motion or data, and can be paused. Narrow screens get a composition of their own, as a still.
 
 ## Deploy
 

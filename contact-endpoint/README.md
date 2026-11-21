@@ -56,7 +56,9 @@ Neither was chosen: both need a decision and an account that only Poesis can pro
    needs no change. This adds a processor of personal data, to be named in the privacy policy.
 
 Whatever the choice, keep credentials on the receiver, restrict it to the site's origin, and add
-the platform's own rate limiting: the one in `handler.mjs` is per instance and best effort.
+the platform's own rate limiting: the one in `handler.mjs` is per instance and best effort. The
+hidden field and the timer stop casual robots only: both values come from the client, and the
+origin check binds browsers, not scripts. If abuse appears, add a challenge on the platform side.
 
 ## Switching the site to a receiver
 

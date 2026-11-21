@@ -42,7 +42,7 @@ export const methodSteps: MethodStep[] = [
   },
   {
     title: 'Design an agentic organization with SAF',
-    summary: 'We write the seed: roles, workflows, instructions and review points, as files you can read.',
+    summary: 'We write the seed: roles, workflows and instructions, as files you can read.',
     what: 'We turn the chosen workflows into a small, complete model of an agentic organization: which agent holds which role, the steps of each workflow, the instructions and skills each role needs, the artifacts each step must produce, what each agent may write, and where a person reviews.',
     who: 'Poesis writes the model; you read it and correct it. It is plain files in a repository, not a black box.',
     saf: 'SAF defines the format of the model. Where your work resembles scaled agile delivery, the ready-made SAF Agentic Organization is a starting point; otherwise the model is written for you.',
@@ -51,7 +51,7 @@ export const methodSteps: MethodStep[] = [
   {
     title: 'Run a governed pilot',
     summary: 'The seed runs on real work, on the agreed scope, with people reviewing at the points you chose.',
-    what: 'The model is put to work on real tasks. Agents carry out the steps; the harness resolves each step, checks what agents are allowed to write, validates what they produce and records it. Work waits at each review point until a person lets it through.',
+    what: 'The model is put to work on real tasks. Agents carry out the steps; the harness resolves each step, checks what agents are allowed to write, validates what they produce and records it. Each workflow ends by handing its results to a person, who accepts, raises concerns or rejects.',
     who: 'Your team works with the agents and reviews their output. Poesis runs the pilot with you and adjusts the model.',
     saf: 'The SAF Agentic Harness governs every step. It runs locally, in your agent host and on your repositories. It is an alpha preview: a pilot is run under human review, not unattended.',
     result: 'Real outputs, and the record of how they were produced: artifacts in Git and the journal of each session.',
