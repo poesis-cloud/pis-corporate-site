@@ -51,7 +51,9 @@ function mount(form: HTMLFormElement): void {
   // falls back to an email draft, does not find it in that draft.
   const trap = endpoint ? addTrap(form) : null;
   const field = (key: FieldKey) => form.querySelector<Field>(`[data-key="${key}"]`);
-  const errorOf = (element: Field) => document.getElementById(`${element.id}-error`);
+  /** The fields of these keys that exist in the form, in the same order. */
+  const fieldsOf = (keys: FieldKey[]): Field[] => keys.map(field).filter((element): element is Field => element !== null);
+  const fieldKeys = contactFields.map(({ key }) => key);
   const idleLabel = submit.innerHTML;
   const shownAt = Date.now();
   let started = false;
@@ -59,11 +61,11 @@ function mount(form: HTMLFormElement): void {
   // With JavaScript the page shows its own messages; without it, the browser's native validation applies.
   form.noValidate = true;
 
-  const values = (): ContactValues => Object.fromEntries(contactFields.map(({ key }) => [key, (field(key)?.value ?? '').trim()])) as ContactValues;
+  const values = (): ContactValues => Object.fromEntries(fieldKeys.map((key) => [key, (field(key)?.value ?? '').trim()])) as ContactValues;
 
   const mark = (element: Field, valid: boolean): void => {
     element.setAttribute('aria-invalid', String(!valid));
-    const error = errorOf(element);
+    const error = document.getElementById(`${element.id}-error`);
     if (error) error.hidden = valid;
   };
   // Spaces alone are not an answer: the request is built from trimmed values.
@@ -73,7 +75,8 @@ function mount(form: HTMLFormElement): void {
     return valid;
   };
   const validate = (): boolean => {
-    const invalid = contactFields.map(({ key }) => field(key)).filter((element): element is Field => element !== null && !check(element));
+    // Every field is checked, not only those before the first error, so all of them are marked at once.
+    const invalid = fieldsOf(fieldKeys).filter((element) => !check(element));
     invalid[0]?.focus();
     if (invalid.length) status.textContent = invalid.length === 1 ? 'One field needs your attention.' : `${invalid.length} fields need your attention.`;
     return invalid.length === 0;
@@ -84,9 +87,8 @@ function mount(form: HTMLFormElement): void {
     started = true;
     track('business_contact_form_start', placement);
   });
-  for (const { key } of contactFields) {
-    const element = field(key);
-    element?.addEventListener('blur', () => { if (element.getAttribute('aria-invalid') === 'true') check(element); });
+  for (const element of fieldsOf(fieldKeys)) {
+    element.addEventListener('blur', () => { if (element.getAttribute('aria-invalid') === 'true') check(element); });
   }
 
   const offerEmail = (request: ContactValues): void => {
@@ -108,7 +110,7 @@ function mount(form: HTMLFormElement): void {
       return;
     }
     if (outcome.state === 'invalid') {
-      const rejected = outcome.fields.map(field).filter((element): element is Field => element !== null);
+      const rejected = fieldsOf(outcome.fields);
       for (const element of rejected) mark(element, false);
       rejected[0]?.focus();
       status.textContent = `Your request was not sent: some details were not accepted. Check the marked fields and send again, or send it by email to ${email}.`;

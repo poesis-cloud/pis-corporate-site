@@ -17,17 +17,18 @@ import { externalLinkAttributes } from '../../data/site.ts';
 
 const hasCases = publishedCaseStudies.length > 0;
 const title = hasCases ? 'Case studies of agentic transformation pilots' : 'How Poesis documents its pilots';
+const breadcrumb = hasCases ? 'Case Studies' : 'Documenting pilots';
 const description = hasCases
   ? 'Pilots of agentic transformation run with Poesis: context, scope, method, human controls, measured results and limits, each with evidence you can inspect.'
   : 'What counts as evidence of an agentic transformation pilot, how a demonstration differs from a pilot and from an operational deployment, and what a case must contain before Poesis publishes it.';
 const kinds = Object.entries(evidenceKinds) as [EvidenceKind, { label: string; meaning: string }][];
 ---
-<BaseLayout title={title} description={description} pageType="Case Studies" noindex={!hasCases} breadcrumbs={[{ label: hasCases ? 'Case Studies' : 'Documenting pilots' }]}>
+<BaseLayout title={title} description={description} pageType="Case Studies" noindex={!hasCases} breadcrumbs={[{ label: breadcrumb }]}>
   <section class="intro">
     <div class="container">
       <ol class="crumbs" aria-label="Breadcrumb">
         <li><a href="/">Poesis</a></li>
-        <li aria-current="page">{hasCases ? 'Case Studies' : 'Documenting pilots'}</li>
+        <li aria-current="page">{breadcrumb}</li>
       </ol>
       <h1>{title}.</h1>
       {hasCases

@@ -17,6 +17,8 @@ const currentOf = (href: string): 'page' | 'true' | undefined => {
   if (href === '/knowledge/' ? inKnowledge : path.startsWith(href)) return 'true';
   return undefined;
 };
+/** A click towards the offer is measured as such; the other menu links are not tracked. */
+const trackingOf = (href: string) => (href === '/transformation/' ? { 'data-track': 'business_transformation_click', 'data-track-id': 'header' } : {});
 ---
 <header class="site-header">
   <div class="container nav">
@@ -27,7 +29,7 @@ const currentOf = (href: string): 'page' | 'true' | undefined => {
     <nav class="nav-links" id="primary-navigation" aria-label="Primary">
       <ul>
         {siteNavigation.map((item) => (
-          <li><a href={item.href} aria-current={currentOf(item.href)} data-track={item.href === '/transformation/' ? 'business_transformation_click' : undefined} data-track-id={item.href === '/transformation/' ? 'header' : undefined}>{item.label}</a></li>
+          <li><a href={item.href} aria-current={currentOf(item.href)} {...trackingOf(item.href)}>{item.label}</a></li>
         ))}
       </ul>
     </nav>

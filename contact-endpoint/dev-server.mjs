@@ -10,6 +10,7 @@
 //   CONTACT_OUTBOX    folder for delivered requests, default contact-endpoint/outbox (ignored by Git)
 //   CONTACT_DELIVERY  set to `fail` to make every delivery fail, to see the form's failure state
 //   MIN_ELAPSED_MS    default 2500
+//   RATE_MAX          attempts per minute before the receiver answers 429, default 5
 //
 // It listens on 127.0.0.1 only. It is a test double, not something to deploy.
 import { createServer } from 'node:http';

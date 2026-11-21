@@ -9,6 +9,7 @@
  * To publish a case: add a record below with `status: 'published'`. The detail
  * page at /case-studies/<slug>/ and its card are generated from it.
  */
+import { organization } from './saf.ts';
 
 /** What the work was. A demonstration is never presented as a client pilot. */
 export type EvidenceKind = 'demonstration' | 'pilot' | 'operational-deployment';
@@ -111,7 +112,6 @@ export const fictionalNotice = 'Fictional example. This organization does not ex
  * What it names in SAF (agents, workflows) exists in the public repository.
  * Set it to `null` to remove it.
  */
-const organizationRepository = 'https://github.com/poesis-cloud/saf-agentic-organization';
 export const illustrativeExample: IllustrativeExample | null = {
   slug: 'example-retail-bank-delivery-team',
   title: 'Fictional example: a delivery team in a retail bank',
@@ -124,8 +124,8 @@ export const illustrativeExample: IllustrativeExample | null = {
   humanControls: 'The team’s product owner reviews every refined feature before it enters planning, and a security reviewer reads anything that touches a control. Nothing is merged without a person. Because SAF does not yet authenticate an approval, the bank records who approved in its own tooling.',
   period: 'None: the scenario is invented.',
   evidence: [
-    { label: 'The workflows named above, in the public repository', href: `${organizationRepository}/tree/main/workflows` },
-    { label: 'The agents named above, in the public repository', href: `${organizationRepository}/tree/main/agents` },
+    { label: 'The workflows named above, in the public repository', href: `${organization.repository}/tree/main/workflows` },
+    { label: 'The agents named above, in the public repository', href: `${organization.repository}/tree/main/agents` },
   ],
   limits: 'This is not evidence of anything. It shows what a case describes, not what a client obtained. SAF is an alpha preview that runs on GitHub Copilot only, and a bank’s own security and compliance functions would have to accept it before any such pilot.',
   learnings: 'A real case states here what the pilot taught, and what changed in the model as a result.',

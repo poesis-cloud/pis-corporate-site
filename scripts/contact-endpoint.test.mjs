@@ -64,7 +64,7 @@ test('missing, malformed and oversized fields are refused, field by field, and n
   const cases = [
     [{ ...valid, name: '   ' }, { name: 'required' }],
     [{ ...valid, email: 'not-an-address' }, { email: 'invalid' }],
-    [{ ...valid, email: '' , goal: '' }, { email: 'required', goal: 'required' }],
+    [{ ...valid, email: '', goal: '' }, { email: 'required', goal: 'required' }],
     [{ ...valid, goal: 'x'.repeat(LIMITS.goal + 1) }, { goal: 'too-long' }],
     [{ ...valid, company: 'c'.repeat(LIMITS.company + 1) }, { company: 'too-long' }],
   ];

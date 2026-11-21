@@ -1,20 +1,21 @@
 ---
 /**
  * Open Source — the developer path through SAF: what it is, the two products,
- * how it works, install, first workflow, community, contribution, and the way
- * back to the Poesis service. Every command and status comes from src/data/saf.ts.
+ * what exists today, how it works, install, first workflow, community,
+ * contribution, and the way back to the Poesis service. The in-page order is
+ * that path: understand, check the state, install, run, take part. Every
+ * command and status comes from src/data/saf.ts.
  */
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Icon from '../components/Icon.astro';
 import CommandBlock from '../components/CommandBlock.astro';
 import ProductPanel from '../components/ProductPanel.astro';
-import { firstRunCommand, harness, cliVersionNote, installCommands, knownLimits, latestPreRelease, marketplace, maturity, maturityLabel, orchestrators, organization, organizationInventory, prerequisites, safLinks, safProducts, supportedHost, verifiedOn, type SafProduct } from '../data/saf.ts';
+import { cliVersionNote, firstRunCommand, harness, installCommands, knownLimits, latestPreRelease, marketplace, maturity, maturityLabel, orchestrators, organization, organizationInventory, prerequisites, safLinks, safProducts, supportedHost, verifiedOn, type SafProduct } from '../data/saf.ts';
 import { externalLinkAttributes, externalLinks } from '../data/site.ts';
 import { formatDate } from '../data/format.ts';
 
 const title = 'SAF, the open-source Systemic Agentic Framework';
 const description = 'SAF is an open-source framework for running agentic organizations: a deterministic harness and a first organization for scaled agile delivery. Alpha preview, Apache-2.0, for GitHub Copilot.';
-/** In-page order, also the developer path: understand, check the state, install, run, take part. */
 
 const loop = [
   { title: 'The organization declares', body: 'Agents, workflows, instructions, skills, model profiles, access rules and artifact schemas are files in the organization plugin.' },

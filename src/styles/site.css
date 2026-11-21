@@ -1292,33 +1292,7 @@ h3.stack-gap {
   color: var(--muted);
 }
 
-/* ---- evidence: honest empty state and case cards ---------------------------------- */
-.evidence-empty {
-  display: grid;
-  grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
-  gap: clamp(1.5rem, 4vw, 4rem);
-  padding: clamp(1.5rem, 3vw, 2.5rem);
-  border: 1px dashed var(--line-strong);
-  border-radius: var(--radius-lg);
-}
-
-.evidence-empty h3 {
-  margin: 0 0 .75rem;
-  font-family: var(--font-display);
-  font-size: 1.5rem;
-  font-weight: 400;
-}
-
-.evidence-empty p {
-  font-size: 1rem;
-}
-
-@media (max-width: 859px) {
-  .evidence-empty {
-    grid-template-columns: minmax(0, 1fr);
-  }
-}
-
+/* ---- evidence: case cards ---------------------------------------------------------- */
 .case-list {
   display: grid;
   gap: 1.25rem;

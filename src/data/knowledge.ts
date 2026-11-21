@@ -33,9 +33,10 @@ const within = (pathname: string, prefixes: readonly string[]) => {
 };
 
 export function knowledgeContext(pathname: string): { inKnowledge: boolean; archive: boolean; isHub: boolean } {
-  const isHub = pathname.replace(/\/$/, '') === '/knowledge';
-  const exact = (archivePaths as readonly string[]).includes(pathname.replace(/\/$/, ''));
-  return { inKnowledge: within(pathname, knowledgePrefixes), archive: exact || within(pathname, archivePrefixes), isHub };
+  const bare = pathname.replace(/\/$/, '');
+  const isHub = bare === '/knowledge';
+  const archive = (archivePaths as readonly string[]).includes(bare) || within(pathname, archivePrefixes);
+  return { inKnowledge: within(pathname, knowledgePrefixes), archive, isHub };
 }
 
 export interface ArchiveEntry {

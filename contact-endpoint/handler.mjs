@@ -90,11 +90,17 @@ export function createHandler({
 
   const throttled = (key) => {
     const time = now();
-    const recent = (seen.get(key) ?? []).filter((stamp) => time - stamp < rateLimit.windowMs);
-    if (recent.length >= rateLimit.max) { seen.set(key, recent); return true; }
+    const inWindow = (stamp) => time - stamp < rateLimit.windowMs;
+    const recent = (seen.get(key) ?? []).filter(inWindow);
+    if (recent.length >= rateLimit.max) {
+      seen.set(key, recent);
+      return true;
+    }
     seen.set(key, [...recent, time]);
     // Forget clients that went quiet, so the map cannot grow without bound.
-    if (seen.size > 5000) for (const [client, stamps] of seen) if (!stamps.some((stamp) => time - stamp < rateLimit.windowMs)) seen.delete(client);
+    if (seen.size > 5000) {
+      for (const [client, stamps] of seen) if (!stamps.some(inWindow)) seen.delete(client);
+    }
     return false;
   };
 
