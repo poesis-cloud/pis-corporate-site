@@ -334,7 +334,9 @@ builtTest('the hero diagram says the transformation in words: your organization,
   const figure = elements(hero, (node) => node.tagName === 'figure' && hasClass(node, 'hero-diagram'))[0];
   // Described once for readers who do not see it; the picture itself is then silent.
   const caption = elements(figure, (node) => node.tagName === 'figcaption')[0];
-  assert.equal(attr(figure, 'aria-labelledby'), attr(caption, 'id'));
+  // A short name for the figure; the long description is its caption, read once.
+  assert.equal(attr(figure, 'aria-label'), 'How Poesis transforms an organization with SAF');
+  assert.ok(!hasAttr(figure, 'aria-labelledby') && hasClass(caption, 'sr-only'));
   for (const phrase of ['your organization', 'modelled with SAF', 'agentic organization', 'governed workflow', 'a person who oversees', 'output checked against its schema', 'people then revise', 'evolves']) assert.ok(clean(text(caption)).includes(phrase), phrase);
   // Two compositions, wide and narrow, each with the same words, placed from the geometry the picture was drawn from.
   const lists = elements(figure, (node) => hasClass(node, 'hero-diagram__labels'));
@@ -446,9 +448,9 @@ builtTest('conversion pages have one H1, a matching title, a unique description 
     assert.equal(headings.length, 1, route);
     const title = clean(text(first(document, 'title')));
     // Every title carries the name once: as a suffix, or because the title already ends with it.
-    assert.ok(title.endsWith(' · Poesis') || /\bPoesis$/.test(title), route);
+    assert.ok(title.endsWith(' · Poesis') || /(^|\s)Poesis$/.test(title), route);
     assert.ok(!title.includes('Poesis · Poesis'), route);
-    // Title and H1 are the same words (SEO register, rule 12). The home page is the one
+    // Title and H1 are the same words (SEO register, rule 12), the home page included.
     assert.equal(title.replace(/ · Poesis$/, ''), clean(text(headings[0])).replace(/\.$/, ''), route);
     const description = attr(elements(document, (node) => node.tagName === 'meta' && attr(node, 'name') === 'description')[0], 'content');
     assert.ok(description.length >= 70 && description.length <= 200, `${route}: ${description.length}`);
@@ -641,6 +643,17 @@ builtTest('links that used to reach the former home page or the pilot builder st
   assert.equal(elements(mainOf(service), (node) => attr(node, 'href') === '/pilot').length, 0);
   // A brief's selection link is forwarded to the builder.
   assert.ok(read('../dist/pilot/index.html').includes("location.replace('/services/pilot/' + location.search)"));
+});
+
+builtTest('every page says the same thing about the human gate: the end of each workflow, not a step inside it', () => {
+  // The harness specification: "the human checkpoint is the workflow return boundary", with no gate inside a workflow.
+  const inside = /step (of|in) the workflow|review points?\b|points (the workflow names|you chose|where a person)|where a person reviews/i;
+  for (const route of [...conversionPages, '/case-studies/', '/case-studies/example-retail-bank-delivery-team/']) assert.doesNotMatch(clean(text(mainOf(built(route)))), inside, route);
+  assert.doesNotMatch(read('../dist/llms.txt'), inside);
+  for (const route of ['/', '/open-source/', '/how-it-works/']) assert.match(clean(text(mainOf(built(route)))), /ends (at a human gate|by handing its results to a person)|end of each workflow/, route);
+  // A Knowledge note keeps its own title: the name is not dropped from titles that merely end with those letters.
+  const note = built('/insights/governed-synthetic-autopoiesis/');
+  assert.ok(clean(text(first(note, 'title'))).endsWith(' · Poesis'));
 });
 
 builtTest('llms.txt is generated from the SAF facts the pages use', () => {

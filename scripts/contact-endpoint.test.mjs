@@ -113,6 +113,8 @@ test('only the site may post: other origins, methods and content types are turne
   assert.equal((await post(payload(), { headers: { 'content-type': 'text/plain' } })).status, 415);
   assert.equal((await post(null, { raw: '{not json' })).status, 400);
   assert.equal((await post(null, { raw: JSON.stringify({ ...payload(), message: 'm'.repeat(MAX_BODY_BYTES) }) })).status, 413);
+  // A declared size over the limit is refused on the header alone, whatever the body holds.
+  assert.equal((await post(payload(), { headers: { 'content-length': String(MAX_BODY_BYTES + 1) } })).status, 413);
   const get = await handle(new Request('https://receiver.example/contact', { method: 'GET', headers: { origin: ORIGIN } }));
   assert.equal(get.status, 405);
   assert.equal(get.headers.get('allow'), 'POST, OPTIONS');

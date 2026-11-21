@@ -7,7 +7,7 @@ Source of the diagram in the hero of the home page: its film and its two stills.
 | `public/hero/diagram.mp4` | H.264, 1080×900, 24 fps, 18 s, no audio track |
 | `public/hero/diagram.webm` | VP8, same picture |
 | `public/hero/diagram.webp` | the first frame of the film: the default picture from 720 px, so the film takes over without a jump |
-| `public/hero/diagram-portrait.webp` | the same diagram composed for narrow screens, 800×1216, still only |
+| `public/hero/diagram-portrait.webp` | the same diagram composed for narrow screens, 800×1250, still only |
 
 ## What it shows
 

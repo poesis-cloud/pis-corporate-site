@@ -975,9 +975,16 @@ h3.stack-gap {
   font-size: 1rem;
 }
 
+/* The name of a column, repeated in each row. On wide screens the head row shows it, so it is
+   only kept for screen readers; when the columns stack, it is shown. */
 .ledger__label {
-  display: none;
-  margin: 0 0 .3rem;
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
   font-size: .82rem;
   font-weight: 600;
   color: var(--muted);
@@ -987,7 +994,6 @@ h3.stack-gap {
   color: var(--ink);
 }
 
-.ledger__head--pair,
 .ledger--pair .ledger__row {
   grid-template-columns: minmax(0, 1fr) minmax(0, 1.6fr);
 }
@@ -1041,7 +1047,13 @@ h3.stack-gap {
   }
 
   .ledger__label {
-    display: block;
+    position: static;
+    width: auto;
+    height: auto;
+    margin: 0 0 .3rem;
+    overflow: visible;
+    clip-path: none;
+    white-space: normal;
   }
 }
 
@@ -1343,23 +1355,6 @@ h3.stack-gap {
 .plain-list strong {
   color: var(--ink);
   font-weight: 600;
-}
-
-.chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: .5rem;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.chips li {
-  padding: .4rem .85rem;
-  border: 1px solid var(--line-strong);
-  border-radius: 999px;
-  font-size: .92rem;
-  color: var(--ink);
 }
 
 /* ---- product panels ----------------------------------------------------------- */

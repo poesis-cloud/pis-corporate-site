@@ -19,7 +19,8 @@ import diagram from '../data/hero-diagram.json';
 /**
  * "Without a frame / With SAF": what changes when agents work inside an organization that a
  * harness holds. Only what SAF ships today is said here; what is in pilot, planned or in the
- * backlog is not. Each line can be sourced in the SAF repositories (see src/data/saf.ts).
+ * backlog is not. Each line comes from the SAF repositories: the harness specification and the
+ * usage model of the organization.
  */
 const frame = [
   { topic: 'Quality', without: 'A first draft, delivered as it came.', withSaf: 'Drafted by the agent that owns the subject, challenged by other agents, rewritten, then checked against its schema.' },
@@ -93,8 +94,8 @@ const ratioOf = (view: { width: number; height: number }) => `${view.width} / ${
       </div>
       {/* The picture is a diagram, readable before it moves. Its still is what everyone gets; the
           film, the same picture in motion, is added on wide screens by the script below. */}
-      <figure class="hero-diagram" aria-labelledby="hero-diagram-caption">
-        <figcaption id="hero-diagram-caption" class="sr-only">Diagram. On one side, your organization: a lead, a team whose members each hold a role, and a process. In the middle, a strand of DNA: the organization modelled with SAF, written down as files. On the other side, the agentic organization written from that model: AI agents holding the same roles, passing work from one to the next in a governed workflow that ends with a person who oversees and decides, and an output checked against its schema. Evidence from the work returns to the model, which people then revise: the organization evolves.</figcaption>
+      <figure class="hero-diagram" aria-label="How Poesis transforms an organization with SAF">
+        <figcaption class="sr-only">Diagram. On one side, your organization: a lead, a team whose members each hold a role, and a process. In the middle, a strand of DNA: the organization modelled with SAF, written down as files. On the other side, the agentic organization written from that model: AI agents holding the same roles, passing work from one to the next in a governed workflow that ends with a person who oversees and decides, and an output checked against its schema. Evidence from the work returns to the model, which people then revise: the organization evolves.</figcaption>
         <div class="hero-diagram__stage" style={`--portrait:${ratioOf(diagram.portrait)};--landscape:${ratioOf(diagram.landscape)}`}>
           <div class="hero-diagram__media">
             <picture>
@@ -162,7 +163,7 @@ const ratioOf = (view: { width: number; height: number }) => `${view.width} / ${
     <div class="container">
       <div class="band-head">
         <h2 id="why-title">Agents are easy to add. An organization that works with them is not.</h2>
-        <p>Most difficulties with AI at work are organizational: who is responsible, what is handed over, who decides. SAF gives agents a frame they cannot skip.</p>
+        <p>Most difficulties with AI at work are organizational: who is responsible, what is handed over, who decides. SAF gives agents a frame, and a harness that holds it.</p>
       </div>
       <div class="ledger__head ledger__head--frame" aria-hidden="true">
         <span></span>
@@ -300,7 +301,8 @@ const ratioOf = (view: { width: number; height: number }) => `${view.width} / ${
     // The chat beside the diagram: the line the film is showing comes forward, the others step back.
     var lines = Array.prototype.slice.call(document.querySelectorAll('.hero-chat li'));
     function follow() {
-      var at = video.duration ? video.currentTime / video.duration : -1;
+      // A paused film shows no particular step: every line is then equally readable.
+      var at = video.duration && !video.paused ? video.currentTime / video.duration : -1;
       var active = false;
       lines.forEach(function (line) {
         var on = at >= Number(line.getAttribute('data-from')) && at < Number(line.getAttribute('data-to'));
@@ -346,6 +348,7 @@ const ratioOf = (view: { width: number; height: number }) => `${view.width} / ${
       choice = pausing ? 'paused' : 'playing';
       try { sessionStorage.setItem('poesis-hero-film', choice); } catch (error) { /* storage unavailable */ }
       if (pausing) video.pause(); else play();
+      follow();
       label(pausing);
     });
     // Older Safari has no addEventListener on a media query list: the page then simply keeps its first answer.

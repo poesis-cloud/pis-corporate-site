@@ -58,8 +58,8 @@ const conversionDescription = 'Poesis guides the agentic transformation of organ
 /** Knowledge pages without their own description keep the wording they were published with. */
 const knowledgeDescription = 'Poesis develops GSM specification content, SIE definition foundations, SIS contribution intake, local SAF controls, planned OIP workflows and early-stage SIM model work. Availability and integration are stated per scope.';
 const resolvedDescription = description ?? (knowledge.inKnowledge ? knowledgeDescription : conversionDescription);
-// A title that already ends with the name does not repeat it.
-const fullTitle = /\bPoesis$/.test(title) ? title : `${title} · Poesis`;
+// On the conversion pages a title that already ends with the name does not repeat it. Knowledge pages keep their titles as published.
+const fullTitle = !knowledge.inKnowledge && /(^|\s)Poesis$/.test(title) ? title : `${title} · Poesis`;
 const ogImage = new URL('/og-default.png', site).href;
 const socialImageAlt = 'Poesis: governed synthetic autopoiesis';
 
