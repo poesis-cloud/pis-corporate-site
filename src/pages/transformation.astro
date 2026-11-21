@@ -8,7 +8,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import Faq from '../components/Faq.astro';
 import { faqLd, transformationFaq } from '../data/faq.ts';
 import { publishedCaseStudies } from '../data/case-studies.ts';
-import { maturityLabel, safLinks } from '../data/saf.ts';
+import { maturityLabel, safLinks, supportedHost } from '../data/saf.ts';
 
 const title = 'Agentic transformation of your organization';
 const description = 'Poesis guides the agentic transformation of an organization or of one of its parts: scope, model of roles and workflows, pilot with SAF under human review, evidence review and next step.';
@@ -66,7 +66,7 @@ const terms = [
 
 const limits = [
   `SAF is in ${maturityLabel.toLowerCase()}. It is suited to a bounded pilot under human review, not to unattended production work.`,
-  'One agent host is supported today: GitHub Copilot.',
+  `One agent host is supported today: ${supportedHost.name}.`,
   'Authenticated human approval is planned. Today a review point is a step of the workflow, not a verified signature.',
   'Poesis publishes no price list and no committed duration. Both depend on the scope.',
   'No client result is published yet. This page will link to case studies when they are cleared for publication.',

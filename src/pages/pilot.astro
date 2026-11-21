@@ -102,3 +102,13 @@ const isNot = [
     </div>
   </section>
 </BaseLayout>
+
+<script is:inline>
+  // Pilot briefs written by the catalog-driven builder carry a link of the form
+  // /pilot?value=…&pain=…&case=…. The builder now lives at /services/pilot: a link
+  // with a selection is forwarded there, query intact.
+  (function () {
+    var query = new URLSearchParams(location.search);
+    if (query.has('value') || query.has('pain') || query.has('case')) location.replace('/services/pilot/' + location.search);
+  })();
+</script>

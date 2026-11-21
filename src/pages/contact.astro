@@ -18,7 +18,8 @@ import { harness, organization, safLinks } from '../data/saf.ts';
 
 const title = "Let's talk about your transformation";
 const description = 'Tell Poesis which team, function or organization you want to transform. A short brief becomes an email you send yourself. Developers: SAF questions go to GitHub issues.';
-const scopes = ['A whole organization', 'A department or business unit', 'A team', 'A function', 'A process', 'Something else', 'Not sure yet'];
+/** "Not sure yet" comes first: an untouched field must not read as a deliberate choice. */
+const scopes = ['Not sure yet', 'A whole organization', 'A department or business unit', 'A team', 'A function', 'A process', 'Something else'];
 const external = { target: '_blank', rel: 'noopener noreferrer' };
 ---
 <BaseLayout
@@ -56,12 +57,12 @@ const external = { target: '_blank', rel: 'noopener noreferrer' };
           <div class="field-row">
             <div>
               <label for="brief-name">Name</label>
-              <input id="brief-name" name="Name" type="text" autocomplete="name" required aria-describedby="brief-name-error" />
+              <input id="brief-name" name="Name" type="text" autocomplete="name" maxlength="120" required aria-describedby="brief-name-error" />
               <p class="field-error" id="brief-name-error" hidden>Enter your name.</p>
             </div>
             <div>
               <label for="brief-email">Work email</label>
-              <input id="brief-email" name="Work email" type="email" autocomplete="email" inputmode="email" required aria-describedby="brief-email-error" />
+              <input id="brief-email" name="Work email" type="email" autocomplete="email" inputmode="email" maxlength="254" required aria-describedby="brief-email-error" />
               <p class="field-error" id="brief-email-error" hidden>Enter an email address we can reply to, such as name@company.com.</p>
             </div>
           </div>
@@ -69,7 +70,7 @@ const external = { target: '_blank', rel: 'noopener noreferrer' };
           <div class="field-row">
             <div>
               <label for="brief-organization">Organization <span class="optional">(optional)</span></label>
-              <input id="brief-organization" name="Organization" type="text" autocomplete="organization" />
+              <input id="brief-organization" name="Organization" type="text" autocomplete="organization" maxlength="160" />
             </div>
             <div>
               <label for="brief-scope">Scope</label>
@@ -91,7 +92,7 @@ const external = { target: '_blank', rel: 'noopener noreferrer' };
           </div>
 
           <div class="actions">
-            <button class="btn btn-primary btn-lg" type="submit" data-track="business_contact_intent" data-track-id="contact-brief"><Icon name="mail" /> Prepare my email</button>
+            <button class="btn btn-primary btn-lg" type="submit"><Icon name="mail" /> Prepare my email</button>
             <button class="btn btn-ghost" type="button" id="brief-copy" hidden><Icon name="copy" /> Copy the brief</button>
           </div>
           <p class="brief-form__status" id="brief-status" role="status" aria-live="polite"></p>
@@ -140,7 +141,8 @@ const external = { target: '_blank', rel: 'noopener noreferrer' };
     const required = [...form.querySelectorAll<HTMLInputElement | HTMLTextAreaElement>('[required]')];
     const errorOf = (field: HTMLElement) => document.getElementById(`${field.id}-error`);
     const check = (field: HTMLInputElement | HTMLTextAreaElement): boolean => {
-      const valid = field.checkValidity();
+      // Spaces alone are not an answer: the brief is built from trimmed values.
+      const valid = field.value.trim() !== '' && field.checkValidity();
       field.setAttribute('aria-invalid', String(!valid));
       const error = errorOf(field);
       if (error) error.hidden = valid;
@@ -160,6 +162,8 @@ const external = { target: '_blank', rel: 'noopener noreferrer' };
       event.preventDefault();
       if (!validate()) return;
       const { href, shortened } = briefMailto(email, values());
+      // Counted here, once a draft is really prepared, not on every click of the button.
+      (window as unknown as { gtag?: (...parameters: unknown[]) => void }).gtag?.('event', 'business_contact_intent', { cta_id: 'contact-brief', link_url: `mailto:${email}`, page_path: location.pathname });
       window.location.href = href;
       status.textContent = shortened
         ? `Your mail app should now show a shortened brief addressed to ${email}: the full text was too long for a mail link. Use "Copy the brief" and paste it into the email. Nothing is sent until you send it.`

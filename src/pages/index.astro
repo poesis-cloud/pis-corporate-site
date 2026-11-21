@@ -11,7 +11,7 @@ import ProductPanel from '../components/ProductPanel.astro';
 import Faq from '../components/Faq.astro';
 import { faqLd, homeFaq } from '../data/faq.ts';
 import { publishedCaseStudies } from '../data/case-studies.ts';
-import { installCommands, maturityLabel, latestPreRelease, safProducts, safLinks, marketplace, harness, organization } from '../data/saf.ts';
+import { installCommands, maturityLabel, latestPreRelease, safProducts, safLinks, marketplace, harness, organization, supportedHost } from '../data/saf.ts';
 import { formatDate } from '../data/format.ts';
 
 const ledger = [
@@ -93,7 +93,7 @@ const qualities = [
   {
     name: 'Extensible',
     why: 'Host bindings are separate adapters, each with its own specification. A new host is added beside the core, not inside it.',
-    limit: 'One adapter exists today, for GitHub Copilot. Other hosts are a direction, not a supported integration.',
+    limit: `One adapter exists today, for ${supportedHost.name}. Other hosts are a direction, not a supported integration.`,
   },
 ];
 
@@ -105,7 +105,7 @@ const heroSources = [{ src: '/hero/seed.webm', type: 'video/webm' }, { src: '/he
   title="Agentic transformation for organizations, built on open-source SAF"
   description={description}
   pageType="Home"
-  preloadImage={{ href: '/hero/seed-poster.webp', media: '(min-width: 768px)', type: 'image/webp' }}
+  preloadImage={{ href: '/hero/seed-poster.webp', media: '(min-width: 1100px)', type: 'image/webp' }}
   jsonLd={[
     { '@type': 'WebSite', name: 'Poesis', url: 'https://poesis.cloud/', description },
     faqLd(homeFaq),
@@ -114,7 +114,7 @@ const heroSources = [{ src: '/hero/seed.webm', type: 'video/webm' }, { src: '/he
   <section class="hero-seed" aria-labelledby="hero-title">
     <div class="hero-seed__media" aria-hidden="true">
       <picture>
-        <source media="(max-width: 767px)" srcset="/hero/seed-poster-portrait.webp" type="image/webp" width="720" height="900" />
+        <source media="(max-width: 1099px)" srcset="/hero/seed-poster-portrait.webp" type="image/webp" width="720" height="900" />
         <img class="hero-seed__poster" src="/hero/seed-poster.webp" width="1280" height="720" alt="" decoding="async" fetchpriority="high" />
       </picture>
       <video
@@ -124,7 +124,6 @@ const heroSources = [{ src: '/hero/seed.webm', type: 'video/webm' }, { src: '/he
         loop
         playsinline
         preload="none"
-        poster="/hero/seed-poster.webp"
         width="1280"
         height="720"
         tabindex="-1"
@@ -149,6 +148,26 @@ const heroSources = [{ src: '/hero/seed.webm', type: 'video/webm' }, { src: '/he
           <p>For developers and architects. Open source, {maturityLabel.toLowerCase()}. <a href={harness.repository} target="_blank" rel="noopener noreferrer" data-track="developer_repo_click" data-track-id="home-hero">View on GitHub</a></p>
         </div>
       </div>
+      {/* Below 1100px there is no room for the film beside the words: the same picture is shown as a still, with its legend. */}
+      <img class="hero-figure" src="/hero/seed-poster-portrait.webp" width="720" height="900" loading="lazy" decoding="async" alt="Diagram: a strand of DNA planted in the ground grows into a tree of AI agents. People review the work at gates on its branches, and checked documents leave its tips." />
+      <ul class="hero-key" aria-label="Legend: a seed grows into an organization of AI agents, reviewed by people, producing checked outputs">
+        <li>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><ellipse cx="12" cy="12" rx="4.6" ry="7" fill="#e6fbff" /></svg>
+          <span><strong>Seed</strong> a model of your organization</span>
+        </li>
+        <li>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="7.5" fill="none" stroke="#38bdf8" stroke-width="2" /><circle cx="12" cy="12" r="3.2" fill="#e6fbff" /></svg>
+          <span><strong>AI agents</strong> each with a role</span>
+        </li>
+        <li>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9.5" fill="none" stroke="#a5b4fc" stroke-width="2" /><circle cx="12" cy="9.5" r="2.6" fill="#e4e8ff" /><path d="M7 17.6a5 5 0 0 1 10 0z" fill="#e4e8ff" /></svg>
+          <span><strong>People</strong> review at the gates</span>
+        </li>
+        <li>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="3.5" width="12" height="17" rx="1" fill="none" stroke="#e6fbff" stroke-width="1.8" /><path d="m9 12.4 2.2 2.4 3.9-5" fill="none" stroke="#99f6e4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg>
+          <span><strong>Outputs</strong> checked and recorded</span>
+        </li>
+      </ul>
     </div>
     <button class="hero-seed__toggle" type="button" hidden>Pause background animation</button>
   </section>
@@ -263,7 +282,7 @@ const heroSources = [{ src: '/hero/seed.webm', type: 'video/webm' }, { src: '/he
       <div class="products">
         {safProducts.map((product) => <ProductPanel product={product} trackId="home-saf" />)}
       </div>
-      <p class="fineprint">{maturityLabel}: the latest pre-release of both products is {latestPreRelease.version}, published on {formatDate(latestPreRelease.publishedOn)}. Interfaces may change before a final release. Supported today: GitHub Copilot only.</p>
+      <p class="fineprint">{maturityLabel}: the latest pre-release of both products is {latestPreRelease.version}, published on {formatDate(latestPreRelease.publishedOn)}. Interfaces may change before a final release. Supported today: {supportedHost.name} only.</p>
     </div>
   </section>
 
@@ -315,7 +334,7 @@ const heroSources = [{ src: '/hero/seed.webm', type: 'video/webm' }, { src: '/he
         </li>
         <li>
           <h3>Install and run</h3>
-          <p>Three commands with the GitHub Copilot CLI, from the preview channel. The <a href={safLinks.quickstart} target="_blank" rel="noopener noreferrer" data-track="developer_docs_click" data-track-id="home-oss-quickstart">Quickstart</a> takes you to a first workflow.</p>
+          <p>Three commands with the {supportedHost.name} CLI, from the preview channel. The <a href={safLinks.quickstart} target="_blank" rel="noopener noreferrer" data-track="developer_docs_click" data-track-id="home-oss-quickstart">Quickstart</a> takes you to a first workflow.</p>
         </li>
         <li>
           <h3>Contribute</h3>
@@ -364,21 +383,26 @@ const heroSources = [{ src: '/hero/seed.webm', type: 'video/webm' }, { src: '/he
   // Links published before the redesign pointed at sections of the former
   // homepage, now the platform overview of the Knowledge corpus. A fragment
   // never reaches a server, so only the page itself can forward it.
+  // An anchor unknown to this page is looked up in the overview and followed only
+  // if it exists there, so no old link is lost and no stray fragment misleads.
   (function () {
     var hash = location.hash.slice(1);
-    if (!hash || document.getElementById(hash)) return;
-    var moved = ['pains', 'affordances', 'usage', 'qualities', 'services', 'portfolio'];
-    if (moved.indexOf(hash) > -1 || /^(affordance-|value-platform-|quality-)/.test(hash)) location.replace('/knowledge/platform/#' + hash);
+    if (!hash || !/^[A-Za-z0-9_-]+$/.test(hash) || document.getElementById(hash) || !window.fetch) return;
+    fetch('/knowledge/platform/')
+      .then(function (response) { return response.ok ? response.text() : ''; })
+      .then(function (html) { if (html.indexOf('id="' + hash + '"') > -1) location.replace('/knowledge/platform/#' + hash); })
+      .catch(function () { /* the home page stays as it is */ });
   })();
 
-  // Background film. The still poster is the default for everyone. The film is
-  // fetched only on a wide viewport, when the visitor has not asked for reduced
-  // motion or reduced data, and it can be paused at any time.
+  // Background film. The still picture is the default for everyone. The film is
+  // fetched only where it has room beside the words (1100px and more), when the
+  // visitor has not asked for reduced motion or reduced data, and it can be paused
+  // at any time. Below that width the same picture is shown as a still in the page.
   (function () {
     var video = document.querySelector('.hero-seed__video');
     var toggle = document.querySelector('.hero-seed__toggle');
     if (!video || !toggle || typeof video.play !== 'function') return;
-    var wide = window.matchMedia('(min-width: 768px)');
+    var wide = window.matchMedia('(min-width: 1100px)');
     var still = window.matchMedia('(prefers-reduced-motion: reduce)');
     var connection = navigator.connection || {};
     var lean = Boolean(connection.saveData) || /(^|-)2g$/.test(connection.effectiveType || '') || window.matchMedia('(prefers-reduced-data: reduce)').matches;

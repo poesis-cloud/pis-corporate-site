@@ -47,6 +47,7 @@ const built = (pathname) => {
 const mainOf = (document) => first(document, 'main');
 
 const conversionPages = ['/', '/transformation/', '/open-source/', '/case-studies/', '/pilot/', '/about/', '/contact/'];
+const noteFiles = () => readdirSync(here('../src/content/insights/')).filter((file) => file.endsWith('.md'));
 
 // ---- 1. the Knowledge corpus is untouched -------------------------------------------------
 
@@ -59,7 +60,7 @@ test('Knowledge content and catalog data are byte-identical to the published bas
     assert.equal(createHash('sha256').update(readFileSync(here(`../${path}`))).digest('hex'), expected, `${path} differs from ${manifest.base.slice(0, 7)}`);
   }
   // Nothing was added to the corpus either: no rewritten or generated article.
-  assert.equal(readdirSync(here('../src/content/insights/')).length, 17);
+  assert.equal(noteFiles().length, 17);
   // Four data modules changed, and only in how they derive a route: the menu, and three
   // helpers that pointed at the former homepage. They are listed, not hashed.
   assert.deepEqual(manifest.rerouted, ['src/data/poesis-platform.ts', 'src/data/services.ts', 'src/data/site-navigation.ts', 'src/data/usage.ts']);
@@ -160,6 +161,11 @@ test('the contact brief becomes an email to the published address and never a ne
   const long = briefMailto(contactEmail, { ...values, 'What we would like to transform': 'x'.repeat(2000) });
   assert.equal(long.shortened, true);
   assert.ok(long.href.length <= MAILTO_LIMIT);
+  // Oversized short fields cannot push the link past the limit either.
+  const oversized = briefMailto(contactEmail, { ...values, Organization: 'o'.repeat(3000), 'What we would like to transform': 'x'.repeat(2000) });
+  assert.equal(oversized.shortened, true);
+  assert.ok(oversized.href.length <= MAILTO_LIMIT);
+  assert.ok(oversized.href.startsWith(`mailto:${contactEmail}?subject=`));
   // A hostile value stays inert text inside the link.
   const hostile = briefMailto(contactEmail, { ...values, Name: 'a&bcc=evil@example.org\r\nBcc: evil@example.org' });
   assert.equal((hostile.href.match(/[?&]bcc=/gi) ?? []).length, 0);
@@ -203,7 +209,14 @@ builtTest('the home page states the hero message verbatim and opens both funnels
   for (const id of ['why', 'method', 'strengths', 'saf', 'proof', 'open-source', 'faq']) assert.equal(elements(main, (node) => node.tagName === 'section' && attr(node, 'id') === id).length, 1, id);
   // Anchors of the former homepage are not reused, so old deep links can be forwarded.
   for (const id of ['pains', 'affordances', 'usage', 'qualities', 'services', 'portfolio']) assert.equal(elements(home, (node) => attr(node, 'id') === id).length, 0, id);
-  assert.ok(read('../dist/index.html').includes("location.replace('/knowledge/platform/#' + hash)"));
+  // An unknown anchor is looked up in the overview and followed only if it exists there.
+  const html = read('../dist/index.html');
+  assert.ok(html.includes("fetch('/knowledge/platform/')"));
+  assert.ok(html.includes("location.replace('/knowledge/platform/#' + hash)"));
+  // The picture comes with its legend: four signs, in the reading order of the film.
+  const key = elements(hero, (node) => hasClass(node, 'hero-key'))[0];
+  assert.deepEqual(elements(key, (node) => node.tagName === 'strong').map((node) => clean(text(node))), ['Seed', 'AI agents', 'People', 'Outputs']);
+  assert.equal(elements(key, (node) => node.tagName === 'svg' && attr(node, 'aria-hidden') === 'true').length, 4);
 });
 
 builtTest('the hero film is local, silent, optional and has a still fallback', () => {
@@ -225,7 +238,10 @@ builtTest('the hero film is local, silent, optional and has a still fallback', (
   const still = first(hero, 'img');
   assert.equal(attr(still, 'alt'), '');
   assert.ok(Number(attr(still, 'width')) > 0 && Number(attr(still, 'height')) > 0);
-  for (const poster of [attr(video, 'poster'), attr(still, 'src'), attr(first(hero, 'source'), 'srcset')]) {
+  // The still is an image under the film, not a `poster` attribute: a poster would be fetched
+  // even on screens that never play the film.
+  assert.ok(!hasAttr(video, 'poster'));
+  for (const poster of [attr(still, 'src'), attr(first(hero, 'source'), 'srcset')]) {
     assert.match(poster, /^\/hero\//);
     assert.ok(statSync(here(`../dist${poster}`)).size < 60_000, poster);
   }
@@ -314,7 +330,7 @@ builtTest('Knowledge pages wear the envelope, archived offers say so, and only K
 builtTest('the Knowledge hub lists the whole corpus and offers its search', () => {
   const hub = built('/knowledge/');
   const hrefs = elements(mainOf(hub), (node) => node.tagName === 'a').map((node) => attr(node, 'href'));
-  const slugs = readdirSync(here('../src/content/insights/')).map((file) => file.replace(/\.md$/, ''));
+  const slugs = noteFiles().map((file) => file.replace(/\.md$/, ''));
   for (const slug of slugs) assert.ok(hrefs.includes(`/insights/${slug}`), slug);
   for (const alternative of alternatives) assert.ok(hrefs.includes(`/it/alternatives/${alternative.slug}/`), alternative.slug);
   for (const solution of platformSolutions) assert.ok(hrefs.includes(solutionHref(solution)), solution.slug);
@@ -371,6 +387,11 @@ builtTest('the contact page offers a brief that degrades to mailto and labels ev
     assert.ok(attr(control, 'name'), id);
   }
   assert.deepEqual(controls.filter((control) => hasAttr(control, 'required')).map((control) => attr(control, 'id')), ['brief-name', 'brief-email', 'brief-goal']);
+  for (const control of controls.filter((candidate) => candidate.tagName !== 'select')) assert.ok(Number(attr(control, 'maxlength')) > 0, attr(control, 'id'));
+  // An untouched scope reads "Not sure yet", never a choice the visitor did not make.
+  assert.equal(clean(text(first(first(form, 'select'), 'option'))), 'Not sure yet');
+  // The intent event is sent by the page once a draft is prepared, not by a click on the button.
+  assert.ok(!hasAttr(elements(form, (node) => node.tagName === 'button' && attr(node, 'type') === 'submit')[0], 'data-track'));
   assert.equal(elements(form, (node) => attr(node, 'type') === 'file' || attr(node, 'type') === 'password').length, 0);
   const copy = clean(text(mainOf(contact)));
   assert.ok(copy.includes('This form does not send anything by itself.'));
@@ -390,6 +411,29 @@ builtTest('the open-source page shows the verified install commands, status and 
   for (const id of ['products', 'how', 'install', 'first-workflow', 'community']) assert.equal(elements(page, (node) => attr(node, 'id') === id).length, 1, id);
   for (const product of safProducts) for (const href of [product.repository, product.docs, product.issues, product.contributing]) assert.ok(elements(page, (node) => attr(node, 'href') === href).length, href);
   assert.ok(elements(page, (node) => attr(node, 'href') === '/transformation/').length, 'the way back to the service');
+});
+
+builtTest('links that used to reach the former home page or the pilot builder still reach them', () => {
+  // Comparison pages and the architecture map point at the platform overview, not at the sales page.
+  for (const alternative of alternatives) {
+    const page = built(`/it/alternatives/${alternative.slug}/`);
+    assert.equal(elements(mainOf(page), (node) => node.tagName === 'a' && attr(node, 'href') === '/').length, 0, alternative.slug);
+    assert.ok(elements(mainOf(page), (node) => attr(node, 'href') === platformOverviewPath).length >= 2, alternative.slug);
+  }
+  const map = elements(built(platformOverviewPath), (node) => attr(node, 'id') === 'arch-platform-heading')[0];
+  assert.equal(attr(first(map, 'a'), 'href'), platformOverviewPath);
+  // Archived service pages lead to the pilot record they describe; a brief's selection link is forwarded to the builder.
+  const service = built('/services/oip-saas/');
+  assert.ok(elements(mainOf(service), (node) => attr(node, 'href') === '/services/pilot').length >= 2);
+  assert.equal(elements(mainOf(service), (node) => attr(node, 'href') === '/pilot').length, 0);
+  assert.ok(read('../dist/pilot/index.html').includes("location.replace('/services/pilot/' + location.search)"));
+});
+
+builtTest('llms.txt is generated from the SAF facts the pages use', () => {
+  const llms = read('../dist/llms.txt');
+  for (const fact of [verifiedOn, latestPreRelease.version, latestPreRelease.publishedOn, supportedHost.name, maturityLabel.toLowerCase(), harness.repository, organization.repository, 'No client case study is published yet.']) assert.ok(llms.includes(fact), fact);
+  assert.ok(llms.startsWith('# Poesis\n'));
+  assert.doesNotMatch(llms, /undefined|\[object|production-ready/);
 });
 
 builtTest('no case-study page exists while no case is published, and the sitemap keeps old and new routes', () => {

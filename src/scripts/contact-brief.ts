@@ -31,5 +31,8 @@ export function briefMailto(email: string, values: BriefValues): { href: string;
   if (full.length <= MAILTO_LIMIT) return { href: full, shortened: false };
   const short: BriefValues = { ...values };
   for (const key of longFields) if (short[key]) short[key] = '(see the full brief pasted below)';
-  return { href: link(composeBrief(short)), shortened: true };
+  const shortened = link(composeBrief(short));
+  if (shortened.length <= MAILTO_LIMIT) return { href: shortened, shortened: true };
+  // Even the short fields are oversized: hand over an empty draft rather than a link a mail app would cut.
+  return { href: `mailto:${email}?subject=${encodeURIComponent('Transformation brief')}&body=${encodeURIComponent('(paste the brief here)')}`, shortened: true };
 }

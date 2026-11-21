@@ -509,9 +509,14 @@ h3.stack-gap {
   border-bottom: 1px solid var(--line);
 }
 
+/* The film lives in a centred stage of at most 100rem. The picture is composed with its
+   subject at 77% of the frame and positioned at 77%, so the subject sits at 77% of the stage
+   whatever the crop: the legend can be placed over it with one calculation. */
 .hero-seed__media {
   position: absolute;
-  inset: 0;
+  inset: 0 auto 0 50%;
+  width: min(100%, 100rem);
+  transform: translateX(-50%);
   z-index: -2;
   background: var(--bg);
 }
@@ -523,7 +528,7 @@ h3.stack-gap {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  object-position: 72% 50%;
+  object-position: 77% 50%;
 }
 
 .hero-seed__video {
@@ -535,20 +540,22 @@ h3.stack-gap {
   opacity: 1;
 }
 
-/* Contrast veil: the left half, where the words are, stays near the ground colour. */
-.hero-seed::after {
+/* Contrast veil, on the stage itself: the half where the words are stays near the ground colour. */
+.hero-seed__media::after {
   content: "";
   position: absolute;
   inset: 0;
-  z-index: -1;
   pointer-events: none;
   background:
-    linear-gradient(90deg, rgba(7, 10, 18, .96) 0%, rgba(7, 10, 18, .92) 40%, rgba(7, 10, 18, .5) 60%, rgba(7, 10, 18, 0) 80%),
-    linear-gradient(0deg, var(--bg) 0%, rgba(7, 10, 18, 0) 22%);
+    linear-gradient(90deg, rgba(7, 10, 18, .96) 0%, rgba(7, 10, 18, .92) 40%, rgba(7, 10, 18, .5) 58%, rgba(7, 10, 18, 0) 72%),
+    linear-gradient(0deg, var(--bg) 0%, rgba(7, 10, 18, 0) 18%);
 }
 
-.hero-seed__content {
-  position: relative;
+@media (min-width: 1601px) {
+  .hero-seed__media {
+    -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 10%, #000 90%, transparent 100%);
+    mask-image: linear-gradient(90deg, transparent 0, #000 10%, #000 90%, transparent 100%);
+  }
 }
 
 .hero-seed__kicker {
@@ -614,6 +621,86 @@ h3.stack-gap {
   text-decoration: underline;
 }
 
+/* The still shown in the text column where the film is veiled or absent. */
+.hero-figure {
+  display: none;
+}
+
+@media (max-width: 1099px) {
+  .hero-figure {
+    display: block;
+    width: 100%;
+    max-width: 26rem;
+    height: auto;
+    aspect-ratio: 1 / 1;
+    margin-top: 2.25rem;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    object-fit: cover;
+    object-position: 55% 38%;
+  }
+
+  .hero-figure + .hero-key {
+    margin-top: 1.25rem;
+    padding-top: 0;
+    border-top: 0;
+  }
+}
+
+/* Legend of the picture: four signs, four plain meanings. In the text column by default;
+   over the film, above its subject, when the screen is wide enough to keep them apart. */
+.hero-key {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, max-content));
+  gap: .6rem 1.75rem;
+  margin: 2.25rem 0 0;
+  padding: 1.25rem 0 0;
+  border-top: 1px solid var(--line);
+  list-style: none;
+  font-size: .9rem;
+  line-height: 1.35;
+  color: var(--ink-soft);
+}
+
+.hero-key li {
+  display: flex;
+  align-items: center;
+  gap: .6rem;
+}
+
+.hero-key svg {
+  flex: none;
+  width: 22px;
+  height: 22px;
+}
+
+.hero-key strong {
+  margin-right: .15em;
+  color: #fff;
+  font-weight: 600;
+}
+
+@media (min-width: 1280px) {
+  .hero-key {
+    position: absolute;
+    top: 1.75rem;
+    left: calc(50% + .27 * min(100vw, 100rem));
+    width: max-content;
+    margin: 0;
+    padding: .7rem 1.1rem;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    background: rgba(7, 10, 18, .55);
+    transform: translateX(-50%);
+  }
+}
+
+@media (max-width: 479px) {
+  .hero-key {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
 .hero-seed__toggle {
   position: absolute;
   right: max(var(--gutter), env(safe-area-inset-right));
@@ -641,28 +728,19 @@ h3.stack-gap {
   border-color: var(--flow);
 }
 
-@media (min-width: 768px) and (max-width: 1099px) {
-  .hero-seed::after {
-    background:
-      linear-gradient(90deg, rgba(7, 10, 18, .95) 0%, rgba(7, 10, 18, .88) 55%, rgba(7, 10, 18, .62) 100%),
-      linear-gradient(0deg, var(--bg) 0%, rgba(7, 10, 18, 0) 22%);
-  }
-}
-
-@media (max-width: 767px) {
+/* Below 1100px the words need the full width: no background picture, the still is in the page. */
+@media (max-width: 1099px) {
   .hero-seed {
     min-height: 0;
     align-items: start;
   }
 
-  .hero-seed__poster {
-    object-position: 50% 0;
+  .hero-seed__media {
+    display: none;
   }
+}
 
-  .hero-seed::after {
-    background: linear-gradient(180deg, rgba(7, 10, 18, .78) 0%, rgba(7, 10, 18, .9) 45%, var(--bg) 100%);
-  }
-
+@media (max-width: 767px) {
   .doors {
     flex-direction: column;
     gap: 1.25rem;

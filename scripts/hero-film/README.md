@@ -6,8 +6,8 @@ Source of the background film of the home page and of its posters.
 | --- | --- |
 | `public/hero/seed.mp4` | H.264, 1280×720, 24 fps, 20 s, no audio track |
 | `public/hero/seed.webm` | VP8, same picture |
-| `public/hero/seed-poster.webp` | still at 74 % of the loop, 1280×720: the default picture for everyone |
-| `public/hero/seed-poster-portrait.webp` | the same moment composed for narrow screens, 720×900 |
+| `public/hero/seed-poster.webp` | the first frame of the film, 1280×720: the default picture, so the film takes over without a jump |
+| `public/hero/seed-poster-portrait.webp` | the same moment composed for narrow screens, 720×900: background and visible still |
 
 ## What it shows
 
@@ -16,9 +16,14 @@ exactly. The mark at the base is the real Poesis logo, `public/poesis-logo.png`,
 the only bitmap in the film. The repository holds no vector master of the logo, so the mark is
 never drawn larger than its 256 px source.
 
-Seed, planted DNA, growth of roles and agents, outputs, human gates (indigo), evolution loop,
-then a new cycle. The faint outline that never fades is the existing organization; what grows
-over it is the agentic organization mirroring it.
+The film must be understood at a glance. It opens on the complete picture and uses three signs:
+a ringed dot is an AI agent with a role, a person in an indigo ring is a human review where work
+waits, a ticked page is a checked output. The home page prints the same signs as a legend.
+
+One cycle: a seed falls and settles into the mark, a double helix rises and roles branch from it,
+work flows and waits at each review, evidence travels back to the mark, and the cycle starts
+again. The faint outline that never fades is the existing organization; what grows over it is the
+agentic organization mirroring it. The phases are named in the `T` table at the top of the script.
 
 ## Regenerate
 
@@ -44,6 +49,10 @@ cwebp -q 78 -m 6 scripts/hero-film/out/seed-poster-portrait.png -o public/hero/s
 
 ## How the page uses it
 
-The poster is what every visitor gets. The film is fetched only on a viewport of 768 px or
-more, when the visitor has not asked for reduced motion or reduced data, and a button pauses
-it. See the inline script at the end of `src/pages/index.astro`.
+The still is what every visitor gets. The film is fetched only on a viewport of 1100 px or
+more, where it has room beside the words, and when the visitor has not asked for reduced motion or reduced data. A button pauses
+it. Below 1100 px the page shows the portrait still instead. See the inline script at the end of `src/pages/index.astro`.
+
+The subject of the picture sits at 77 % of the frame and the frame is positioned at 77 %
+(`object-position`), so the subject stays at 77 % of the stage whatever the crop. Keep the two
+numbers equal if the composition changes: the legend is placed over the subject from them.

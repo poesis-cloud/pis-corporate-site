@@ -5,20 +5,25 @@
   One deterministic function, draw(t) with t in [0, 1), paints a frame. The loop
   closes exactly: frame 0 and the frame after the last one are the same picture.
 
-  Story, in the order it plays:
-    seed            a seed falls onto the outline of an existing organization
-    planted DNA     it settles into the real Poesis mark (public/poesis-logo.png)
-    growth          a double helix rises, then roles and agents branch from it
-    outputs         work flows outward and leaves artifacts at the nodes
-    governance      indigo gates hold each flow until it is released
-    evolution       evidence returns to the mark, and the cycle starts again
+  The film has to be understood at a glance, so it opens on the complete picture
+  (the poster is its first frame) and uses three signs only:
+    a ringed dot      an AI agent holding a role
+    a person, indigo  a human review: work waits there until it is released
+    a ticked page     an output that was checked
+
+  Story, in timeline order (the file starts at START_T, in the middle of "produce"):
+    seed       a seed falls onto the outline of an existing organization
+    plant      it settles into the real Poesis mark (public/poesis-logo.png);
+               a double helix rises and roles branch from it
+    produce    work flows outward, waits at each human review, leaves checked outputs
+    evolve     evidence travels back to the mark, and the cycle starts again
 
   The outline that never fades is "your organization"; what grows over it, bright,
   is the agentic organization mirroring it.
 
   Open through capture-server.mjs:
-    /?play=1                 real-time preview
-    /?t=0.72                 one frame
+    /?play=1                 real-time preview, from the first frame of the file
+    /?t=0.42                 one frame, at that fraction of the cycle
     /?capture=1              post every frame and the posters to the server
     add &layout=portrait     for the narrow-screen poster
 -->
@@ -38,10 +43,22 @@ const query = new URLSearchParams(location.search);
 const FPS = 24;
 const SECONDS = 20;
 const FRAMES = FPS * SECONDS;
-const POSTER_T = 0.74;
+/** Phases of one cycle, as [start, end] fractions of the loop. */
+const T = {
+  seedIn: [0, 0.02], fall: [0.01, 0.075], sink: [0.076, 0.094], ripple: [0.076, 0.16],
+  trunk: [0.085, 0.2],
+  branch: [0.14, 0.18, 0.22], branchSpan: 0.075, subSpan: 0.06,
+  crown: [0.25, 0.3],
+  work: [0.33, 0.38],
+  rest: [0.84, 0.9],
+  arc: [0.76, 0.8], evidence: [0.8, 0.915], receive: [0.915, 0.935],
+  fade: [0.93, 0.99],
+};
+/** First frame of the file and picture of the poster: the organization at work. */
+const START_T = 0.42;
 
 const LAYOUTS = {
-  landscape: { W: 1280, H: 720, cx: 986, ground: 520, s: 0.8 },
+  landscape: { W: 1280, H: 720, cx: 986, ground: 526, s: 0.8 },
   portrait: { W: 720, H: 900, cx: 400, ground: 520, s: 0.86 },
 };
 const L = LAYOUTS[query.get('layout')] ?? LAYOUTS.landscape;
@@ -57,6 +74,7 @@ const CYAN = '#38bdf8';
 const PALE = '#e6fbff';
 const GOV = '#a5b4fc';
 const GHOST = '#7d92b4';
+const PERSON = '#e4e8ff';
 const TAU = Math.PI * 2;
 
 const clamp = (x) => (x < 0 ? 0 : x > 1 ? 1 : x);
@@ -68,9 +86,9 @@ const px = (unit) => unit * L.s;
 // ---- the organization, in units relative to the planted seed -----------------
 const TRUNK = 430;
 const LEVELS = [
-  { y: -150, x: 152, at: 0.18, subs: [[218, -206], [236, -120]] },
-  { y: -250, x: 118, at: 0.24, subs: [[190, -304]] },
-  { y: -340, x: 78, at: 0.30, subs: [[134, -390]] },
+  { y: -150, x: 156, at: T.branch[0], subs: [[232, -196]] },
+  { y: -250, x: 120, at: T.branch[1], subs: [[192, -302]] },
+  { y: -340, x: 80, at: T.branch[2], subs: [[136, -388]] },
 ];
 /** Branches that carry a human gate: [level, side]. */
 const GATED = new Set(['0:1', '1:-1', '2:1']);
@@ -95,7 +113,7 @@ LEVELS.forEach((level, index) => {
       const from = curve[3];
       const to = at(side * sx, sy);
       const mid = [(from[0] + to[0]) / 2 + side * px(10), (from[1] + to[1]) / 2 - px(14)];
-      branch.subs.push({ curve: [from, mid, mid, to], start: level.at + 0.1, phase: frac(branch.phase + 0.29 + subIndex * 0.31) });
+      branch.subs.push({ curve: [from, mid, mid, to], start: level.at + T.branchSpan, phase: frac(branch.phase + 0.29 + subIndex * 0.31) });
     });
     branches.push(branch);
   }
@@ -112,12 +130,12 @@ for (const side of [-1, 1]) {
 // Evolution loop: from the crown, around the outside, back to the planted mark.
 const arc = { cx: L.cx, cy: L.ground - px(TRUNK / 2) + px(12), rx: px(292), ry: px(TRUNK / 2 + 44) };
 const arcPoint = (u) => { const angle = -Math.PI / 2 + u * Math.PI; return [arc.cx + arc.rx * Math.cos(angle), arc.cy + arc.ry * Math.sin(angle)]; };
-const ARC_GATES = [0.3, 0.68];
+const ARC_REVIEW = 0.5;
 
 // Deterministic motes: the same cloud on every run.
 let seedValue = 20261121;
 const random = () => { seedValue = (seedValue * 1664525 + 1013904223) % 4294967296; return seedValue / 4294967296; };
-const motes = Array.from({ length: 46 }, () => ({ x: (random() - 0.5) * 560, y: -random() * 470, r: 0.6 + random() * 1.2, laps: 1 + Math.floor(random() * 2), phase: random(), drift: 18 + random() * 40 }));
+const motes = Array.from({ length: 18 }, () => ({ x: (random() - 0.5) * 560, y: -random() * 470, r: 0.6 + random() * 1.2, laps: 1 + Math.floor(random() * 2), phase: random(), drift: 18 + random() * 40 }));
 
 // ---- the real Poesis mark, tinted ---------------------------------------------
 const logo = new Image();
@@ -194,16 +212,28 @@ function node(point, radius, grown, fill, ring) {
   ctx.fill();
 }
 
-function diamond(point, size, color, alpha, spin = 0) {
+/** A human review: a person inside an indigo ring. `held` in [0, 1] lights it while work waits there. */
+function review(point, held) {
+  const radius = px(10.5);
   ctx.save();
   ctx.translate(point[0], point[1]);
-  ctx.rotate(Math.PI / 4 + spin);
-  ctx.globalAlpha *= alpha;
+  glow(GOV, px(5 + 18 * held));
+  ctx.beginPath();
+  ctx.arc(0, 0, radius, 0, TAU);
   ctx.fillStyle = INK;
-  ctx.fillRect(-size, -size, size * 2, size * 2);
-  ctx.lineWidth = px(1.8);
-  ctx.strokeStyle = color;
-  ctx.strokeRect(-size, -size, size * 2, size * 2);
+  ctx.fill();
+  ctx.lineWidth = px(1.9);
+  ctx.strokeStyle = GOV;
+  ctx.stroke();
+  noGlow();
+  ctx.fillStyle = PERSON;
+  ctx.beginPath();
+  ctx.arc(0, -radius * 0.26, radius * 0.27, 0, TAU);
+  ctx.fill();
+  ctx.beginPath();
+  ctx.arc(0, radius * 0.64, radius * 0.52, Math.PI, 0);
+  ctx.closePath();
+  ctx.fill();
   ctx.restore();
 }
 
@@ -219,12 +249,6 @@ function outline(t) {
     strokeCurve(branch.curve, 1);
     for (const sub of branch.subs) strokeCurve(sub.curve, 1);
   }
-  ctx.setLineDash([px(3), px(7)]);
-  for (const [from, to] of links) { ctx.beginPath(); ctx.moveTo(from[0], from[1]); ctx.lineTo(to[0], to[1]); ctx.stroke(); }
-  ctx.beginPath();
-  for (let i = 0; i <= 60; i++) { const [x, y] = arcPoint(i / 60); if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y); }
-  ctx.stroke();
-  ctx.setLineDash([]);
   ctx.globalAlpha = 0.3;
   for (const branch of branches) {
     node(branch.curve[3], px(7), 1, GHOST, GHOST);
@@ -263,7 +287,7 @@ function ground(t) {
   }
   ctx.restore();
   // ripple when the seed lands
-  const ripple = (t - 0.086) / 0.09;
+  const ripple = (t - T.ripple[0]) / (T.ripple[1] - T.ripple[0]);
   if (ripple > 0 && ripple < 1) {
     ctx.save();
     ctx.globalAlpha = (1 - ripple) * 0.7;
@@ -298,7 +322,7 @@ function drift(t, activity) {
   for (const mote of motes) {
     const life = frac(t * mote.laps + mote.phase);
     const [x, y] = at(mote.x + Math.sin(TAU * life) * 8, mote.y - life * mote.drift);
-    ctx.globalAlpha = Math.sin(Math.PI * life) * (0.1 + 0.2 * activity);
+    ctx.globalAlpha = Math.sin(Math.PI * life) * (0.06 + 0.14 * activity);
     ctx.beginPath();
     ctx.arc(x, y, px(mote.r), 0, TAU);
     ctx.fill();
@@ -310,23 +334,23 @@ function mark(t) {
   if (!logo.complete || !logo.naturalWidth) return;
   const size = px(96);
   const [x, y] = at(0, 56);
-  const planted = span(t, 0.088, 0.125);
-  const receives = span(t, 0.895, 0.915) * (1 - span(t, 0.93, 0.975));
-  const rest = 1 - span(t, 0.94, 0.99);
+  const planted = span(t, T.sink[0], T.sink[1] + 0.03);
+  const receives = span(t, T.receive[0] - 0.015, T.receive[0]) * (1 - span(t, T.receive[1], T.receive[1] + 0.04));
+  const rest = 1 - span(t, T.fade[0] + 0.01, T.fade[1]);
   const alpha = 0.3 + 0.62 * planted * rest + 0.08 * receives;
   ctx.save();
   ctx.globalAlpha = Math.min(1, alpha);
-  glow(TEAL, px(10 + 26 * Math.max(receives, planted * (1 - span(t, 0.125, 0.2)))));
+  glow(TEAL, px(10 + 26 * Math.max(receives, planted * (1 - span(t, T.sink[1] + 0.03, T.trunk[1])))));
   ctx.drawImage(tinted, x - size / 2, y - size / 2, size, size);
   ctx.restore();
 }
 
 function seed(t) {
-  const fall = span(t, 0.012, 0.086);
-  const visible = span(t, 0.0, 0.02) * (1 - span(t, 0.086, 0.104));
+  const fall = span(t, T.fall[0], T.fall[1]);
+  const visible = span(t, T.seedIn[0], T.seedIn[1]) * (1 - span(t, T.sink[0], T.sink[1]));
   if (visible <= 0) return;
   const [x, top] = at(0, -TRUNK - 46);
-  const y = top + (L.ground - top) * fall + px(56) * span(t, 0.086, 0.104);
+  const y = top + (L.ground - top) * fall + px(56) * span(t, T.sink[0], T.sink[1]);
   ctx.save();
   ctx.globalAlpha = visible;
   const trail = ctx.createLinearGradient(0, y - px(70), 0, y);
@@ -341,7 +365,7 @@ function seed(t) {
   glow(MINT, px(22));
   ctx.fillStyle = PALE;
   ctx.beginPath();
-  ctx.ellipse(x, y, px(5.5), px(8.5), 0, 0, TAU);
+  ctx.ellipse(x, y, px(6.5), px(10), 0, 0, TAU);
   ctx.fill();
   ctx.restore();
 }
@@ -358,27 +382,34 @@ function artifact(point, side, life, alpha) {
   if (life <= 0 || life >= 1) return;
   const x = point[0] + side * px(30) * ease(life);
   const y = point[1] - px(38) * ease(life);
-  const half = px(4.6);
+  const half = px(6);
   ctx.save();
   ctx.globalAlpha = alpha * Math.sin(Math.PI * life);
+  ctx.lineJoin = 'round';
+  ctx.lineCap = 'round';
+  ctx.fillStyle = INK;
   ctx.strokeStyle = PALE;
-  ctx.lineWidth = px(1.4);
+  ctx.lineWidth = px(1.5);
   glow(CYAN, px(8));
-  ctx.strokeRect(x - half, y - half * 1.25, half * 2, half * 2.5);
-  noGlow();
   ctx.beginPath();
-  ctx.moveTo(x - half * 0.5, y - half * 0.35);
-  ctx.lineTo(x + half * 0.5, y - half * 0.35);
-  ctx.moveTo(x - half * 0.5, y + half * 0.35);
-  ctx.lineTo(x + half * 0.5, y + half * 0.35);
+  ctx.rect(x - half, y - half * 1.3, half * 2, half * 2.6);
+  ctx.fill();
+  ctx.stroke();
+  noGlow();
+  ctx.strokeStyle = MINT;
+  ctx.lineWidth = px(1.7);
+  ctx.beginPath();
+  ctx.moveTo(x - half * 0.48, y + half * 0.05);
+  ctx.lineTo(x - half * 0.1, y + half * 0.5);
+  ctx.lineTo(x + half * 0.55, y - half * 0.45);
   ctx.stroke();
   ctx.restore();
 }
 
 function generation(t) {
-  const fade = 1 - span(t, 0.9, 0.98);
+  const fade = 1 - span(t, T.fade[0], T.fade[1]);
   if (fade <= 0) return;
-  const activity = span(t, 0.42, 0.5) * (1 - span(t, 0.86, 0.92));
+  const activity = span(t, T.work[0], T.work[1]) * (1 - span(t, T.rest[0], T.rest[1]));
   ctx.save();
   ctx.globalAlpha = fade;
   ctx.lineCap = 'round';
@@ -389,7 +420,7 @@ function generation(t) {
   rise.addColorStop(1, CYAN);
 
   // evolution loop
-  const loop = span(t, 0.48, 0.6);
+  const loop = span(t, T.arc[0], T.arc[1]);
   if (loop > 0) {
     ctx.save();
     ctx.globalAlpha = fade * 0.5;
@@ -400,15 +431,8 @@ function generation(t) {
     for (let i = 0; i <= Math.round(70 * loop); i++) { const [x, y] = arcPoint(i / 70); if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y); }
     ctx.stroke();
     ctx.restore();
-    const travel = (t - 0.62) / 0.28;
-    for (const gate of ARC_GATES) {
-      if (loop < gate) continue;
-      const near = travel > 0 && travel < 1 ? Math.max(0, 1 - Math.abs(travel - gate) / 0.09) : 0;
-      ctx.save();
-      glow(GOV, px(4 + 14 * near));
-      diamond(arcPoint(gate), px(5), GOV, 0.75 + 0.25 * near, near * Math.PI / 2);
-      ctx.restore();
-    }
+    const travel = (t - T.evidence[0]) / (T.evidence[1] - T.evidence[0]);
+    if (loop >= ARC_REVIEW) review(arcPoint(ARC_REVIEW), travel > 0 && travel < 1 ? Math.max(0, 1 - Math.abs(ease(travel) - ARC_REVIEW) / 0.12) : 0);
     if (travel > 0 && travel < 1) {
       const [x, y] = arcPoint(ease(travel));
       ctx.save();
@@ -425,13 +449,13 @@ function generation(t) {
   ctx.strokeStyle = rise;
   ctx.lineWidth = px(2);
   glow(TEAL, px(12));
-  helix(t, span(t, 0.1, 0.3));
+  helix(t, span(t, T.trunk[0], T.trunk[1]));
   noGlow();
 
   // coordination links
   if (activity > 0) {
     ctx.save();
-    ctx.globalAlpha = fade * activity * 0.42;
+    ctx.globalAlpha = fade * activity * 0.3;
     ctx.strokeStyle = CYAN;
     ctx.lineWidth = px(1.1);
     ctx.setLineDash([px(3), px(6)]);
@@ -451,22 +475,14 @@ function generation(t) {
 
   // branches, nodes, flows, artifacts, gates
   for (const branch of branches) {
-    const grown = span(t, branch.start, branch.start + 0.1);
+    const grown = span(t, branch.start, branch.start + T.branchSpan);
     ctx.strokeStyle = rise;
     ctx.lineWidth = px(1.7);
     glow(TEAL, px(9));
     strokeCurve(branch.curve, grown);
-    for (const sub of branch.subs) strokeCurve(sub.curve, span(t, sub.start, sub.start + 0.08));
+    for (const sub of branch.subs) strokeCurve(sub.curve, span(t, sub.start, sub.start + T.subSpan));
     noGlow();
 
-    if (branch.gated && grown > 0.52) {
-      const life = frac(t * 5 + branch.phase);
-      const { held } = flowAlong(life, true);
-      ctx.save();
-      glow(GOV, px(4 + 16 * held * activity));
-      diamond(bezier(...branch.curve, 0.52), px(5.4), GOV, 0.8 + 0.2 * held, held * activity * Math.PI / 2);
-      ctx.restore();
-    }
 
     if (activity > 0) {
       const life = frac(t * 5 + branch.phase);
@@ -496,13 +512,20 @@ function generation(t) {
     }
 
     glow(CYAN, px(8));
-    node(branch.curve[3], px(7), span(t, branch.start + 0.085, branch.start + 0.12), PALE, CYAN);
-    for (const sub of branch.subs) node(sub.curve[3], px(4.6), span(t, sub.start + 0.07, sub.start + 0.1), PALE, TEAL);
+    node(branch.curve[3], px(7.5), span(t, branch.start + T.branchSpan - 0.01, branch.start + T.branchSpan + 0.025), PALE, CYAN);
+    for (const sub of branch.subs) node(sub.curve[3], px(5), span(t, sub.start + T.subSpan - 0.01, sub.start + T.subSpan + 0.02), PALE, TEAL);
     noGlow();
+    // The review sign sits on top of the flow, so work is seen to wait behind it.
+    if (branch.gated && grown > 0.6) {
+      ctx.save();
+      ctx.globalAlpha = fade * span(grown, 0.6, 0.9);
+      review(bezier(...branch.curve, 0.52), flowAlong(frac(t * 5 + branch.phase), true).held * activity);
+      ctx.restore();
+    }
   }
 
   // crown
-  const crowned = span(t, 0.3, 0.36);
+  const crowned = span(t, T.crown[0], T.crown[1]);
   if (crowned > 0) {
     ctx.save();
     ctx.globalAlpha = fade * crowned * (0.22 + 0.1 * Math.sin(TAU * t * 3));
@@ -515,7 +538,7 @@ function generation(t) {
     ctx.fill();
     ctx.restore();
     glow(CYAN, px(14));
-    node(crown, px(10), crowned, PALE, CYAN);
+    node(crown, px(11), crowned, PALE, CYAN);
     noGlow();
   }
   ctx.restore();
@@ -538,11 +561,11 @@ const post = (path, blob) => fetch(path, { method: 'POST', body: blob }).then((r
 
 async function capture() {
   const suffix = query.get('layout') === 'portrait' ? '-portrait' : '';
-  draw(POSTER_T);
+  draw(START_T);
   await post(`/still?name=seed-poster${suffix}.png`, await blobOf('image/png'));
   if (!suffix) {
     for (let frame = 0; frame < FRAMES; frame++) {
-      draw(frame / FRAMES);
+      draw(frac(frame / FRAMES + START_T));
       await post(`/frame?i=${frame}`, await blobOf('image/jpeg', 0.95));
       if (frame % FPS === 0) document.title = `frame ${frame} / ${FRAMES}`;
     }
@@ -556,9 +579,9 @@ logo.onload = () => {
   if (query.has('capture')) capture().catch((error) => { document.title = `capture failed: ${error.message}`; document.body.dataset.state = 'failed'; });
   else if (query.has('play')) {
     const started = performance.now();
-    const tick = (now) => { draw(frac((now - started) / 1000 / SECONDS)); requestAnimationFrame(tick); };
+    const tick = (now) => { draw(frac((now - started) / 1000 / SECONDS + START_T)); requestAnimationFrame(tick); };
     requestAnimationFrame(tick);
-  } else draw(Number(query.get('t') ?? POSTER_T));
+  } else draw(Number(query.get('t') ?? START_T));
   document.body.dataset.ready = 'true';
 };
 logo.src = '/poesis-logo.png';
