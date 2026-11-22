@@ -1820,6 +1820,50 @@ h3.stack-gap {
   color: var(--ink-soft);
 }
 
+/* An introduction with the demonstration beside it: the words first, the panel after; side by
+   side on a wide screen, where the panel takes the wider column so that its steps sit in a row. */
+.intro--demo .container {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: clamp(2rem, 5vw, 3rem);
+}
+
+.intro__words,
+.intro__demo {
+  min-width: 0;
+}
+
+@media (min-width: 64rem) {
+  .intro--demo {
+    padding-top: clamp(2rem, 1rem + 2.6vw, 3.25rem);
+  }
+
+  .intro--demo .container {
+    grid-template-columns: minmax(0, .83fr) minmax(0, 1.17fr);
+    align-items: center;
+    column-gap: clamp(2rem, 4vw, 3.75rem);
+  }
+
+  /* The title is sized from its own column, as on the home page. */
+  .intro--demo .intro__words {
+    container-type: inline-size;
+  }
+
+  .intro--demo h1 {
+    font-size: clamp(2rem, 9.4cqi, 3.5rem);
+  }
+
+  .intro__demo {
+    min-height: 43rem;
+  }
+}
+
+@media (min-width: 72rem) {
+  .intro__demo {
+    min-height: 36rem;
+  }
+}
+
 .intro__lead + .intro__lead {
   margin-top: 1rem;
 }

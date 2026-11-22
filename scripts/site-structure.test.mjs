@@ -673,7 +673,15 @@ builtTest('the Transformation page sells one offer in seven short sections, says
   const intro = elements(main, (node) => hasClass(node, 'intro'))[0];
   assert.ok(clean(text(intro)).includes(`${offerQualifier} A pilot is agreed case by case.`));
   assert.ok(copy.includes('Poesis publishes no price list and no standard duration.'));
-  assert.doesNotMatch(copy, /Agentic Organization Transformation|book a|package|production-ready|deployed at scale|Claude|\d+\s*%|\d+\s*(days?|weeks?|months?)\b|\bROI\b|€|\$/i);
+  // The embedded developer demo uses "$" as a terminal prompt, never as a price.
+  // Exclude only those decorative prompt nodes; keep checking all other demo copy.
+  for (const prompt of elements(main, (node) => hasClass(node, 'demo__prompt'))) {
+    assert.equal(text(prompt), '$');
+    assert.equal(attr(prompt, 'aria-hidden'), 'true');
+    assert.ok(hasClass(prompt.parentNode, 'demo__line'));
+  }
+  const withoutPrompts = (node) => hasClass(node, 'demo__prompt') ? '' : node.nodeName === '#text' ? node.value : (node.childNodes ?? []).map(withoutPrompts).join('');
+  assert.doesNotMatch(clean(withoutPrompts(main)), /Agentic Organization Transformation|book a|package|production-ready|deployed at scale|Claude|\d+\s*%|\d+\s*(days?|weeks?|months?)\b|\bROI\b|€|\$/i);
   // Larger scopes are a direction, not a record: the page says so.
   const who = elements(main, (node) => attr(node, 'id') === 'who')[0];
   assert.deepEqual(elements(who, (node) => node.tagName === 'dt').map((node) => clean(text(node))), ['One team', 'A function or a profession', 'An entity or business unit', 'A whole organization']);

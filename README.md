@@ -231,7 +231,12 @@ artifact patterns of its `conf/workspace.conf.yaml`. Check them again when `saf.
 - It lays itself out from its own width (container queries), so it can be placed on another
   page: `<DemoChat id="…" initial="developers" source="…" />`.
 
-Captures: `docs/review/2026-11-22-hero-demo/`.
+The same panel appears beside the introductions of `/transformation/` (organizations selected)
+and `/developers/` (developers selected). Both tabs remain available on each page. The text
+comes first on small screens; the demonstration sits beside it from 1024 px. Each placement
+has its own element IDs and measurement source.
+
+Captures: `docs/review/2026-11-22-hero-demo/` and `docs/review/2026-11-22-page-demos/`.
 
 The former hero film is no longer shipped. Its source stays in `scripts/hero-film/`, with its
 geometry in `src/data/hero-diagram.json`.

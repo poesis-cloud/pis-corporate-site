@@ -9,6 +9,7 @@
  * files of the repositories match what they declare.
  */
 import BaseLayout from '../layouts/BaseLayout.astro';
+import DemoChat from '../components/DemoChat.astro';
 import Icon from '../components/Icon.astro';
 import CommandBlock from '../components/CommandBlock.astro';
 import ProductPanel from '../components/ProductPanel.astro';
@@ -43,19 +44,26 @@ const sourceCode = (product: SafProduct) => ({
   breadcrumbs={[{ label: 'Developers' }]}
   jsonLd={safProducts.map(sourceCode)}
 >
-  <section class="intro">
+  <section class="intro intro--demo">
     <div class="container">
-      <ol class="crumbs" aria-label="Breadcrumb">
-        <li><a href="/">Poesis</a></li>
-        <li aria-current="page">Developers</li>
-      </ol>
-      <h1>{title}.</h1>
-      <p class="intro__lead">SAF, the Systemic Agentic Framework, runs an organization of AI agents the way an organization actually works: roles with responsibilities, workflows that link them, artifacts that are checked, and people who decide. You install it in your own agent host; nothing is hosted by Poesis.</p>
-      <p class="intro__note">{maturityLabel}, open source, for {supportedHost.name} today.</p>
-      <div class="actions">
-        <a class="btn btn-primary btn-lg" href="#install" data-track="developer_install_click" data-track-id="oss-intro">Install SAF</a>
-        <a class="btn btn-ghost btn-lg" href={safLinks.repositories} {...externalLinkAttributes} data-track="developer_repo_click" data-track-id="oss-intro"><Icon name="github" /> View the repositories</a>
-        <a class="btn btn-quiet" href={safLinks.docs} {...externalLinkAttributes} data-track="developer_docs_click" data-track-id="oss-intro">Read the documentation</a>
+      <div class="intro__words">
+        <ol class="crumbs" aria-label="Breadcrumb">
+          <li><a href="/">Poesis</a></li>
+          <li aria-current="page">Developers</li>
+        </ol>
+        <h1>{title}.</h1>
+        <p class="intro__lead">SAF, the Systemic Agentic Framework, runs an organization of AI agents the way an organization actually works: roles with responsibilities, workflows that link them, artifacts that are checked, and people who decide. You install it in your own agent host; nothing is hosted by Poesis.</p>
+        <p class="intro__note">{maturityLabel}, open source, for {supportedHost.name} today.</p>
+        <div class="actions">
+          <a class="btn btn-primary btn-lg" href="#install" data-track="developer_install_click" data-track-id="oss-intro">Install SAF</a>
+          <a class="btn btn-ghost btn-lg" href={safLinks.repositories} {...externalLinkAttributes} data-track="developer_repo_click" data-track-id="oss-intro"><Icon name="github" /> View the repositories</a>
+          <a class="btn btn-quiet" href={safLinks.docs} {...externalLinkAttributes} data-track="developer_docs_click" data-track-id="oss-intro">Read the documentation</a>
+        </div>
+      </div>
+
+      {/* The demonstration of the home page, opened on the scenario of this page: install, declare, validate, review. Illustrative, and labelled so. */}
+      <div class="intro__demo">
+        <DemoChat id="developers-demo" initial="developers" source="developers" />
       </div>
     </div>
   </section>
