@@ -107,6 +107,7 @@ a {
   align-items: center;
   gap: .6rem;
   min-height: 44px;
+  white-space: nowrap;
   font-family: var(--font-display);
   font-size: 1.4rem;
   letter-spacing: -.01em;
@@ -282,7 +283,8 @@ a {
   }
 }
 
-@media (max-width: 359px) {
+/* Phones: the call to action keeps its full name, so the menu button keeps only its icon. */
+@media (max-width: 419px) {
   .nav {
     gap: .5rem;
   }
@@ -299,6 +301,17 @@ a {
     overflow: hidden;
     clip-path: inset(50%);
     white-space: nowrap;
+  }
+}
+
+/* The narrowest screens: the mark alone stands for the name, which the link still carries. */
+@media (max-width: 339px) {
+  .brand span {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
   }
 }
 
@@ -473,467 +486,758 @@ h3.stack-gap {
   color: var(--flow-ink);
 }
 
-/* ---- hero: the statement, and the diagram that explains it ------------------- */
-.hero-seed {
+/* ---- home hero: the promise, then one workflow shown as an illustration ----- */
+.home-hero {
   position: relative;
-  padding-block: clamp(1.75rem, .9rem + 3.6vw, 4.5rem) clamp(3rem, 2rem + 5vw, 5.5rem);
-  overflow: hidden;
-  border-bottom: 1px solid var(--line);
+  padding-block: clamp(2.5rem, 1.7rem + 3.6vw, 4.75rem) clamp(3.5rem, 2.5rem + 5vw, 6.5rem);
+  background: radial-gradient(58rem 26rem at 50% -8rem, rgba(45, 212, 191, .08), transparent 70%);
 }
 
-.hero-seed__grid {
-  display: grid;
-  gap: clamp(2.25rem, 1.5rem + 3vw, 3.5rem);
-}
-
-.hero-seed__content {
-  min-width: 0;
-}
-
-.hero-seed__kicker {
-  margin: 0 0 1.1rem;
-  font-size: .95rem;
-  font-weight: 600;
-  color: var(--flow-ink);
-}
-
-.hero-seed h1 {
-  max-width: 12em;
-  margin: 0;
-  font-size: clamp(2rem, 1.15rem + 3.8vw, 3.4rem);
-  line-height: 1.06;
-  text-wrap: balance;
-}
-
-.hero-seed__lead {
-  max-width: 33rem;
-  margin: 1.4rem 0 0;
-  font-size: clamp(1.05rem, 1rem + .2vw, 1.15rem);
-  color: var(--ink-soft);
-}
-
-.hero-actions {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: .9rem 1.4rem;
-  margin-top: 2rem;
-}
-
-.hero-actions .btn-quiet {
-  min-height: 44px;
-  font-size: 1rem;
-}
-
-/* The signature of Poesis: its founder's sentence, in italics, in the margin of the picture.
-   Quieter than everything that sells: it is there to be found, not to be read first. */
-.hero-signature {
-  max-width: 27rem;
-  margin: 0;
-  padding-top: 1rem;
-  border-top: 1px solid var(--line-strong);
-  font-family: var(--font-display);
-  font-size: 1.08rem;
-  font-style: italic;
-  line-height: 1.45;
-  color: var(--ink-soft);
-}
-
-/* The diagram. One picture in two compositions (narrow, then wide from 720px), with its words
-   as real text over it. Positions come from src/data/hero-diagram.json, as percentages of the
-   picture, and type is sized in units of the picture's width, so words and picture scale as one. */
-.hero-diagram {
-  position: relative;
-  width: 100%;
-  max-width: 27rem;
-  min-width: 0;
-  margin: 0 auto;
-  container-type: inline-size;
-}
-
-.hero-diagram__stage {
-  position: relative;
-  aspect-ratio: var(--portrait);
-}
-
-/* The picture is drawn on the ground colour. Its edges are faded so that it sits in the page,
-   whose ground carries a faint grid and glow, without the outline of a rectangle. */
-.hero-diagram__media {
-  --fade-top: 9%;
-  position: absolute;
-  inset: 0;
-  -webkit-mask-image: linear-gradient(90deg, transparent, #000 3.5%, #000 96.5%, transparent), linear-gradient(transparent, #000 var(--fade-top), #000 96%, transparent);
-  -webkit-mask-composite: source-in;
-  mask-image: linear-gradient(90deg, transparent, #000 3.5%, #000 96.5%, transparent), linear-gradient(transparent, #000 var(--fade-top), #000 96%, transparent);
-  mask-composite: intersect;
-}
-
-.hero-diagram__still,
-.hero-diagram__film {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-}
-
-/* The film opens on the still's own picture, so it can fade in over it without a jump. */
-.hero-diagram__film {
-  display: none;
-  opacity: 0;
-  transition: opacity .8s ease;
-}
-
-.hero-diagram__film.is-playing {
-  opacity: 1;
-}
-
-.hero-diagram__labels {
-  position: absolute;
-  inset: 0;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-  font-family: var(--font-sans);
-  line-height: 1.2;
-}
-
-.hero-diagram__labels--landscape {
-  display: none;
-}
-
-.hero-diagram__title,
-.hero-diagram__tag {
-  position: absolute;
-  width: max-content;
+.home-hero__words {
+  max-width: 60rem;
+  margin-inline: auto;
   text-align: center;
 }
 
-/* A title is placed by the centre of its first line; what it says more sits right under it. */
-.hero-diagram__title {
-  font-size: .95rem;
-  font-size: max(.9rem, 4.6cqw);
-  transform: translate(-50%, -.6em);
-}
-
-.hero-diagram__title strong {
-  display: block;
+.home-hero__eyebrow {
+  margin: 0 0 1.4rem;
+  font-size: .8rem;
   font-weight: 600;
-  color: #fff;
-}
-
-.hero-diagram__title span {
-  display: block;
-  margin-top: .3em;
-  font-size: max(.75rem, .8em);
-  color: var(--ink-soft);
-}
-
-/* A tag names the sign it stands next to, in that sign's colour. */
-.hero-diagram__tag {
-  font-size: .78rem;
-  font-size: max(.75rem, 3.7cqw);
-  color: #e6fbff;
-  white-space: pre-line;
-  transform: translate(-50%, -50%);
-}
-
-.hero-diagram__tag[data-align="left"] {
-  text-align: left;
-  transform: translate(0, -50%);
-}
-
-.hero-diagram__tag[data-align="right"] {
-  text-align: right;
-  transform: translate(-100%, -50%);
-}
-
-.hero-diagram__tag[data-id="oversight"],
-.hero-diagram__tag[data-id="evolves"] {
-  color: var(--gov);
-}
-
-.hero-diagram__tag[data-id="workflows"] {
+  letter-spacing: .14em;
+  text-transform: uppercase;
   color: var(--flow-ink);
 }
 
-/* One step in practice, as the chat it is: a small window with the Poesis mark, the visitor's
-   message on the right, the agent's on the left, the harness's receipt, then the decision.
-   Under the picture on narrow screens; in the free corner of the wide picture from 720px. */
-.hero-chat {
-  max-width: 21rem;
-  margin: 1.5rem auto 0;
-  padding: .7em .8em .8em;
-  border: 1px solid var(--line-strong);
-  border-radius: 14px;
-  background: rgba(11, 19, 34, .78);
-  font-family: var(--font-sans);
-  font-size: .86rem;
-  line-height: 1.3;
-  color: var(--ink);
+.home-hero h1 {
+  max-width: none;
+  margin: 0;
+  font-size: clamp(2.2rem, 1.3rem + 3.9vw, 4rem);
+  line-height: 1.06;
+  letter-spacing: -.02em;
+  text-wrap: balance;
 }
 
-.hero-chat__head {
-  display: flex;
-  align-items: center;
-  gap: .45em;
-  margin: 0 0 .65em;
-  padding-bottom: .55em;
-  border-bottom: 1px solid var(--line);
-  font-size: .95em;
+.home-hero h1 span {
+  display: block;
 }
 
-/* The Poesis mark, shown as in the header: white, with a breath of the flow colour. */
-.hero-chat__head img {
-  width: 1.45em;
-  height: 1.45em;
-  filter: brightness(0) invert(1) drop-shadow(0 0 5px rgba(45, 212, 191, .55));
+.home-hero__lead {
+  max-width: 41rem;
+  margin: 1.6rem auto 0;
+  font-size: clamp(1.08rem, 1rem + .5vw, 1.3rem);
+  line-height: 1.5;
+  color: var(--ink-soft);
+  text-wrap: pretty;
 }
 
-.hero-chat__head strong {
-  font-weight: 600;
-  color: #fff;
-}
-
-.hero-chat__head span {
-  margin-left: auto;
-  font-size: .88em;
+.home-hero__note {
+  margin: .85rem 0 0;
+  font-size: .98rem;
   color: var(--muted);
 }
 
-.hero-chat ol {
-  display: grid;
-  gap: .45em;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.hero-chat li {
+.home-hero__actions {
   display: flex;
   flex-wrap: wrap;
+  justify-content: center;
+  gap: .75rem 1rem;
+  margin-top: 2.1rem;
+}
+
+/* The scene: three groups read from left to right on wide screens, top to bottom
+   on narrow ones. Complete and still by default; the six beats are further down. */
+.scene {
+  max-width: 62rem;
+  margin: clamp(2.25rem, 1.8rem + 2.4vw, 3.75rem) auto 0;
+}
+
+.scene p {
+  margin: 0;
+}
+
+.scene__stage {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr) minmax(0, .95fr);
+  gap: clamp(1.25rem, 3vw, 2.75rem);
   align-items: center;
-  gap: .4em;
-  transition: opacity .4s ease;
+  padding: clamp(1.25rem, 1rem + 1.8vw, 2.5rem);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  font-size: .9rem;
+  line-height: 1.4;
+  text-align: left;
 }
 
-/* The visitor speaks from the right, the agent answers from the left. */
-.hero-chat li[data-role="you"] {
-  justify-content: flex-end;
+.scene__talk,
+.scene__work {
+  display: flex;
+  flex-direction: column;
+  gap: .8rem;
+  min-width: 0;
 }
 
-.hero-chat li[data-role="you"] span,
-.hero-chat li[data-role="agent"] span {
-  padding: .32em .7em;
-  border-radius: 1em;
+.scene__bubble {
+  max-width: 15rem;
+  padding: .65rem .9rem;
+  border: 1px solid var(--line-strong);
 }
 
-.hero-chat li[data-role="you"] span {
-  border-bottom-right-radius: .25em;
-  background: rgba(255, 255, 255, .1);
+.scene__bubble--you {
+  align-self: flex-end;
+  border-radius: 14px 14px 3px 14px;
+  background: var(--surface-2);
+  color: var(--ink);
 }
 
-.hero-chat li[data-role="agent"] span {
-  border: 1px solid rgba(45, 212, 191, .4);
-  border-bottom-left-radius: .25em;
-  background: rgba(45, 212, 191, .1);
+.scene__bubble--agent {
+  display: flex;
+  align-items: flex-start;
+  gap: .55rem;
+  align-self: flex-start;
+  border-radius: 3px 14px 14px 14px;
+  color: var(--ink-soft);
 }
 
-/* The harness is not a voice in the chat: it leaves a receipt under the agent's message. */
-.hero-chat li[data-role="harness"] {
-  padding-left: .15em;
-  font-size: .95em;
-  color: var(--flow-2);
+.scene__mark {
+  flex: none;
+  margin-top: .12rem;
+  fill: none;
+  stroke: var(--flow);
+  stroke-width: 2;
+  stroke-linecap: round;
 }
 
-.hero-chat li[data-role="harness"] b {
+/* The draft, and the trellis the harness lays over it: a faint grid, and three named checks. */
+.scene__doc {
+  position: relative;
+  overflow: hidden;
+  padding: .9rem 1rem;
+  border: 1px solid rgba(94, 234, 212, .55);
+  border-radius: 10px;
+  background: var(--bg);
+}
+
+.scene__doc::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: linear-gradient(rgba(94, 234, 212, .09) 1px, transparent 1px), linear-gradient(90deg, rgba(94, 234, 212, .09) 1px, transparent 1px);
+  background-size: 18px 18px;
+  pointer-events: none;
+}
+
+.scene__doc > * {
+  position: relative;
+}
+
+.scene__file {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: .75rem;
+  font-family: var(--font-mono);
+  font-size: .8rem;
+  color: var(--ink);
+}
+
+/* The state of the document: a draft until a person has decided. Still, it shows the decision. */
+.scene__state {
+  position: relative;
+  font-family: var(--font-sans);
+  font-size: .76rem;
   font-weight: 600;
+  white-space: nowrap;
 }
 
-/* The decision belongs to a person: three choices, in the colour of human decisions. */
-.hero-chat li[data-role="gate"] {
-  justify-content: flex-end;
-  margin-top: .1em;
-}
-
-.hero-chat li[data-role="gate"] span {
-  padding: .22em .6em;
-  border: 1px solid var(--gov-line);
-  border-radius: .5em;
-  font-size: .92em;
+.scene__state i {
+  font-style: normal;
   color: var(--gov);
 }
 
-.hero-chat li[data-role="gate"] span:first-of-type {
-  background: var(--gov-soft);
-  color: #fff;
-}
-
-/* While the film shows this step, the line it is on comes forward. */
-.hero-chat ol.is-following li {
-  opacity: .45;
-}
-
-.hero-chat ol.is-following li.is-now {
-  opacity: 1;
-}
-
-.hero-diagram__toggle {
+.scene__state i:first-child {
   position: absolute;
   right: 0;
-  bottom: 0;
-  display: inline-grid;
-  place-items: center;
-  width: 44px;
-  height: 44px;
-  padding: 0;
-  border: 1px solid var(--line-strong);
-  border-radius: 50%;
-  background: rgba(7, 10, 18, .7);
+  color: var(--alpha);
+  opacity: 0;
+}
+
+.scene__rule {
+  display: block;
+  width: 86%;
+  height: 5px;
+  margin-top: .55rem;
+  border-radius: 3px;
+  background: var(--line-strong);
+}
+
+.scene__file + .scene__rule {
+  margin-top: .85rem;
+}
+
+.scene__rule + .scene__rule {
+  width: 70%;
+}
+
+.scene__rule + .scene__rule + .scene__rule {
+  width: 78%;
+}
+
+.scene__checks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .2rem .9rem;
+  margin: .9rem 0 0;
+  padding: .7rem 0 0;
+  border-top: 1px solid var(--line-strong);
+  list-style: none;
+  font-size: .8rem;
   color: var(--ink-soft);
+}
+
+.scene__checks li:not(.scene__harness)::before {
+  content: "";
+  display: inline-block;
+  width: .42em;
+  height: .72em;
+  margin-right: .45em;
+  border: solid var(--flow);
+  border-width: 0 2px 2px 0;
+  transform: translateY(-.08em) rotate(45deg);
+}
+
+.scene__harness {
+  flex-basis: 100%;
+  font-weight: 600;
+  color: var(--flow-ink);
+}
+
+.scene__decision,
+.scene__commit {
+  display: flex;
+  align-items: center;
+  gap: .55rem;
+}
+
+.scene__decision svg,
+.scene__commit svg {
+  flex: none;
+  fill: none;
+  stroke-width: 2;
+  stroke-linecap: round;
+}
+
+.scene__decision {
+  color: var(--ink-soft);
+}
+
+.scene__decision b {
+  font-weight: 600;
+  color: var(--gov);
+}
+
+.scene__decision svg {
+  stroke: var(--gov);
+}
+
+.scene__commit {
+  font-size: .84rem;
+  color: var(--ink-soft);
+}
+
+.scene__commit svg {
+  stroke: var(--flow);
+}
+
+/* The organization: two rails and their rungs, a strand laid flat, climbing a trellis. */
+.scene__growth {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: .35rem;
+  min-width: 0;
+}
+
+.scene__plant {
+  width: 100%;
+  max-width: 15rem;
+  height: auto;
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.scene__trellis {
+  stroke: rgba(255, 255, 255, .07);
+  stroke-width: 1;
+}
+
+.scene__ground {
+  stroke: var(--line-strong);
+  stroke-width: 1.5;
+}
+
+.scene__rail {
+  stroke-width: 2;
+}
+
+.scene__rail--a {
+  stroke: var(--flow);
+}
+
+.scene__rail--b {
+  stroke: var(--flow-2);
+}
+
+.scene__rungs {
+  stroke: rgba(94, 234, 212, .55);
+  stroke-width: 1.5;
+}
+
+.scene__branch {
+  stroke: var(--flow);
+  stroke-width: 1.8;
+}
+
+.scene__node {
+  fill: var(--surface);
+  stroke: var(--flow);
+  stroke-width: 2;
+}
+
+.scene__new .scene__node {
+  fill: var(--flow);
+}
+
+.scene__seed {
+  fill: var(--flow-2);
+}
+
+.scene__evolves {
+  font-weight: 600;
+  color: var(--flow-ink);
+  text-align: center;
+}
+
+.scene__caption {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  min-height: 44px;
+  margin-top: .6rem;
+  padding-inline: .35rem;
+  font-size: .84rem;
+  color: var(--muted);
+}
+
+.scene__toggle {
+  min-height: 44px;
+  padding: 0 .9rem;
+  border: 1px solid var(--line-strong);
+  border-radius: 10px;
+  background: transparent;
+  color: var(--ink-soft);
+  font: inherit;
   cursor: pointer;
 }
 
-.hero-diagram__toggle:hover {
+.scene__toggle:hover {
+  border-color: var(--muted);
   color: #fff;
-  border-color: var(--flow);
 }
 
-.hero-diagram__toggle[data-state="playing"] .hero-diagram__play,
-.hero-diagram__toggle[data-state="paused"] .hero-diagram__pause {
-  display: none;
-}
-
-@media (min-width: 720px) {
-  .hero-diagram {
-    max-width: 46rem;
+/* Six beats in a twelve-second loop: the request, the draft, the checks, the decision,
+   the commit, the new branch. Played only with scripts on, so that the pause control
+   exists, and only for visitors who accept motion. Paused, the whole picture shows. */
+@media (prefers-reduced-motion: no-preference) {
+  .js .scene:not(.is-paused) [data-beat] {
+    animation: scene-beat-1 12s linear infinite both;
   }
 
-  .hero-diagram__stage {
-    aspect-ratio: var(--landscape);
+  .js .scene:not(.is-paused) [data-beat="2"] {
+    animation-name: scene-beat-2;
   }
 
-  /* The wide picture is empty above its first sign, where the titles are written. */
-  .hero-diagram__media {
-    --fade-top: 18%;
+  .js .scene:not(.is-paused) [data-beat="3"],
+  .js .scene:not(.is-paused) .scene__doc::before {
+    animation: scene-beat-3 12s linear infinite both;
   }
 
-  /* The wide picture is also empty at its lower left: the chat sits there. */
-  .hero-chat {
-    position: absolute;
-    left: 2.5%;
-    bottom: 1.5%;
-    width: 37.5%;
-    max-width: none;
-    margin: 0;
-    font-size: .78rem;
-    font-size: max(.75rem, 1.82cqw);
+  .js .scene:not(.is-paused) [data-beat="4"] {
+    animation-name: scene-beat-4;
   }
 
-  .hero-diagram__labels--portrait {
-    display: none;
+  .js .scene:not(.is-paused) [data-beat="5"] {
+    animation-name: scene-beat-5;
   }
 
-  .hero-diagram__labels--landscape {
-    display: block;
+  .js .scene:not(.is-paused) [data-beat="6"] {
+    animation-name: scene-beat-6;
   }
 
-  .hero-diagram__title {
-    font-size: 1rem;
-    font-size: 2.7cqw;
+  .js .scene:not(.is-paused) .scene__doc {
+    animation: scene-beat-2 12s linear infinite both, scene-frame 12s linear infinite both;
   }
 
-  .hero-diagram__tag {
-    font-size: .8rem;
-    font-size: 2.2cqw;
+  .js .scene:not(.is-paused) .scene__state i:first-child {
+    animation: scene-draft 12s linear infinite both;
+  }
+
+  .js .scene.is-offscreen [data-beat],
+  .js .scene.is-offscreen .scene__state i,
+  .js .scene.is-offscreen .scene__doc::before {
+    animation-play-state: paused;
   }
 }
 
-/* From 1100px the diagram stands beside the words, and runs on to the edge of wide screens:
-   the larger it is, the easier its labels are to read. */
-@media (min-width: 1100px) {
-  .hero-seed {
-    padding-block: clamp(2.25rem, 1rem + 2.4vw, 3.75rem) clamp(2.5rem, 1.5rem + 3vw, 4.5rem);
-  }
-
-  /* The diagram takes the larger share: its labels must stay readable on a small laptop.
-     The words are centred beside it, and the signature closes their column, level with its foot. */
-  .hero-seed__grid {
-    grid-template-columns: minmax(0, .8fr) minmax(0, 1.2fr);
-    grid-template-rows: 1fr auto;
-    align-items: center;
-    gap: clamp(1.5rem, 2.6vw, 3rem);
-  }
-
-  .hero-seed__content {
-    grid-area: 1 / 1;
-  }
-
-  .hero-diagram {
-    grid-area: 1 / 2 / span 2;
-  }
-
-  .hero-signature {
-    grid-area: 2 / 1;
-    align-self: end;
-    margin-bottom: 1.25rem;
-  }
-
-  .hero-seed h1 {
-    font-size: clamp(2.5rem, 1rem + 2.6vw, 3.4rem);
-  }
-
-  .hero-diagram {
-    width: auto;
-    max-width: none;
-    margin: 0 max(-13.75rem, min(0px, (var(--maxw) - 100vw) / 2)) 0 0;
-  }
-
-  .hero-diagram__film {
-    display: block;
-  }
+@keyframes scene-beat-1 {
+  0%, 3% { opacity: 0; transform: translateY(8px); }
+  7%, 94% { opacity: 1; transform: none; }
+  100% { opacity: 0; transform: none; }
 }
 
-@media (min-width: 1280px) {
-  .hero-seed__grid {
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1.08fr);
+@keyframes scene-beat-2 {
+  0%, 15% { opacity: 0; transform: translateY(8px); }
+  19%, 94% { opacity: 1; transform: none; }
+  100% { opacity: 0; transform: none; }
+}
+
+@keyframes scene-beat-3 {
+  0%, 31% { opacity: 0; }
+  35%, 94% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+@keyframes scene-beat-4 {
+  0%, 48% { opacity: 0; transform: translateY(8px); }
+  52%, 94% { opacity: 1; transform: none; }
+  100% { opacity: 0; transform: none; }
+}
+
+@keyframes scene-beat-5 {
+  0%, 63% { opacity: 0; transform: translateY(8px); }
+  67%, 94% { opacity: 1; transform: none; }
+  100% { opacity: 0; transform: none; }
+}
+
+@keyframes scene-beat-6 {
+  0%, 76% { opacity: 0; }
+  81%, 94% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+@keyframes scene-draft {
+  0%, 48% { opacity: 1; }
+  52%, 100% { opacity: 0; }
+}
+
+@keyframes scene-frame {
+  0%, 31% { border-color: var(--line-strong); }
+  35%, 100% { border-color: rgba(94, 234, 212, .55); }
+}
+
+@media (max-width: 859px) {
+  .scene__stage {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: start;
+  }
+
+  .scene__growth {
+    grid-column: 1 / -1;
+  }
+
+  .scene__plant {
+    max-width: 13rem;
   }
 }
 
 @media (max-width: 559px) {
-  .hero-actions {
-    flex-direction: column;
-    align-items: stretch;
+  .scene__stage {
+    grid-template-columns: minmax(0, 1fr);
   }
 
-  .hero-actions .btn-quiet {
-    justify-content: center;
+  .home-hero__actions .btn {
+    flex: 1 1 100%;
   }
 }
 
-/* The smallest phones: the statement is long, so everything above the button is set tighter. */
+/* The smallest phones: the optional line gives way, so that the first action stays on the first screen. */
 @media (max-width: 359px) {
-  .hero-seed {
-    padding-top: 1.1rem;
-  }
-
-  .hero-seed__kicker {
-    margin-bottom: .6rem;
-    font-size: .85rem;
-  }
-
-  .hero-seed h1 {
-    font-size: 1.75rem;
-  }
-
-  .hero-seed__lead {
-    margin-top: 1rem;
-    font-size: 1rem;
-  }
-
-  .hero-actions {
-    margin-top: 1.25rem;
+  .home-hero__note {
+    display: none;
   }
 }
+
+/* ---- home: what changes, how it grows, two paths, why governed ---------------- */
+.changes {
+  margin: 0;
+  padding: 0;
+  border-top: 1px solid var(--line);
+  list-style: none;
+}
+
+.changes li {
+  display: grid;
+  grid-template-columns: minmax(0, .8fr) minmax(0, 1.2fr);
+  gap: .4rem clamp(1.5rem, 4vw, 4rem);
+  padding: 1.5rem 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.changes p {
+  margin: 0;
+  font-size: 1.15rem;
+  line-height: 1.45;
+}
+
+.changes__pain {
+  color: var(--muted);
+}
+
+.changes__result {
+  color: var(--ink);
+}
+
+.changes li.changes__head {
+  padding: .85rem 0;
+  font-size: .88rem;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+/* On wide screens the two column heads name the sides; each cell still names its own side to a screen reader. */
+.changes__label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+@media (max-width: 719px) {
+  .changes li {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .changes li.changes__head {
+    display: none;
+  }
+
+  .changes__label {
+    position: static;
+    display: block;
+    width: auto;
+    height: auto;
+    margin-bottom: .15rem;
+    clip-path: none;
+    font-size: .82rem;
+    font-weight: 600;
+    color: var(--muted);
+  }
+
+  .changes__result {
+    margin-top: .5rem;
+  }
+}
+
+.growth {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 2.5rem clamp(1.5rem, 3vw, 3rem);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* One rail across the four steps, a node on each: the order is part of the meaning. */
+.growth li {
+  position: relative;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--line-strong);
+}
+
+.growth li::before {
+  content: "";
+  position: absolute;
+  top: -5px;
+  left: 0;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--flow);
+}
+
+.growth h3 {
+  margin: 0 0 .5rem;
+  font-family: var(--font-display);
+  font-size: 1.7rem;
+  font-weight: 400;
+  letter-spacing: -.01em;
+}
+
+.growth p {
+  margin: 0;
+  color: var(--ink-soft);
+}
+
+@media (max-width: 959px) {
+  .growth {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 559px) {
+  .growth {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.paths {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.5rem;
+}
+
+.path {
+  display: flex;
+  flex-direction: column;
+  gap: .9rem;
+  padding: clamp(1.5rem, 1rem + 2.4vw, 2.75rem);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+}
+
+.path__for {
+  margin: 0;
+  font-size: .88rem;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.path h3 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(1.6rem, 1.3rem + 1.2vw, 2.2rem);
+  font-weight: 400;
+  line-height: 1.12;
+  letter-spacing: -.012em;
+}
+
+.path > p {
+  margin: 0;
+  font-size: 1.05rem;
+  color: var(--ink-soft);
+}
+
+.path__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .5rem 1.25rem;
+  margin-top: auto;
+  padding-top: .9rem;
+}
+
+.path__links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 1.1rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: .95rem;
+}
+
+.path__links a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  color: var(--flow-ink);
+}
+
+@media (max-width: 859px) {
+  .paths {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.qualities {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0 clamp(2rem, 5vw, 5rem);
+  margin: 0;
+}
+
+.qualities > div {
+  padding: 1.4rem 0;
+  border-top: 1px solid var(--line-strong);
+}
+
+.qualities dt {
+  font-family: var(--font-display);
+  font-size: 1.45rem;
+  letter-spacing: -.01em;
+}
+
+.qualities dd {
+  margin: .4rem 0 0;
+  color: var(--ink-soft);
+}
+
+@media (max-width: 719px) {
+  .qualities {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* The last section of the home page: the state of the evidence on one side, the one thing to do on the other. */
+.closing__split {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, .85fr);
+  gap: clamp(2rem, 5vw, 5rem);
+  align-items: center;
+}
+
+.closing--home h2 ~ p {
+  max-width: 36rem;
+  color: var(--ink-soft);
+}
+
+.closing__call {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1.1rem;
+  padding: clamp(1.5rem, 1rem + 2vw, 2.5rem);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-lg);
+  background: var(--bg);
+}
+
+.closing__question {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(1.5rem, 1.2rem + 1.2vw, 2.1rem);
+  line-height: 1.15;
+  letter-spacing: -.012em;
+  color: var(--ink);
+}
+
+.closing__mail {
+  margin: 0;
+  font-size: .95rem;
+  color: var(--muted);
+}
+
+@media (max-width: 859px) {
+  .closing__split {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
 
 /* ---- ledger: pain, approach, value ---------------------------------------- */
 .ledger {
@@ -2192,13 +2496,7 @@ h3.stack-gap {
 
 /* ---- motion preferences ------------------------------------------------------------------------------------ */
 @media (prefers-reduced-motion: reduce) {
-  .hero-diagram__film {
-    display: none;
-  }
-
-  .faq summary::after,
-  .hero-diagram__film,
-  .hero-chat li {
+  .faq summary::after {
     transition: none;
   }
 }

@@ -9,7 +9,6 @@
  * To publish a case: add a record below with `status: 'published'`. The detail
  * page at /case-studies/<slug>/ and its card are generated from it.
  */
-import { organization } from './saf.ts';
 
 /** What the work was. A demonstration is never presented as a client pilot. */
 export type EvidenceKind = 'demonstration' | 'pilot' | 'operational-deployment';
@@ -110,27 +109,11 @@ export const fictionalNotice = 'Fictional example. This organization does not ex
  *   - it is kept out of the sitemap and of search engines, and disappears from the
  *     site as soon as a real case is published.
  * What it names in SAF (agents, workflows) exists in the public repository.
- * Set it to `null` to remove it.
+ *
+ * Retired on 22 November 2026 by decision of the team: the site shows no fictional
+ * client, even labelled as fiction. The slot stays `null` until that decision changes.
  */
-export const illustrativeExample: IllustrativeExample | null = {
-  slug: 'example-retail-bank-delivery-team',
-  title: 'Fictional example: a delivery team in a retail bank',
-  summary: 'An invented walk-through of how one software delivery team of a retail bank could run its backlog refinement and iteration planning as an agentic organization.',
-  context: 'A retail bank with a large in-house IT department, working in a scaled agile set-up. The team in this example maintains customer notification services. The bank, the team and the situation are invented.',
-  problem: 'Regulatory and product changes reach the team as long documents. Turning one of them into refined features and stories goes through several hands, and the reasons behind each decision are lost on the way. Planning starts from incomplete context.',
-  scope: 'One team and two recurring activities: refining features into stories, and planning an iteration. Left out: any change to production systems, anything that touches customer data, and every other team.',
-  method: 'The five steps of the Poesis method. The roles and handoffs of the team are mapped; refinement and planning are chosen as the first workflows; the ready-made SAF Agentic Organization is adapted to the team; the pilot runs on the team’s own repository; the evidence is reviewed with the team and its managers.',
-  agentsAndWorkflows: 'The program and team orchestrators of the SAF Agentic Organization, with its product manager, product owner, system architect, developer, security expert and UX designer agents. Workflows: feature backlog refinement, team backlog refinement, iteration planning and iteration review. Each step writes one artifact, checked against its schema and committed to the repository.',
-  humanControls: 'The team’s product owner reviews every refined feature before it enters planning, and a security reviewer reads anything that touches a control. Nothing is merged without a person. Because SAF does not yet authenticate an approval, the bank records who approved in its own tooling.',
-  period: 'None: the scenario is invented.',
-  evidence: [
-    { label: 'The workflows named above, in the public repository', href: `${organization.repository}/tree/main/workflows` },
-    { label: 'The agents named above, in the public repository', href: `${organization.repository}/tree/main/agents` },
-  ],
-  limits: 'This is not evidence of anything. It shows what a case describes, not what a client obtained. SAF is an alpha preview that runs on GitHub Copilot only, and a bank’s own security and compliance functions would have to accept it before any such pilot.',
-  learnings: 'A real case states here what the pilot taught, and what changed in the model as a result.',
-  nextStep: 'A real case states here the decision that was taken: extend, adjust or stop.',
-};
+export const illustrativeExample: IllustrativeExample | null = null;
 
 /** The example is shown only while it cannot be mistaken for, or sit beside, a real case. */
 export const shownExample: IllustrativeExample | null = publishedCaseStudies.length === 0 ? illustrativeExample : null;

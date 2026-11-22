@@ -15,7 +15,7 @@ import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { parse } from 'parse5';
 import { siteNavigation, navigationCta, footerNavigation, legalNavigation } from '../src/data/site-navigation.ts';
 import { archivePaths, archivePrefixes, knowledgeContext, knowledgePrefixes, platformOverviewPath, thesisPath } from '../src/data/knowledge.ts';
-import { cliVersionNote, harness, installCommands, knownLimits, latestPreRelease, marketplace, maturity, maturityLabel, organization, safLinks, safProducts, supportedHost, verifiedOn } from '../src/data/saf.ts';
+import { cliVersionNote, harness, installCommands, knownLimits, latestPreRelease, marketplace, maturity, maturityLabel, organization, organizationCatalog, preReleases, safLinks, safProducts, supportedHost, verifiedOn } from '../src/data/saf.ts';
 import { homeFaq, howItWorksFaq, pilotFaq, transformationFaq, faqLd } from '../src/data/faq.ts';
 import { caseStudies, fictionalNotice, illustrativeExample, publicationChecklist, publishedCaseStudies, shownExample, validateCaseStudies } from '../src/data/case-studies.ts';
 import { briefMailto, buildPayload, composeBrief, contactFields, interpretResponse, MAILTO_LIMIT } from '../src/scripts/contact-brief.ts';
@@ -25,16 +25,18 @@ import { contact, contactEmail, contactTransport, offerName } from '../src/data/
 import { platformSolutions, solutionHref } from '../src/data/poesis-platform.ts';
 import { alternatives } from '../src/data/alternatives.ts';
 
-/** Geometry of the hero diagram: the film is drawn from it and the page places its words from it. */
-const heroDiagram = JSON.parse(readFileSync(new URL('../src/data/hero-diagram.json', import.meta.url), 'utf8'));
-
 /**
- * Clément Cazaud's decision of 21 November 2026: the title of the home page says what Poesis
- * offers, and his own sentence becomes the signature of Poesis, in italics, beside the picture.
- * Both are held here word for word: changing either is a decision for Poesis, not for a refactor.
+ * Decision of the Poesis team, 22 November 2026: the home page takes the structure of concept B
+ * and the identity of concept A, and its hero says these words. They are held here word for word:
+ * changing them is a decision for Poesis, not for a refactor.
  */
-const HERO_TITLE = 'Transform your organization with governed AI agents.';
-const HERO_SIGNATURE = 'Generate easily and rapidly a seed of an agentic organisation mirroring yours to automatize. Plant it, and watch it to produce and evolve.';
+const HERO_EYEBROW = 'Poesis · Agentic transformation';
+const HERO_TITLE = 'Plant one seed. Grow a governed organization of AI agents.';
+const HERO_LEAD = 'Transform the way your teams work with AI agents — built around your organization, guided by humans, and powered by SAF.';
+const HERO_NOTE = 'From a focused pilot to an evolving agentic operating model.';
+/** The two actions of the site, named the same way wherever they appear. */
+const CONTACT_ACTION = 'Talk to Poesis';
+const DEVELOPER_ACTION = 'Build with SAF';
 
 const here = (path) => new URL(path, import.meta.url);
 const read = (path) => readFileSync(here(path), 'utf8');
@@ -57,9 +59,9 @@ const built = (pathname) => {
 const mainOf = (document) => first(document, 'main');
 
 /** The pages that sell or explain the offer, all indexable. */
-const conversionPages = ['/', '/transformation/', '/how-it-works/', '/open-source/', '/pilot/', '/about/', '/contact/'];
-/** The pages that end with the contact form, or are it. */
-const formPages = ['/', '/transformation/', '/how-it-works/', '/pilot/', '/contact/'];
+const conversionPages = ['/', '/transformation/', '/how-it-works/', '/developers/', '/pilot/', '/about/', '/contact/'];
+/** The pages that end with the contact form, or are it. The home page sends to the contact page instead. */
+const formPages = ['/transformation/', '/how-it-works/', '/pilot/', '/contact/'];
 const noteFiles = () => readdirSync(here('../src/content/insights/')).filter((file) => file.endsWith('.md'));
 
 // ---- 1. the Knowledge corpus is untouched -------------------------------------------------
@@ -99,8 +101,14 @@ test('Knowledge routes are classified without ambiguity', () => {
 
 test('SAF facts keep their alpha status, verified host and preview-channel install', () => {
   assert.equal(maturityLabel, 'Alpha preview');
-  assert.match(latestPreRelease.version, /^\d+\.\d+\.\d+-alpha\.\d+$/);
-  assert.equal(latestPreRelease.tag, `v${latestPreRelease.version}`);
+  // The two products are released separately: each carries its own pre-release, and the latest of the two dates the state.
+  for (const release of [preReleases.harness, preReleases.organization]) {
+    assert.match(release.version, /^\d+\.\d+\.\d+-alpha\.\d+$/);
+    assert.equal(release.tag, `v${release.version}`);
+    assert.ok(verifiedOn >= release.publishedOn);
+  }
+  assert.ok([preReleases.harness, preReleases.organization].includes(latestPreRelease));
+  assert.ok(latestPreRelease.publishedOn >= preReleases.harness.publishedOn && latestPreRelease.publishedOn >= preReleases.organization.publishedOn);
   assert.match(verifiedOn, /^\d{4}-\d{2}-\d{2}$/);
   assert.ok(verifiedOn >= latestPreRelease.publishedOn);
   assert.deepEqual(installCommands, [
@@ -116,13 +124,20 @@ test('SAF facts keep their alpha status, verified host and preview-channel insta
   }
   assert.ok(maturity.planned.some((item) => item.startsWith('Authenticated human approval')));
   assert.ok(maturity.planned.some((item) => /stable channel/.test(item)));
-  assert.ok(maturity.published.some((item) => item.includes(latestPreRelease.version) && item.includes('preview channel')));
+  assert.ok(maturity.published.some((item) => item.includes(preReleases.harness.version) && item.includes(preReleases.organization.version) && item.includes('preview channel')));
+  // The human gate: the decision is recorded, and nobody claims that the person is authenticated.
+  assert.ok(maturity.planned.some((item) => /recorded as a committed artifact; who decided is not yet authenticated/.test(item)));
+  assert.ok(organizationCatalog.startsWith(`${organization.repository}/blob/main/`));
   assert.ok(safLinks.limitations.startsWith('https://docs.poesis.cloud/saf/'));
   assert.match(cliVersionNote, /current version of the Copilot CLI/);
   assert.equal(supportedHost.name, 'GitHub Copilot');
   assert.deepEqual(safProducts, [harness, organization]);
   for (const product of safProducts) {
-    assert.equal(product.license, 'Apache-2.0');
+    // No licence is named while the licence files of the repositories differ from the licence they declare: the pages link to the file.
+    assert.equal('license' in product, false);
+    assert.equal(product.licenceFile, `${product.repository}/blob/main/LICENSE`);
+    // No count of agents, skills or workflows: the numbers changed between two pre-releases.
+    assert.doesNotMatch([product.summary, ...product.provides].join(' '), /\b(\d+|two|three|four|five|six|seven|eight|nine|ten|fourteen|twenty-five)\s+(agents|skills|workflows|orchestrators)\b/i);
     for (const link of [product.repository, product.releases, product.contributing, product.issues]) assert.ok(link.startsWith(`https://github.com/poesis-cloud/${product.technicalName}`), link);
     assert.ok(product.docs.startsWith('https://docs.poesis.cloud/saf/'));
     // The marketing name never carries the SAFe mark; the technical name stays exact.
@@ -172,16 +187,11 @@ test('no case study is published without evidence, stated limits and clearance',
   assert.equal(caseStudies.length, 0, 'add a case only with its evidence and its publication clearance');
   assert.equal(publishedCaseStudies.length, 0);
   assert.ok(publicationChecklist.length >= 5);
-  // The invented example is not a case: it sits outside the register, announces itself as fiction and reports nothing.
-  assert.ok(illustrativeExample);
-  assert.equal(shownExample, illustrativeExample);
-  assert.ok(!caseStudies.includes(illustrativeExample));
-  assert.match(illustrativeExample.slug, /^example-/);
-  assert.match(illustrativeExample.title, /^Fictional example: /);
-  for (const key of ['measuredResults', 'publicationClearance', 'kind', 'status']) assert.equal(key in illustrativeExample, false, key);
+  // Decision of the team, 22 November 2026: no fictional client on the site, even labelled as fiction.
+  assert.equal(illustrativeExample, null);
+  assert.equal(shownExample, null);
+  // Should the slot ever be used again, its notice still says first that the example is invented.
   for (const phrase of ['Fictional example.', 'does not exist', 'not a client of Poesis', 'nothing was measured']) assert.ok(fictionalNotice.includes(phrase), phrase);
-  assert.doesNotMatch(JSON.stringify(illustrativeExample), /\d+\s*%|€|\$|\bROI\b|\bsaved\b|\bfaster\b/i);
-  for (const link of illustrativeExample.evidence) assert.ok(link.href.startsWith('https://github.com/poesis-cloud/'), link.href);
   const record = {
     slug: 'sample', status: 'published', kind: 'pilot', title: 't', summary: 's', context: 'c', problem: 'p', scope: 's', method: 'm',
     agentsAndWorkflows: 'a', humanControls: 'h', period: 'p', evidence: [{ label: 'e', href: 'https://example.org' }],
@@ -260,7 +270,9 @@ test('menu, call to action, footer and legal links point at distinct, well-forme
   const externals = footerNavigation.flatMap((group) => group.items).filter((item) => item.external);
   for (const item of externals) assert.match(item.href, /^https:\/\//, item.href);
   assert.deepEqual(legalNavigation.map((item) => item.href), ['/legal/mentions-legales', '/legal/privacy', '/legal/cookies']);
-  assert.deepEqual(footerNavigation.map((group) => group.label), ['Transformation', 'Open source', 'Knowledge', 'Company']);
+  assert.deepEqual(footerNavigation.map((group) => group.label), ['Transformation', 'Developers', 'Knowledge', 'Company']);
+  assert.deepEqual(siteNavigation.map((item) => [item.label, item.href]), [['Transformation', '/transformation/'], ['Developers', '/developers/'], ['Knowledge', '/knowledge/']]);
+  assert.deepEqual([navigationCta.label, navigationCta.href], [CONTACT_ACTION, '/contact/']);
 });
 
 // ---- 3. the built site ------------------------------------------------------------------------
@@ -272,55 +284,72 @@ builtTest('every address the previous site served still resolves', () => {
   assert.deepEqual(missing, []);
 });
 
-builtTest('the home page says what is sold in its title, keeps the founder\'s sentence as a signature, and has one dominant action', () => {
+builtTest('the home page sells the transformation in its title, in six short sections, with one action for each audience', () => {
   const home = built('/');
   const main = mainOf(home);
   const headings = elements(home, (node) => node.tagName === 'h1');
   assert.equal(headings.length, 1);
   assert.equal(clean(text(headings[0])), HERO_TITLE);
-  const hero = elements(main, (node) => hasClass(node, 'hero-seed'))[0];
-  // The founder's sentence is on the page once, word for word, as a paragraph in the hero: never as a heading.
-  const signatures = elements(home, (node) => hasClass(node, 'hero-signature'));
-  assert.equal(signatures.length, 1);
-  assert.equal(signatures[0].tagName, 'p');
-  assert.equal(clean(text(signatures[0])), HERO_SIGNATURE);
-  assert.equal(elements(hero, (node) => node === signatures[0]).length, 1);
-  assert.equal(clean(text(home)).split(HERO_SIGNATURE).length - 1, 1);
-  for (const heading of elements(home, (node) => /^h[1-6]$/.test(node.tagName ?? ''))) assert.ok(!clean(text(heading)).includes('Generate easily'), clean(text(heading)));
-  // The offer is named, and said in two short sentences: what Poesis does with SAF, and how to start.
-  assert.equal(clean(text(elements(hero, (node) => hasClass(node, 'hero-seed__kicker'))[0])), `${offerName}, by Poesis`);
-  const lead = clean(text(elements(hero, (node) => hasClass(node, 'hero-seed__lead'))[0]));
-  for (const phrase of ['design and evolve an agentic organization that mirrors yours', 'SAF, our open-source framework', 'one team or one workflow', 'under human oversight']) assert.ok(lead.includes(phrase), phrase);
-  assert.ok(lead.split(/\.\s/).length <= 2 && lead.length < 200, 'two short sentences');
+  const hero = elements(main, (node) => hasClass(node, 'home-hero'))[0];
+  // The words approved by the team, each in its place: an orientation, the title, one sentence, one line.
+  assert.equal(clean(text(elements(hero, (node) => hasClass(node, 'home-hero__eyebrow'))[0])), HERO_EYEBROW);
+  assert.equal(clean(text(elements(hero, (node) => hasClass(node, 'home-hero__lead'))[0])), HERO_LEAD);
+  assert.equal(clean(text(elements(hero, (node) => hasClass(node, 'home-hero__note'))[0])), HERO_NOTE);
+  // The founder's long sentence is the intent behind the title, never a heading of thirty words.
+  for (const heading of elements(home, (node) => /^h[1-6]$/.test(node.tagName ?? ''))) assert.ok(clean(text(heading)).split(' ').length <= 14, clean(text(heading)));
   // Nothing in the hero promises an organization that runs itself.
-  assert.doesNotMatch(clean(text(hero)), /fully automat|autonomous|without (people|humans)|no human/i);
-  // One filled button for the prospect; the developer path is a quiet link, no line of small print under them, and no repository link competes in the hero.
+  assert.doesNotMatch(clean(text(hero)), /fully automat|autonomous|without (people|humans)|no human|instantly/i);
+  // Two actions of comparable weight: the conversation with Poesis first, the developer path second. No repository link competes in the hero.
   const actions = elements(hero, (node) => node.tagName === 'a' && hasClass(node, 'btn'));
-  assert.deepEqual(actions.map((node) => [clean(text(node)), attr(node, 'href')]), [['Discuss your transformation', '/contact/'], ['Explore SAF', '/open-source/']]);
-  assert.equal(elements(hero, (node) => hasClass(node, 'hero-actions__note')).length, 0);
+  assert.deepEqual(actions.map((node) => [clean(text(node)), attr(node, 'href')]), [[CONTACT_ACTION, '/contact/'], [DEVELOPER_ACTION, '/developers/']]);
   assert.ok(hasClass(actions[0], 'btn-primary') && hasClass(actions[0], 'btn-lg'));
-  assert.ok(hasClass(actions[1], 'btn-quiet') && !hasClass(actions[1], 'btn-primary'));
-  assert.equal(elements(hero, (node) => attr(node, 'href')?.startsWith('https://github.com')).length, 0);
-  // The service is what is sold: the earlier platform positioning is not on the page.
+  assert.ok(hasClass(actions[1], 'btn-lg') && !hasClass(actions[1], 'btn-primary'));
+  assert.equal(elements(hero, (node) => attr(node, 'href')?.startsWith('https://')).length, 0);
+  // Six sections and no more, in the order of the argument.
+  const sections = elements(main, (node) => node.tagName === 'section');
+  assert.deepEqual(sections.map((node) => attr(node, 'id') ?? 'hero'), ['hero', 'change', 'grow', 'paths', 'governed', 'evidence']);
+  for (const section of sections) assert.ok(hasAttr(section, 'aria-labelledby'), attr(section, 'id'));
   const copy = clean(text(main));
-  for (const phrase of ['Organizational Intelligence Platform', 'OIP', 'Run a Pilot', 'Partnership']) assert.ok(!copy.includes(phrase), phrase);
-  assert.ok(copy.includes('Alpha preview'));
-  // No case is published: the page shows no empty showcase and sends nobody to one.
-  assert.doesNotMatch(copy, /case stud/i);
-  assert.equal(elements(main, (node) => attr(node, 'href')?.startsWith('/case-studies')).length, 0);
-  for (const id of ['why', 'method', 'saf', 'faq', 'contact']) assert.equal(elements(main, (node) => node.tagName === 'section' && attr(node, 'id') === id).length, 1, id);
-  // The opening table opposes work without a frame to work with SAF, on what SAF ships today, and the page says where it stops.
-  const why = elements(main, (node) => attr(node, 'id') === 'why')[0];
-  assert.deepEqual(elements(why, (node) => node.tagName === 'h3').map((node) => clean(text(node))), ['Quality', 'Traceability', 'Human decision', 'Separation of roles', 'Ownership', 'Improvement']);
-  assert.doesNotMatch(clean(text(why)), /2 days|two days|Claude Code|scorecard|guarantee/i);
-  const saf = elements(main, (node) => attr(node, 'id') === 'saf')[0];
-  for (const phrase of [maturityLabel, latestPreRelease.version, supportedHost.name, 'not yet recorded or authenticated']) assert.ok(clean(text(saf)).includes(phrase), phrase);
-  assert.equal(elements(saf, (node) => attr(node, 'href') === '/open-source/#status').length, 1);
-  assert.equal(elements(main, (node) => attr(node, 'id') === 'proof').length, 0);
-  // The five steps, in order; install commands live on the open-source page, not here.
-  const method = elements(main, (node) => attr(node, 'id') === 'method')[0];
-  assert.deepEqual(elements(method, (node) => node.tagName === 'h3').slice(0, 5).map((node) => clean(text(node))), methodSteps.map((step) => step.title));
+  // Short: a few hundred words, every word of the scene included.
+  const words = copy.split(' ').length;
+  assert.ok(words >= 300 && words <= 480, `${words} words`);
+  // The service is what is sold: the earlier platform positioning, a booking that does not exist and a community that does not exist are not on the page.
+  for (const phrase of ['Organizational Intelligence Platform', 'OIP', 'Run a Pilot', 'Partnership', 'Book a', 'community', 'Apache', 'SaaS']) assert.ok(!copy.includes(phrase), phrase);
+  // Nothing that moves from one pre-release to the next, and nothing no check can back.
+  assert.doesNotMatch(copy, /\d+\s+(agents|skills|workflows)|alpha\.\d|no hallucination|guarantee|fully secure|compliant|\d+\s*%|\d+\s*(days?|weeks?|months?)\b/i);
+  assert.ok(copy.includes(maturityLabel));
+  // Three problems, each with what changes; the right-hand side says where the human decision is.
+  const change = elements(main, (node) => attr(node, 'id') === 'change')[0];
+  const rows = elements(change, (node) => node.tagName === 'li' && !hasClass(node, 'changes__head'));
+  assert.equal(rows.length, 3);
+  for (const row of rows) assert.equal(elements(row, (node) => node.tagName === 'p').length, 2);
+  assert.ok(clean(text(change)).includes('A person decides at the end of every workflow.'));
+  // Four verbs, in order: the steps of an engagement Poesis leads, not something the software does alone.
+  const grow = elements(main, (node) => attr(node, 'id') === 'grow')[0];
+  assert.deepEqual(elements(grow, (node) => node.tagName === 'h3').map((node) => clean(text(node))), ['Mirror', 'Organize', 'Govern', 'Evolve']);
+  assert.ok(clean(text(grow)).includes('an engagement led by Poesis'));
+  // Two paths, told apart: the service, then the open-source framework, each with a real destination.
+  const paths = elements(main, (node) => attr(node, 'id') === 'paths')[0];
+  const [service, framework] = elements(paths, (node) => node.tagName === 'article');
+  assert.deepEqual([service, framework].map((node) => clean(text(first(node, 'h3')))), ['Transform your organization', DEVELOPER_ACTION]);
+  assert.deepEqual(elements(service, (node) => node.tagName === 'a').map((node) => attr(node, 'href')), ['/contact/', '/transformation/']);
+  assert.deepEqual(elements(framework, (node) => node.tagName === 'a').map((node) => attr(node, 'href')), ['/developers/', safLinks.quickstart, safLinks.repositories, harness.contributing]);
+  assert.ok(clean(text(framework)).includes(`${supportedHost.name} plugins`));
+  assert.doesNotMatch(clean(text(framework)), /hosted|subscription|sign up|free trial/i);
+  // Four qualities, each stopping where the check stops, and the way to the known limits.
+  const governed = elements(main, (node) => attr(node, 'id') === 'governed')[0];
+  assert.deepEqual(elements(governed, (node) => node.tagName === 'dt').map((node) => clean(text(node))), ['Explicit workflows', 'Checked artifacts', 'Human gates', 'Yours, in Git']);
+  assert.ok(clean(text(governed)).includes('against its declared schema, and nothing beyond it'));
+  assert.equal(elements(governed, (node) => attr(node, 'href') === '/developers/#status').length, 1);
+  // Evidence, said as it stands: no case is published, and what can be checked is public. Then one thing to do.
+  const evidence = elements(main, (node) => attr(node, 'id') === 'evidence')[0];
+  assert.ok(clean(text(evidence)).includes('No case is published yet.'));
+  for (const href of ['/case-studies/', safLinks.repositories, safLinks.limitations, safLinks.docs, '/contact/', `mailto:${contactEmail}`]) assert.equal(elements(evidence, (node) => attr(node, 'href') === href).length, 1, href);
+  assert.equal(clean(text(elements(evidence, (node) => attr(node, 'href') === '/contact/')[0])), CONTACT_ACTION);
+  // Install commands live on the developers page, not here.
   assert.equal(elements(main, (node) => node.tagName === 'pre').length, 0);
+  // Every link of the page leads somewhere: no empty or placeholder target.
+  for (const link of elements(main, (node) => node.tagName === 'a')) assert.match(attr(link, 'href') ?? '', /^(\/[a-z-]+\/(#[a-z-]+)?|https:\/\/[^\s]+|mailto:[^\s]+)$/, clean(text(link)));
   // Anchors of the former homepage are not reused, so old deep links can be forwarded.
   for (const id of ['pains', 'affordances', 'usage', 'qualities', 'services', 'portfolio']) assert.equal(elements(home, (node) => attr(node, 'id') === id).length, 0, id);
   // An unknown anchor is looked up in the overview and followed only if it exists there.
@@ -329,103 +358,53 @@ builtTest('the home page says what is sold in its title, keeps the founder\'s se
   assert.ok(html.includes("location.replace('/knowledge/platform/#' + hash)"));
 });
 
-builtTest('the hero diagram says the transformation in words: your organization, modelled with SAF, agentic organization', () => {
-  const hero = elements(built('/'), (node) => hasClass(node, 'hero-seed'))[0];
-  const figure = elements(hero, (node) => node.tagName === 'figure' && hasClass(node, 'hero-diagram'))[0];
-  // Described once for readers who do not see it; the picture itself is then silent.
-  const caption = elements(figure, (node) => node.tagName === 'figcaption')[0];
-  // A short name for the figure; the long description is its caption, read once.
-  assert.equal(attr(figure, 'aria-label'), 'How Poesis transforms an organization with SAF');
-  assert.ok(!hasAttr(figure, 'aria-labelledby') && hasClass(caption, 'sr-only'));
-  for (const phrase of ['your organization', 'modelled with SAF', 'agentic organization', 'governed workflow', 'a person who oversees', 'output checked against its schema', 'people then revise', 'evolves']) assert.ok(clean(text(caption)).includes(phrase), phrase);
-  // Two compositions, wide and narrow, each with the same words, placed from the geometry the picture was drawn from.
-  const lists = elements(figure, (node) => hasClass(node, 'hero-diagram__labels'));
-  assert.deepEqual(lists.map((list) => attr(list, 'class').split(' ').at(-1)), ['hero-diagram__labels--landscape', 'hero-diagram__labels--portrait']);
-  for (const [index, name] of ['landscape', 'portrait'].entries()) {
-    const view = heroDiagram[name];
-    const titles = elements(lists[index], (node) => hasClass(node, 'hero-diagram__title'));
-    // The reading order is the transformation itself.
-    assert.deepEqual(titles.map((node) => clean(text(first(node, 'strong')))), ['Your organization', 'Modelled with SAF', 'Agentic organization'], name);
-    assert.deepEqual(titles.map((node) => clean(text(first(node, 'span')))), ['People, roles and processes', "Your organization's DNA", 'AI agents, each with a role'], name);
-    const tags = elements(lists[index], (node) => hasClass(node, 'hero-diagram__tag'));
-    assert.deepEqual(tags.map((node) => clean(text(node))).sort(), ['Checked outputs', 'Evolves with evidence', 'Governed workflows', 'Human oversight'], name);
-    // Every word sits inside the picture.
-    for (const [node, item] of [...titles.map((node, at) => [node, view.titles[at]]), ...tags.map((node, at) => [node, view.tags[at]])]) {
-      const [, left, top] = attr(node, 'style').match(/^left:([\d.]+)%;top:([\d.]+)%$/);
-      assert.ok(Math.abs(Number(left) - (100 * item.x) / view.width) < 0.01 && Number(left) > 0 && Number(left) < 100, `${name} ${item.id} left`);
-      assert.ok(Math.abs(Number(top) - (100 * item.y) / view.height) < 0.01 && Number(top) > 0 && Number(top) < 100, `${name} ${item.id} top`);
-    }
-  }
-  // One step in practice, shown as the chat it is: the Poesis mark, the visitor, the agent, the harness's receipt, the decision.
-  const step = elements(figure, (node) => hasClass(node, 'hero-chat'))[0];
-  assert.equal(attr(first(step, 'img'), 'src'), '/poesis-logo.png');
-  assert.equal(clean(text(elements(step, (node) => hasClass(node, 'hero-chat__head'))[0])), 'Poesis SAF agent in your agent host');
-  const lines = elements(step, (node) => node.tagName === 'li');
-  assert.deepEqual(lines.map((node) => clean(text(first(node, 'b')))), ['You', 'Agent', 'Harness', 'You']);
-  assert.deepEqual(lines.map((node) => attr(node, 'data-role')), ['you', 'agent', 'harness', 'gate']);
-  assert.deepEqual(elements(lines[3], (node) => node.tagName === 'span').map((node) => clean(text(node))), ['Accept', 'Concerns', 'Reject']);
-  // An illustration, not a control: nothing in it can be clicked or focused.
-  assert.equal(elements(step, (node) => ['a', 'button', 'input'].includes(node.tagName) || hasAttr(node, 'tabindex')).length, 0);
-  for (const line of lines) assert.ok(clean(text(line)).length <= 34, clean(text(line)));
-  // The film brings each line forward in turn: the windows follow one another inside its "work" phase.
-  const windows = lines.map((node) => [Number(attr(node, 'data-from')), Number(attr(node, 'data-to'))]);
-  for (const [index, [from, to]] of windows.entries()) assert.ok(from < to && from >= 0.4 && to <= 0.76 && (index === 0 || from === windows[index - 1][1]), `window ${index}`);
-  // The stage reserves the picture's place before it loads: no layout shift.
-  const stage = elements(figure, (node) => hasClass(node, 'hero-diagram__stage'))[0];
-  assert.equal(attr(stage, 'style'), `--portrait:${heroDiagram.portrait.width} / ${heroDiagram.portrait.height};--landscape:${heroDiagram.landscape.width} / ${heroDiagram.landscape.height}`);
-  // The film carries no words of its own, and the diagram promises nothing SAF does not ship.
+builtTest('the hero scene tells one workflow in six beats, in real words, and claims nothing the harness does not do', () => {
+  const hero = elements(built('/'), (node) => hasClass(node, 'home-hero'))[0];
+  const figure = elements(hero, (node) => node.tagName === 'figure' && hasClass(node, 'scene'))[0];
+  // The request, the draft, the checks of the harness, the human decision, the commit, the new branch.
+  const beat = (number) => elements(figure, (node) => attr(node, 'data-beat') === String(number));
+  assert.deepEqual([1, 2, 3, 4, 5, 6].map((number) => beat(number).length > 0), [true, true, true, true, true, true]);
+  assert.equal(clean(text(beat(1)[0])), 'Map our release process.');
+  assert.ok(clean(text(elements(figure, (node) => hasClass(node, 'scene__doc'))[0])).startsWith('release-process.md'));
+  // The checks are named and limited: a write rule, a schema, a journal. The word is "checks", never "approved".
+  assert.deepEqual(elements(beat(3)[0], (node) => node.tagName === 'li').map((node) => clean(text(node))), ['Harness', 'write rule', 'schema', 'journal']);
+  assert.doesNotMatch(clean(text(beat(3)[0])), /approv|verified|validated by AI/i);
+  // The decision belongs to a person, apart from the checks, and comes after them.
+  const decision = elements(figure, (node) => hasClass(node, 'scene__decision'))[0];
+  assert.equal(clean(text(decision)), 'A person decides: accepted');
+  assert.equal(attr(decision, 'data-beat'), '4');
+  assert.equal(clean(text(elements(figure, (node) => hasClass(node, 'scene__commit'))[0])), 'Committed to your Git workspace');
+  assert.equal(clean(text(elements(figure, (node) => hasClass(node, 'scene__evolves'))[0])), 'The organization gains a branch');
+  // Said for what it is.
+  const caption = first(figure, 'figcaption');
+  assert.ok(clean(text(caption)).startsWith('Illustrative workflow'));
+  // An illustration, not a product screen: the only control is the one that pauses it, and it appears only when the scene can move.
+  const controls = elements(figure, (node) => ['a', 'button', 'input', 'select', 'textarea'].includes(node.tagName) || hasAttr(node, 'tabindex'));
+  assert.equal(controls.length, 1);
+  assert.equal(controls[0].tagName, 'button');
+  assert.equal(attr(controls[0], 'type'), 'button');
+  assert.ok(hasAttr(controls[0], 'hidden'));
+  assert.equal(clean(text(controls[0])), 'Pause animation');
+  // Drawn in the page: no film, no picture file, nothing fetched. The drawings are silent for screen readers; the words are text.
+  assert.equal(elements(hero, (node) => ['video', 'img', 'picture', 'source', 'canvas', 'iframe'].includes(node.tagName)).length, 0);
+  for (const drawing of elements(figure, (node) => node.tagName === 'svg')) assert.equal(attr(drawing, 'aria-hidden'), 'true');
+  assert.ok(!existsSync(here('../dist/hero/')), 'the former film is no longer shipped');
+  assert.equal(elements(built('/'), (node) => node.tagName === 'link' && attr(node, 'rel') === 'preload').length, 0);
+  // It moves only with scripts on (so that it can be paused) and for visitors who accept motion; paused or still, the whole picture shows.
+  const styles = readdirSync(here('../dist/_astro/')).filter((file) => file.endsWith('.css')).map((file) => read(`../dist/_astro/${file}`)).join('\n');
+  assert.match(styles, /@media\s*\(prefers-reduced-motion:\s*no-preference\)\s*\{\s*\.js \.scene:not\(\.is-paused\) \[data-beat\]/);
+  assert.doesNotMatch(styles, /hero-diagram|hero-chat|hero-seed/);
+  const script = read('../dist/index.html');
+  assert.ok(script.includes("sessionStorage.setItem('poesis-hero-scene'"));
+  // The words promise nothing SAF does not ship.
   const words = clean(text(figure));
-  for (const claim of ['autonomous', 'guarantee', 'unchecked', 'Claude', 'self-']) assert.ok(!words.toLowerCase().includes(claim.toLowerCase()), claim);
-});
-
-builtTest('the hero film is local, silent, optional and has a still fallback', () => {
-  const hero = elements(built('/'), (node) => hasClass(node, 'hero-seed'))[0];
-  const video = first(hero, 'video');
-  for (const name of ['autoplay', 'muted', 'loop', 'playsinline']) assert.ok(hasAttr(video, name), name);
-  assert.equal(attr(video, 'preload'), 'none');
-  assert.ok(!hasAttr(video, 'controls'));
-  assert.equal(attr(video, 'aria-hidden'), 'true');
-  assert.equal(attr(video, 'tabindex'), '-1');
-  // No source in the markup: nothing is fetched until the page has checked width, motion and data preferences.
-  assert.equal(elements(video, (node) => node.tagName === 'source').length, 0);
-  assert.ok(!hasAttr(video, 'src'));
-  const sources = JSON.parse(attr(video, 'data-sources'));
-  assert.deepEqual(sources.map((source) => source.type), ['video/webm', 'video/mp4']);
-  for (const source of sources) {
-    assert.match(source.src, /^\/hero\//);
-    const size = statSync(here(`../dist${source.src}`)).size;
-    assert.ok(size > 100_000 && size < 2_000_000, `${source.src}: ${size} bytes`);
-  }
-  // The still is an image under the film, not a `poster` attribute: a poster would be fetched
-  // even on screens that never play the film. One picture element serves both compositions, so
-  // a screen downloads only the one it shows.
-  assert.ok(!hasAttr(video, 'poster'));
-  const still = elements(hero, (node) => hasClass(node, 'hero-diagram__still'))[0];
-  assert.equal(attr(still, 'alt'), '', 'the figure is described by its caption and its labels');
-  // On the first screen of tablets and laptops: not lazy.
-  assert.ok(!hasAttr(still, 'loading'));
-  assert.deepEqual([attr(still, 'width'), attr(still, 'height')], [String(heroDiagram.portrait.width), String(heroDiagram.portrait.height)]);
-  const wide = first(hero, 'source');
-  assert.equal(attr(wide, 'media'), '(min-width: 720px)');
-  assert.deepEqual([attr(wide, 'width'), attr(wide, 'height')], [String(heroDiagram.landscape.width), String(heroDiagram.landscape.height)]);
-  for (const picture of [attr(wide, 'srcset'), attr(still, 'src')]) {
-    assert.match(picture, /^\/hero\//);
-    assert.ok(statSync(here(`../dist${picture}`)).size < 60_000, picture);
-  }
-  // Where the diagram is on the first screen, its still is fetched early.
-  const preload = elements(built('/'), (node) => node.tagName === 'link' && attr(node, 'rel') === 'preload' && attr(node, 'as') === 'image')[0];
-  assert.deepEqual([attr(preload, 'href'), attr(preload, 'media')], [attr(wide, 'srcset'), '(min-width: 1100px)']);
-  // The film can be paused: a real button with a name, shown only when the film can play.
-  const toggle = elements(hero, (node) => hasClass(node, 'hero-diagram__toggle'))[0];
-  assert.equal(toggle.tagName, 'button');
-  assert.equal(attr(toggle, 'aria-label'), 'Pause animation');
-  assert.ok(hasAttr(toggle, 'hidden'), 'the pause control appears only when the film can play');
-  // No leftover of the previous film.
-  assert.ok(!existsSync(here('../dist/hero/seed.mp4')) && !existsSync(here('../dist/hero/seed-poster.webp')));
+  for (const claim of ['autonomous', 'guarantee', 'unchecked', 'Claude', 'self-', 'approved by']) assert.ok(!words.toLowerCase().includes(claim.toLowerCase()), claim);
+  // Light: the whole home page, scene included, stays a small document.
+  assert.ok(statSync(here('../dist/index.html')).size < 60_000);
 });
 
 builtTest('every page carries the same short menu and the call to action, and none carries the old groups', () => {
-  assert.deepEqual(siteNavigation.map((item) => item.label), ['Transformation', 'How It Works', 'Open Source', 'Knowledge']);
+  assert.deepEqual(siteNavigation.map((item) => item.label), ['Transformation', 'Developers', 'Knowledge']);
   for (const route of [...conversionPages, '/case-studies/', '/knowledge/', platformOverviewPath, '/catalog/', '/solutions/saf/', '/services/oip-saas/', '/insights/agentic-safe/', '/usage/read-governance-model/', '/legal/privacy/', '/404.html']) {
     const header = first(built(route), 'header');
     const nav = first(header, 'nav');
@@ -434,7 +413,7 @@ builtTest('every page carries the same short menu and the call to action, and no
     assert.equal(cta.length, 1, route);
     assert.deepEqual([attr(cta[0], 'href'), clean(text(cta[0]))], [navigationCta.href, navigationCta.label], route);
     assert.equal(elements(header, (node) => node.tagName === 'button' && hasClass(node, 'nav-dropdown-trigger')).length, 0, route);
-    assert.doesNotMatch(clean(text(header)), /Platform|Partnership|Services|Run a Pilot|Case Studies/, route);
+    assert.doesNotMatch(clean(text(header)), /Platform|Partnership|Services|Run a Pilot|Case Studies|How It Works|Open Source|Let's talk/, route);
     // A click towards the offer is measured as such.
     assert.equal(attr(elements(nav, (node) => attr(node, 'href') === '/transformation/')[0], 'data-track'), 'business_transformation_click', route);
   }
@@ -566,7 +545,7 @@ builtTest('the contact form is short, labelled, honest about its transport, and 
       assert.equal(hasAttr(control, 'required'), contactFields[index].required, `${route} ${id}`);
     }
     assert.equal(elements(form, (node) => ['file', 'password', 'tel'].includes(attr(node, 'type'))).length, 0, route);
-    assert.equal(attr(form, 'data-source'), route === '/' ? 'home' : route.replaceAll('/', ''), route);
+    assert.equal(attr(form, 'data-source'), route.replaceAll('/', ''), route);
     assert.ok(elements(form, (node) => attr(node, 'href') === '/legal/privacy').length, `${route}: privacy link`);
     // Without JavaScript the form is the browser's own mailto, with native validation.
     assert.equal(attr(form, 'action'), `mailto:${contactEmail}?subject=Transformation%20request`, route);
@@ -608,20 +587,26 @@ builtTest('the contact form is short, labelled, honest about its transport, and 
   assert.ok(privacy.includes(posting ? 'The contact form sends what you enter' : 'The contact form runs entirely in your browser'));
 });
 
-builtTest('the open-source page shows the verified install commands, and keeps what exists apart from what does not', () => {
-  const page = built('/open-source/');
+builtTest('the developers page shows the verified install commands, keeps what exists apart from what does not, and names no licence and no community', () => {
+  const page = built('/developers/');
   const copy = clean(text(mainOf(page)));
   const blocks = elements(page, (node) => node.tagName === 'pre').map((node) => text(node));
   assert.ok(blocks.includes(installCommands.join('\n')));
-  for (const phrase of [maturityLabel, latestPreRelease.version, 'Apache License 2.0', 'GitHub Copilot', 'No other agent host is supported yet.', 'no response-time commitment', 'What exists today, and what does not.', cliVersionNote]) assert.ok(copy.includes(phrase), phrase);
+  for (const phrase of [maturityLabel, preReleases.harness.version, preReleases.organization.version, 'GitHub Copilot', 'No other agent host is supported yet.', 'no response-time commitment', 'What exists today, and what does not.', 'nothing is hosted by Poesis', cliVersionNote]) assert.ok(copy.includes(phrase), phrase);
   for (const item of [...maturity.published, ...maturity.implemented, ...maturity.partial, ...maturity.planned, ...knownLimits]) assert.ok(copy.includes(clean(item)), item);
   assert.ok(elements(page, (node) => attr(node, 'href') === safLinks.limitations).length, 'link to the limitations the project publishes');
   assert.doesNotMatch(copy, /Claude Code|Cursor|production-ready|enterprise-ready|@poesis-saf(?!-preview)\b/);
+  // No licence is named while the licence files do not match what the repositories declare; no community is announced while there is no place for one; no count that the next pre-release would contradict.
+  assert.doesNotMatch(copy, /Apache|\bMIT\b|community|Join\b|\b\d+\s+(agents|skills|workflows)\b/i);
+  assert.doesNotMatch(read(distFile('/developers/')), /apache\.org/);
   // No pill above the title: the status is a sentence.
   assert.equal(elements(elements(page, (node) => hasClass(node, 'intro'))[0], (node) => hasClass(node, 'status')).length, 0);
-  for (const id of ['products', 'status', 'how', 'install', 'first-workflow', 'community']) assert.equal(elements(page, (node) => attr(node, 'id') === id).length, 1, id);
-  for (const product of safProducts) for (const href of [product.repository, product.docs, product.issues, product.contributing]) assert.ok(elements(page, (node) => attr(node, 'href') === href).length, href);
+  for (const id of ['products', 'status', 'how', 'install', 'first-workflow', 'contribute']) assert.equal(elements(page, (node) => attr(node, 'id') === id).length, 1, id);
+  for (const product of safProducts) for (const href of [product.repository, product.docs, product.issues, product.contributing, product.licenceFile]) assert.ok(elements(page, (node) => attr(node, 'href') === href).length, href);
+  assert.ok(elements(page, (node) => attr(node, 'href') === organizationCatalog).length, 'the roster and catalog are linked, not counted');
   assert.ok(elements(page, (node) => attr(node, 'href') === '/transformation/').length, 'the way back to the service');
+  // The former address of the page was never published: nothing is left at it.
+  assert.ok(!existsSync(here('../dist/open-source/')));
 });
 
 builtTest('links that used to reach the former home page or the pilot builder still reach them', () => {
@@ -637,7 +622,7 @@ builtTest('links that used to reach the former home page or the pilot builder st
   // and the pilot record it described stays one link away, in the list of archived services.
   const service = built('/services/oip-saas/');
   const actions = elements(mainOf(service), (node) => node.tagName === 'a' && hasClass(node, 'btn')).map((node) => [clean(text(node)), attr(node, 'href')]);
-  assert.deepEqual(actions, [['See what Poesis offers today', '/transformation/'], ['Discuss your transformation', '/contact/'], ['See the current offer', '/transformation/']]);
+  assert.deepEqual(actions, [['See what Poesis offers today', '/transformation/'], [CONTACT_ACTION, '/contact/'], ['See the current offer', '/transformation/']]);
   assert.doesNotMatch(clean(text(mainOf(service))), /Discuss future requirements|Start with a Pilot|Shape your Pilot/);
   assert.ok(elements(mainOf(service), (node) => attr(node, 'href') === '/services/pilot').length >= 1);
   assert.equal(elements(mainOf(service), (node) => attr(node, 'href') === '/pilot').length, 0);
@@ -648,9 +633,11 @@ builtTest('links that used to reach the former home page or the pilot builder st
 builtTest('every page says the same thing about the human gate: the end of each workflow, not a step inside it', () => {
   // The harness specification: "the human checkpoint is the workflow return boundary", with no gate inside a workflow.
   const inside = /step (of|in) the workflow|review points?\b|points (the workflow names|you chose|where a person)|where a person reviews/i;
-  for (const route of [...conversionPages, '/case-studies/', '/case-studies/example-retail-bank-delivery-team/']) assert.doesNotMatch(clean(text(mainOf(built(route)))), inside, route);
+  for (const route of [...conversionPages, '/case-studies/']) assert.doesNotMatch(clean(text(mainOf(built(route)))), inside, route);
   assert.doesNotMatch(read('../dist/llms.txt'), inside);
-  for (const route of ['/', '/open-source/', '/how-it-works/']) assert.match(clean(text(mainOf(built(route)))), /ends (at a human gate|by handing its results to a person)|end of each workflow/, route);
+  for (const route of ['/', '/developers/', '/how-it-works/']) assert.match(clean(text(mainOf(built(route)))), /ends (at a human gate|with a person|by handing its results to a person)|end of (each|every) workflow/, route);
+  // Since the organization records the decision, no page says any more that nothing keeps it.
+  for (const route of conversionPages) assert.doesNotMatch(clean(text(mainOf(built(route)))), /neither records|not yet recorded/, route);
   // A Knowledge note keeps its own title: the name is not dropped from titles that merely end with those letters.
   const note = built('/insights/governed-synthetic-autopoiesis/');
   assert.ok(clean(text(first(note, 'title'))).endsWith(' · Poesis'));
@@ -658,36 +645,26 @@ builtTest('every page says the same thing about the human gate: the end of each 
 
 builtTest('llms.txt is generated from the SAF facts the pages use', () => {
   const llms = read('../dist/llms.txt');
-  for (const fact of [verifiedOn, latestPreRelease.version, latestPreRelease.publishedOn, supportedHost.name, maturityLabel.toLowerCase(), harness.repository, organization.repository, 'No client case study is published yet.', offerName, 'https://poesis.cloud/how-it-works/']) assert.ok(llms.includes(fact), fact);
+  for (const fact of [verifiedOn, preReleases.harness.version, preReleases.organization.version, latestPreRelease.publishedOn, supportedHost.name, maturityLabel.toLowerCase(), harness.repository, organization.repository, 'No client case study is published yet.', offerName, 'https://poesis.cloud/how-it-works/', 'https://poesis.cloud/developers/']) assert.ok(llms.includes(fact), fact);
   assert.ok(llms.startsWith('# Poesis\n'));
-  assert.doesNotMatch(llms, /undefined|\[object|production-ready|\/case-studies\//);
+  assert.doesNotMatch(llms, /undefined|\[object|production-ready|\/case-studies\/|\/open-source\/|Apache/);
 });
 
-builtTest('without a published case, the register is a quiet page with one fictional example, and nothing presents it as proof', () => {
+builtTest('without a published case, the register is a quiet page with no example of any kind, out of the menu and of search engines', () => {
   const register = built('/case-studies/');
   assert.equal(clean(text(first(register, 'h1'))), 'How Poesis documents its pilots.');
-  assert.doesNotMatch(clean(text(mainOf(register))), /Published cases|being documented|No case study is published/);
-  // The example announces itself as fiction on its card and at the top of its page, and reports no result.
-  assert.deepEqual(readdirSync(here('../dist/case-studies/')).sort(), [illustrativeExample.slug, 'index.html']);
-  const card = elements(register, (node) => hasClass(node, 'case-card--fiction'));
-  assert.equal(card.length, 1);
-  assert.equal(clean(text(elements(card[0], (node) => hasClass(node, 'fiction-notice'))[0])), fictionalNotice);
-  const example = built(`/case-studies/${illustrativeExample.slug}/`);
-  const body = mainOf(example);
-  const notice = elements(body, (node) => hasClass(node, 'fiction-notice'))[0];
-  assert.equal(clean(text(notice)), fictionalNotice);
-  const order = elements(body, (node) => node.tagName === 'h1' || hasClass(node, 'fiction-notice'));
-  assert.ok(hasClass(order[0], 'fiction-notice'), 'the notice comes before the title');
-  assert.ok(clean(text(first(example, 'h1'))).startsWith('Fictional example: '));
-  assert.ok(clean(text(first(example, 'title'))).startsWith('Fictional example: '));
-  assert.ok(clean(text(body)).includes('None. A real case reports here only what was measured'));
-  assert.doesNotMatch(clean(text(body)), /Cleared for publication|\d+\s*%/);
-  // Neither page is offered to search engines, and no commercial page links to them.
-  for (const page of [register, example]) {
-    assert.equal(attr(elements(page, (node) => node.tagName === 'meta' && attr(node, 'name') === 'robots')[0], 'content'), 'noindex, follow');
-    assert.equal(elements(page, (node) => node.tagName === 'link' && attr(node, 'rel') === 'canonical').length, 0);
-  }
-  for (const route of conversionPages) assert.equal(elements(built(route), (node) => attr(node, 'href')?.startsWith('/case-studies')).length, 0, route);
+  const copy = clean(text(mainOf(register)));
+  assert.doesNotMatch(copy, /Published cases|being documented|No case study is published/);
+  // No client, real or invented: the page explains how a case is documented, and nothing else is generated beside it.
+  assert.doesNotMatch(copy, /Fictional|retail bank|\d+\s*%/i);
+  assert.equal(elements(register, (node) => hasClass(node, 'case-card') || hasClass(node, 'fiction-notice')).length, 0);
+  assert.deepEqual(readdirSync(here('../dist/case-studies/')), ['index.html']);
+  // It is not offered to search engines, and it is not in the menu: an empty showcase is not a destination.
+  assert.equal(attr(elements(register, (node) => node.tagName === 'meta' && attr(node, 'name') === 'robots')[0], 'content'), 'noindex, follow');
+  assert.equal(elements(register, (node) => node.tagName === 'link' && attr(node, 'rel') === 'canonical').length, 0);
+  assert.equal(elements(first(register, 'header'), (node) => attr(node, 'href')?.startsWith('/case-studies')).length, 0);
+  // Only the evidence section of the home page sends a reader to it, to say how a pilot is documented.
+  for (const route of conversionPages.filter((page) => page !== '/')) assert.equal(elements(mainOf(built(route)), (node) => attr(node, 'href')?.startsWith('/case-studies')).length, 0, route);
 });
 
 builtTest('the sitemap and the noindex directives agree, and archived offers are in neither index', () => {

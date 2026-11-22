@@ -5,7 +5,7 @@
  * cannot drift from what the pages state. A convenience, not a ranking lever.
  */
 import type { APIRoute } from 'astro';
-import { harness, latestPreRelease, maturityLabel, organization, safLinks, supportedHost, verifiedOn } from '../data/saf.ts';
+import { harness, latestPreRelease, maturityLabel, organization, preReleases, safLinks, supportedHost, verifiedOn } from '../data/saf.ts';
 import { publishedCaseStudies } from '../data/case-studies.ts';
 import { offerName } from '../data/site.ts';
 
@@ -25,7 +25,7 @@ Names that are easy to confuse:
 - **${harness.name}** (\`${harness.technicalName}\`) is the deterministic engine: it resolves each workflow step, checks agent write grants and artifact schemas, and records what happened.
 - **${organization.name}** (\`${organization.technicalName}\`) is a first ready-made agentic organization for scaled agile delivery, run by the harness.
 
-Status, read from the public repositories on ${verifiedOn}: both products are in ${maturityLabel.toLowerCase()} (latest pre-release ${latestPreRelease.version}, published ${latestPreRelease.publishedOn}), licensed under ${harness.license}, and supported on one agent host, ${supportedHost.name}. They are plugins for an agent host, not a hosted service. ${cases}
+Status, read from the public repositories on ${verifiedOn}: both products are in ${maturityLabel.toLowerCase()} (latest pre-releases: harness ${preReleases.harness.version}, organization ${preReleases.organization.version}, the most recent published ${latestPreRelease.publishedOn}), open source, and supported on one agent host, ${supportedHost.name}. They are plugins for an agent host, not a hosted service. ${cases}
 
 ## Service
 
@@ -34,9 +34,9 @@ Status, read from the public repositories on ${verifiedOn}: both products are in
 - [A first pilot](${site}/pilot/): what a pilot involves and what it is not
 ${publishedCaseStudies.length ? `- [Case studies](${site}/case-studies/): published pilots, each with its evidence\n` : ''}- [Contact](${site}/contact/): how to reach Poesis
 
-## Open source
+## Developers
 
-- [SAF overview](${site}/open-source/): the two products, how a step goes through SAF, install commands, first workflow, community
+- [Build with SAF](${site}/developers/): the two products, what exists today, how a step goes through SAF, install commands, first workflow, contribution
 - [SAF documentation](${safLinks.docs}): reference documentation and quickstart
 - [${harness.technicalName}](${harness.repository}): source code and specification of the harness
 - [${organization.technicalName}](${organization.repository}): source code of the organization

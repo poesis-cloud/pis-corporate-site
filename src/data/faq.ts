@@ -4,7 +4,7 @@
  * Each answer is plain text, so the words a visitor reads and the FAQPage
  * structured data are the same string. Product facts are taken from saf.ts.
  */
-import { latestPreRelease, supportedHost } from './saf.ts';
+import { latestPreRelease, preReleases, supportedHost } from './saf.ts';
 import { formatDate } from './format.ts';
 
 export interface FaqItem {
@@ -47,7 +47,7 @@ export const firstPilot: FaqItem = {
 export const openSource: FaqItem = {
   question: 'Is SAF open source?',
   answer: [
-    'The SAF Agentic Harness and the SAF Agentic Organization are published on GitHub under the Apache License 2.0. Contributions are accepted under the same licence, with the Developer Certificate of Origin.',
+    'Yes. The SAF Agentic Harness and the SAF Agentic Organization are published on GitHub as open source, and each repository carries its licence file. Contributions are signed off under the Developer Certificate of Origin.',
     'Other Poesis products have their own terms, and the Poesis names and marks are not covered by the licence.',
   ],
 };
@@ -63,7 +63,7 @@ export const environments: FaqItem = {
 export const productionReady: FaqItem = {
   question: 'Is the framework production-ready?',
   answer: [
-    `No. Both products are in alpha preview: the latest pre-release is ${latestPreRelease.version}, published on ${formatDate(latestPreRelease.publishedOn)}.`,
+    `No. Both products are in alpha preview: the latest pre-releases are harness ${preReleases.harness.version} and organization ${preReleases.organization.version}, the most recent published on ${formatDate(latestPreRelease.publishedOn)}.`,
     'Interfaces may change, the stable marketplace channel has no release yet, and authenticated human approval is planned rather than shipped. That is why an engagement starts with a bounded pilot under human review.',
   ],
 };

@@ -16,7 +16,7 @@ const { product, trackId } = Astro.props;
     <span class="status">{maturityLabel}</span>
   </div>
   <h3>{product.name}</h3>
-  <p class="product__repo">{product.technicalName} · {product.license}</p>
+  <p class="product__repo">{product.technicalName}</p>
   <p>{product.summary}</p>
   <ul class="plain-list">
     {product.provides.map((item) => <li>{item}</li>)}

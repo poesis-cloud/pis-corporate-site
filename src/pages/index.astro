@@ -1,270 +1,248 @@
 ---
 /**
  * Home — sells one thing: the agentic transformation of an organization, guided
- * by Poesis. Its first job is a qualified conversation with a decision-maker.
- * SAF is shown as what the method runs on, and as the way in for developers,
- * without competing with that first job. Every product statement comes from
- * src/data/saf.ts.
+ * by Poesis. Its first job is a conversation with a decision-maker; its second
+ * is to send a developer to SAF. Six sections, a few hundred words.
+ *
+ * Direction decided by the team on 22 November 2026: the structure of concept B
+ * (a short promise, the two paths early, a scene that reads from left to right)
+ * with the identity of concept A (the dark ground, the serif, a discreet strand).
+ *
+ * Every statement about SAF is one its public repositories support: see
+ * src/data/saf.ts. The page prints no count, no version and no licence name.
  */
 import BaseLayout from '../layouts/BaseLayout.astro';
-import ContactSection from '../components/ContactSection.astro';
-import Faq from '../components/Faq.astro';
-import { faqLd, homeFaq } from '../data/faq.ts';
 import { evidenceKinds, publishedCaseStudies } from '../data/case-studies.ts';
-import { maturityLabel, latestPreRelease, safLinks, supportedHost } from '../data/saf.ts';
-import { methodSteps } from '../data/method.ts';
-import { externalLinkAttributes, offerName } from '../data/site.ts';
-import diagram from '../data/hero-diagram.json';
+import { harness, maturityLabel, safLinks, supportedHost } from '../data/saf.ts';
+import { contactEmail, externalLinkAttributes } from '../data/site.ts';
 
-/**
- * "Without a frame / With SAF": what changes when agents work inside an organization that a
- * harness holds. Only what SAF ships today is said here; what is in pilot, planned or in the
- * backlog is not. Each line comes from the SAF repositories: the harness specification and the
- * usage model of the organization.
- */
-const frame = [
-  { topic: 'Quality', without: 'A first draft, delivered as it came.', withSaf: 'Drafted by the agent that owns the subject, challenged by other agents, rewritten, then checked against its schema.' },
-  { topic: 'Traceability', without: 'An answer in a chat.', withSaf: 'One commit per step, in your repository. No step counts without its document.' },
-  { topic: 'Human decision', without: 'The agent concludes on its own.', withSaf: 'Every workflow ends at a human gate: agents prepare the decision, a person takes it.' },
-  { topic: 'Separation of roles', without: 'Left to goodwill.', withSaf: 'Checked by the harness: an agent may write only the kinds of document its role is granted.' },
-  { topic: 'Ownership', without: 'Your work lives in a vendor’s cloud.', withSaf: 'The organization and its work live in your own Git and your own agent tool. Nothing is hosted by Poesis.' },
-  { topic: 'Improvement', without: 'The same irritants, again and again.', withSaf: 'Frictions are recorded at each step, and the organization changes by reviewed commits.' },
+/** The title of the page and its H1, approved on 22 November 2026. Held word for word by a test. */
+const heroTitle = 'Plant one seed. Grow a governed organization of AI agents';
+/** The same words in two lines: the image first, then what it means for the reader. */
+const [heroSeed, heroPromise] = ['Plant one seed.', 'Grow a governed organization of AI agents.'];
+const heroLead = 'Transform the way your teams work with AI agents — built around your organization, guided by humans, and powered by SAF.';
+const heroNote = 'From a focused pilot to an evolving agentic operating model.';
+const description = 'Poesis helps organizations adopt governed AI agents: a transformation service that starts with a focused pilot, built on SAF, its open-source framework.';
+
+/** Three problems a decision-maker recognizes, each with what changes. Only what SAF ships today is on the right. */
+const changes = [
+  { pain: 'AI experiments that do not scale.', result: 'Start with one team or one workflow, on a frame built to extend.' },
+  { pain: 'Agents without clear rules.', result: 'Roles, workflows and write rights are declared before an agent runs.' },
+  { pain: 'Outputs no one can review.', result: 'Each step leaves a checked document in your Git. A person decides at the end of every workflow.' },
 ];
 
-/**
- * One step of a governed workflow, as the person in front of the agent host lives it, shown as
- * the chat it is: they ask, the agent drafts, the harness holds the frame, they decide. The film
- * brings each line forward in turn: `from` and `to` are fractions of its loop.
- */
-const chat = [
-  { who: 'You', role: 'you', says: ['“Refine this feature.”'], from: 0.4, to: 0.44 },
-  { who: 'Agent', role: 'agent', says: ['feature.md drafted'], from: 0.44, to: 0.55 },
-  { who: 'Harness', role: 'harness', says: ['role ✓ schema ✓ commit ✓'], from: 0.55, to: 0.6 },
-  { who: 'You', role: 'gate', says: ['Accept', 'Concerns', 'Reject'], from: 0.6, to: 0.76 },
+/** The four steps of an engagement. They describe a service Poesis leads, not something the software does alone. */
+const growth = [
+  { verb: 'Mirror', text: 'We map one scope with you: its roles, its workflows, its documents.' },
+  { verb: 'Organize', text: 'That map becomes AI agents, each with a role, a workflow and a format to follow.' },
+  { verb: 'Govern', text: 'The harness checks every write against the rules you declared. People hold the decisions.' },
+  { verb: 'Evolve', text: 'Frictions are logged as the work runs, and you revise the organization under version control.' },
 ];
 
-/** Where the framework stops today, said before anyone asks. The full list is on /open-source/. */
-const limits = [
-  `${maturityLabel}: the latest pre-release is ${latestPreRelease.version}, and interfaces may change.`,
-  `One agent host is supported today: ${supportedHost.name}.`,
-  'The decision a person takes at the end of a workflow is not yet recorded or authenticated by the harness.',
-  'Only what passes through the harness is governed, and a harness hook that cannot answer lets the call through.',
+/** What "governed" stands on in SAF today. Each line stops where the check stops. */
+const qualities = [
+  { name: 'Explicit workflows', text: 'Who does what, and in which order, is written down before the work starts.' },
+  { name: 'Checked artifacts', text: 'The harness validates each document against its declared schema, and nothing beyond it.' },
+  { name: 'Human gates', text: 'Every workflow ends with a person who accepts, raises concerns or rejects.' },
+  { name: 'Yours, in Git', text: 'The work is committed to your own repository. Poesis hosts nothing.' },
 ];
-
-/** What Poesis offers, in the words a prospect would search for. It is the H1 and the title of the page. */
-const heroTitle = 'Transform your organization with governed AI agents';
-/**
- * Clément Cazaud's sentence, word for word. By his decision of 21 November 2026 it is no longer
- * the title of the page: it is the signature of Poesis, set in italics beside the picture.
- */
-const signature = 'Generate easily and rapidly a seed of an agentic organisation mirroring yours to automatize. Plant it, and watch it to produce and evolve.';
-const description = 'Poesis helps you transform a team, a function or a whole organization with governed AI agents, built on SAF, its open-source framework. Start with a pilot.';
-const heroSources = [{ src: '/hero/diagram.webm', type: 'video/webm' }, { src: '/hero/diagram.mp4', type: 'video/mp4' }];
-/**
- * The hero diagram has two compositions, wide and narrow. Its words are real text laid over
- * the picture, at the positions the picture itself was drawn from (src/data/hero-diagram.json).
- */
-const diagramViews = (['landscape', 'portrait'] as const).map((name) => {
-  const view = diagram[name];
-  const at = (item: { x: number; y: number }) => `left:${((100 * item.x) / view.width).toFixed(2)}%;top:${((100 * item.y) / view.height).toFixed(2)}%`;
-  return { name, view, at };
-});
-const ratioOf = (view: { width: number; height: number }) => `${view.width} / ${view.height}`;
 ---
 <BaseLayout
   title={heroTitle}
   description={description}
   pageType="Home"
-  preloadImage={{ href: '/hero/diagram.webp', media: '(min-width: 1100px)', type: 'image/webp' }}
-  jsonLd={[
-    { '@type': 'WebSite', name: 'Poesis', url: 'https://poesis.cloud/', description },
-    faqLd(homeFaq),
-  ]}
+  jsonLd={[{ '@type': 'WebSite', name: 'Poesis', url: 'https://poesis.cloud/', description }]}
 >
-  <section class="hero-seed" aria-labelledby="hero-title">
-    <div class="container hero-seed__grid">
-      <div class="hero-seed__content">
-        <p class="hero-seed__kicker">{offerName}, by Poesis</p>
-        <h1 id="hero-title">{heroTitle}.</h1>
-        <p class="hero-seed__lead">Poesis helps you design and evolve an agentic organization that mirrors yours, with SAF, our open-source framework. Start with one team or one workflow, under human oversight.</p>
-        <div class="hero-actions">
-          <a class="btn btn-primary btn-lg" href="/contact/" data-track="business_contact_intent" data-track-id="home-hero">Discuss your transformation</a>
-          <a class="btn btn-quiet" href="/open-source/" data-track="developer_docs_click" data-track-id="home-hero">Explore SAF</a>
+  <section class="home-hero" aria-labelledby="hero-title">
+    <div class="container">
+      <div class="home-hero__words">
+        <p class="home-hero__eyebrow">Poesis · Agentic transformation</p>
+        <h1 id="hero-title"><span>{heroSeed}</span> <span>{heroPromise}</span></h1>
+        <p class="home-hero__lead">{heroLead}</p>
+        <p class="home-hero__note">{heroNote}</p>
+        <div class="home-hero__actions">
+          <a class="btn btn-primary btn-lg" href="/contact/" data-track="business_contact_intent" data-track-id="home-hero">Talk to Poesis</a>
+          <a class="btn btn-ghost btn-lg" href="/developers/" data-track="developer_docs_click" data-track-id="home-hero">Build with SAF</a>
         </div>
       </div>
-      {/* The picture is a diagram, readable before it moves. Its still is what everyone gets; the
-          film, the same picture in motion, is added on wide screens by the script below. */}
-      <figure class="hero-diagram" aria-label="How Poesis transforms an organization with SAF">
-        <figcaption class="sr-only">Diagram. On one side, your organization: a lead, a team whose members each hold a role, and a process. In the middle, a strand of DNA: the organization modelled with SAF, written down as files. On the other side, the agentic organization written from that model: AI agents holding the same roles, passing work from one to the next in a governed workflow that ends with a person who oversees and decides, and an output checked against its schema. Evidence from the work returns to the model, which people then revise: the organization evolves.</figcaption>
-        <div class="hero-diagram__stage" style={`--portrait:${ratioOf(diagram.portrait)};--landscape:${ratioOf(diagram.landscape)}`}>
-          <div class="hero-diagram__media">
-            <picture>
-              <source media="(min-width: 720px)" srcset="/hero/diagram.webp" type="image/webp" width={diagram.landscape.width} height={diagram.landscape.height} />
-              <img class="hero-diagram__still" src="/hero/diagram-portrait.webp" width={diagram.portrait.width} height={diagram.portrait.height} alt="" decoding="async" />
-            </picture>
-            <video
-              class="hero-diagram__film"
-              autoplay
-              muted
-              loop
-              playsinline
-              preload="none"
-              width={diagram.landscape.width}
-              height={diagram.landscape.height}
-              tabindex="-1"
-              aria-hidden="true"
-              disablepictureinpicture
-              data-sources={JSON.stringify(heroSources)}
-            ></video>
+
+      {/* One workflow, as an illustration: a request, a draft, the checks of the harness, a human
+          decision, the commit, and the organization that gains a branch. Every word is real text
+          and the whole picture is readable when nothing moves. It animates only with scripts on
+          (so that it can be paused) and when the visitor has not asked for reduced motion. */}
+      <figure class="scene" data-scene>
+        <div class="scene__stage">
+          <div class="scene__talk">
+            <p class="scene__bubble scene__bubble--you" data-beat="1">Map our release process.</p>
+            <p class="scene__bubble scene__bubble--agent" data-beat="2">
+              <svg class="scene__mark" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M8 2c0 5 8 6 8 10s-8 5-8 10M16 2c0 5-8 6-8 10s8 5 8 10" /></svg>
+              <span>Here is a first draft.</span>
+            </p>
           </div>
-          {diagramViews.map(({ name, view, at }) => (
-            <ul class={`hero-diagram__labels hero-diagram__labels--${name}`}>
-              {view.titles.map((title) => (
-                <li class="hero-diagram__title" data-id={title.id} style={at(title)}>
-                  <strong>{title.text}</strong>
-                  <span>{title.sub}</span>
-                </li>
-              ))}
-              {view.tags.map((tag) => (
-                <li class="hero-diagram__tag" data-id={tag.id} data-align={tag.align} style={at(tag)}>{tag.text}</li>
-              ))}
-            </ul>
-          ))}
-          <button class="hero-diagram__toggle" type="button" hidden aria-label="Pause animation" title="Pause animation" data-state="playing">
-            <svg class="hero-diagram__pause" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M8 5v14M16 5v14" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" /></svg>
-            <svg class="hero-diagram__play" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M8 5.5v13l11-6.5z" fill="currentColor" /></svg>
-          </button>
+
+          <div class="scene__work">
+            <div class="scene__doc" data-beat="2">
+              <p class="scene__file"><span>release-process.md</span> <b class="scene__state"><i aria-hidden="true">Draft</i><i data-beat="4">Accepted</i></b></p>
+              <span class="scene__rule" aria-hidden="true"></span>
+              <span class="scene__rule" aria-hidden="true"></span>
+              <span class="scene__rule" aria-hidden="true"></span>
+              <ul class="scene__checks" data-beat="3">
+                <li class="scene__harness">Harness</li>
+                <li>write rule</li>
+                <li>schema</li>
+                <li>journal</li>
+              </ul>
+            </div>
+            <p class="scene__decision" data-beat="4">
+              <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><circle cx="12" cy="8" r="3.5" /><path d="M5 20c1.2-3.6 4-5.4 7-5.4s5.8 1.8 7 5.4" /></svg>
+              <span><b>A person decides:</b> accepted</span>
+            </p>
+            <p class="scene__commit" data-beat="5">
+              <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><circle cx="12" cy="12" r="3.2" /><path d="M2 12h6.8M15.2 12H22" /></svg>
+              <span>Committed to your Git workspace</span>
+            </p>
+          </div>
+
+          <div class="scene__growth">
+            <svg class="scene__plant" viewBox="0 0 240 216" aria-hidden="true">
+              <path class="scene__trellis" d="M30 12V196M60 12V196M90 12V196M120 12V196M150 12V196M180 12V196M210 12V196M12 28H228M12 58H228M12 88H228M12 118H228M12 148H228M12 178H228" />
+              <path class="scene__ground" d="M20 196H220" />
+              <path class="scene__rail scene__rail--a" d="M113 196V88" />
+              <path class="scene__rail scene__rail--b" d="M127 196V88" />
+              <path class="scene__rungs" d="M113 178H127M113 158H127M113 138H127M113 118H127M113 98H127" />
+              <path class="scene__branch" d="M113 148H60V132M127 118H180V102" />
+              <circle class="scene__node" cx="60" cy="124" r="8" />
+              <circle class="scene__node" cx="180" cy="94" r="8" />
+              <g class="scene__new" data-beat="6">
+                <path class="scene__rail scene__rail--a" d="M113 88V58" />
+                <path class="scene__rail scene__rail--b" d="M127 88V58" />
+                <path class="scene__rungs" d="M113 78H127M113 62H127" />
+                <path class="scene__branch" d="M113 68H90V52" />
+                <circle class="scene__node" cx="90" cy="44" r="8" />
+              </g>
+              <ellipse class="scene__seed" cx="120" cy="203" rx="9" ry="5.5" />
+            </svg>
+            <p class="scene__evolves" data-beat="6">The organization gains a branch</p>
+          </div>
         </div>
-        {/* A chat with a SAF agent, held by the harness. On wide pictures it sits in the free corner
-            of the diagram; on narrow screens, under it. An illustration: the choices are not buttons. */}
-        <div class="hero-chat">
-          <p class="hero-chat__head">
-            <img src="/poesis-logo.png" width="18" height="18" alt="" />
-            <strong>Poesis SAF agent</strong>
-            <span>in your agent host</span>
-          </p>
-          <ol>
-            {chat.map((line) => (
-              <li data-role={line.role} data-from={line.from} data-to={line.to}>
-                <b class={line.role === 'harness' ? undefined : 'sr-only'}>{line.who}</b>
-                {line.says.map((part) => <span>{part}</span>)}
-              </li>
-            ))}
-          </ol>
-        </div>
+        <figcaption class="scene__caption">
+          <span>Illustrative workflow</span>
+          <button class="scene__toggle" type="button" hidden>Pause animation</button>
+        </figcaption>
       </figure>
-      {/* The signature comes after the picture in the page, so on narrow screens it reads below it;
-          on wide screens it is set at the foot of the words, beside the picture. */}
-      <p class="hero-signature">{signature}</p>
     </div>
   </section>
 
-  <section class="band" id="why" aria-labelledby="why-title">
+  <section class="band" id="change" aria-labelledby="change-title">
     <div class="container">
       <div class="band-head">
-        <h2 id="why-title">Agents are easy to add. An organization that works with them is not.</h2>
-        <p>Most difficulties with AI at work are organizational: who is responsible, what is handed over, who decides. SAF gives agents a frame, and a harness that holds it.</p>
+        <h2 id="change-title">From AI experiments to work you can govern.</h2>
       </div>
-      <div class="ledger__head ledger__head--frame" aria-hidden="true">
-        <span></span>
-        <span>Without a frame</span>
-        <span>With SAF</span>
-      </div>
-      <ul class="ledger ledger--frame ledger--tight">
-        {frame.map((row) => (
-          <li class="ledger__row">
-            <h3>{row.topic}</h3>
-            <div>
-              <p class="ledger__label">Without a frame</p>
-              <p class="ledger__without">{row.without}</p>
-            </div>
-            <div>
-              <p class="ledger__label">With SAF</p>
-              <p class="ledger__value">{row.withSaf}</p>
-            </div>
+      <ul class="changes">
+        <li class="changes__head" aria-hidden="true">
+          <span>Today</span>
+          <span>With Poesis and SAF</span>
+        </li>
+        {changes.map((row) => (
+          <li>
+            <p class="changes__pain"><span class="changes__label">Today</span> {row.pain}</p>
+            <p class="changes__result"><span class="changes__label">With Poesis and SAF</span> {row.result}</p>
           </li>
         ))}
       </ul>
-      <div class="actions">
-        <a class="btn btn-ghost" href="/transformation/" data-track="business_transformation_click" data-track-id="home-why">See what an engagement covers</a>
-        <a class="btn btn-quiet" href="/contact/" data-track="business_contact_intent" data-track-id="home-why">Map a first workflow with us</a>
-      </div>
     </div>
   </section>
 
-  <section class="band band--raised" id="method" aria-labelledby="method-title">
+  <section class="band band--raised" id="grow" aria-labelledby="grow-title">
     <div class="container">
       <div class="band-head">
-        <h2 id="method-title">Five steps, on a scope you choose.</h2>
-        <p>One team, one function, one process or a whole enterprise: the method is the same. It is indicative: scope, pace and terms are agreed for each engagement.</p>
+        <h2 id="grow-title">How it grows.</h2>
+        <p>Four steps of an engagement led by Poesis. Scope and pace are agreed for each one.</p>
       </div>
-      <ol class="steps steps--five">
-        {methodSteps.map((step) => (
+      <ol class="growth">
+        {growth.map((step) => (
           <li>
-            <h3>{step.title}</h3>
-            <p>{step.summary}</p>
+            <h3>{step.verb}</h3>
+            <p>{step.text}</p>
           </li>
         ))}
       </ol>
-      <div class="actions">
-        <a class="btn btn-primary" href="/contact/" data-track="business_contact_intent" data-track-id="home-method">Discuss your transformation</a>
-        <a class="btn btn-quiet" href="/how-it-works/">See how it works, step by step</a>
+    </div>
+  </section>
+
+  <section class="band" id="paths" aria-labelledby="paths-title">
+    <div class="container">
+      <h2 class="sr-only" id="paths-title">Two ways to start</h2>
+      <div class="paths">
+        <article class="path">
+          <p class="path__for">For your organization</p>
+          <h3>Transform your organization</h3>
+          <p>A service led by Poesis. It starts with a pilot on one team or one workflow, and you judge it on the work it produces.</p>
+          <div class="path__actions">
+            <a class="btn btn-primary" href="/contact/" data-track="business_contact_intent" data-track-id="home-paths">Talk to Poesis</a>
+            <a class="btn btn-quiet" href="/transformation/" data-track="business_transformation_click" data-track-id="home-paths">See how an engagement works</a>
+          </div>
+        </article>
+        <article class="path">
+          <p class="path__for">For developers</p>
+          <h3>Build with SAF</h3>
+          <p>An open-source framework: a harness, and the organizations that run on it, installed as {supportedHost.name} plugins. {maturityLabel}.</p>
+          <div class="path__actions">
+            <a class="btn btn-ghost" href="/developers/" data-track="developer_docs_click" data-track-id="home-paths">Build with SAF</a>
+            <ul class="path__links">
+              <li><a href={safLinks.quickstart} {...externalLinkAttributes} data-track="developer_docs_click" data-track-id="home-paths-quickstart">Quickstart</a></li>
+              <li><a href={safLinks.repositories} {...externalLinkAttributes} data-track="developer_repo_click" data-track-id="home-paths-repositories">Repositories</a></li>
+              <li><a href={harness.contributing} {...externalLinkAttributes} data-track="developer_repo_click" data-track-id="home-paths-contributing">Contributing</a></li>
+            </ul>
+          </div>
+        </article>
       </div>
     </div>
   </section>
 
-  <section class="band" id="saf" aria-labelledby="saf-title">
+  <section class="band band--raised" id="governed" aria-labelledby="governed-title">
     <div class="container">
       <div class="band-head">
-        <h2 id="saf-title">Built on SAF, an open-source framework you can inspect.</h2>
-        <p>SAF, the Systemic Agentic Framework, is what the method runs on: a harness, the engine that runs declared workflows and checks each step, and a first ready-made agentic organization. Its code, specifications and releases are public: you can read all of it before you talk to us.</p>
+        <h2 id="governed-title">Why governed matters.</h2>
       </div>
-      <div class="limits">
-        <h3>Where it stops today</h3>
-        <ul class="plain-list">
-          {limits.map((limit) => <li>{limit}</li>)}
-        </ul>
-        <p class="fineprint">That is why an engagement starts with a pilot under human oversight. <a href="/open-source/#status">Read every known limit</a>.</p>
-      </div>
-      <div class="actions">
-        <a class="btn btn-ghost" href="/open-source/" data-track="developer_docs_click" data-track-id="home-saf">Explore SAF open source</a>
-        <a class="btn btn-quiet" href={safLinks.repositories} {...externalLinkAttributes} data-track="developer_repo_click" data-track-id="home-saf-star">Star the repositories on GitHub</a>
-      </div>
+      <dl class="qualities">
+        {qualities.map((quality) => (
+          <div>
+            <dt>{quality.name}</dt>
+            <dd>{quality.text}</dd>
+          </div>
+        ))}
+      </dl>
+      <p class="fineprint">SAF is in {maturityLabel.toLowerCase()}. <a href="/developers/#status">Read what it does today, and where it stops</a>.</p>
     </div>
   </section>
 
-  {publishedCaseStudies.length > 0 && (
-    <section class="band" id="proof" aria-labelledby="proof-title">
-      <div class="container">
-        <div class="band-head">
-          <h2 id="proof-title">Real work. Verifiable learning.</h2>
-          <p>Each case states whether it is a demonstration, a pilot or an operational deployment, and links to evidence you can inspect.</p>
-        </div>
-        <ul class="case-list">
-          {publishedCaseStudies.map((study) => (
-            <li class="case-card">
-              <span class="status status--verified">{evidenceKinds[study.kind].label}</span>
-              <h3><a href={`/case-studies/${study.slug}/`}>{study.title}</a></h3>
-              <p>{study.summary}</p>
-            </li>
-          ))}
-        </ul>
+  <section class="closing closing--home" id="evidence" aria-labelledby="evidence-title">
+    <div class="container closing__split">
+      <div>
+        <h2 id="evidence-title">Evidence, then scale.</h2>
+        {publishedCaseStudies.length > 0 ? (
+          <ul class="case-list">
+            {publishedCaseStudies.map((study) => (
+              <li class="case-card">
+                <span class="status status--verified">{evidenceKinds[study.kind].label}</span>
+                <h3><a href={`/case-studies/${study.slug}/`}>{study.title}</a></h3>
+                <p>{study.summary}</p>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p>A pilot is documented with the client’s approval: its scope, what was run, where people decided and what it could not show. No case is published yet. <a href="/case-studies/">See how a pilot is documented</a>.</p>
+        )}
+        <p>Until then, what you can check is public: <a href={safLinks.repositories} {...externalLinkAttributes} data-track="developer_repo_click" data-track-id="home-evidence">the code</a>, <a href={safLinks.limitations} {...externalLinkAttributes} data-track="developer_docs_click" data-track-id="home-evidence-limits">its known limits</a> and <a href={safLinks.docs} {...externalLinkAttributes} data-track="developer_docs_click" data-track-id="home-evidence-docs">its documentation</a>.</p>
       </div>
-    </section>
-  )}
-
-  <section class="band" id="faq" aria-labelledby="faq-title">
-    <div class="container">
-      <div class="band-head">
-        <h2 id="faq-title">Questions people ask first.</h2>
+      <div class="closing__call">
+        <p class="closing__question">Which team would you start with?</p>
+        <a class="btn btn-primary btn-lg" href="/contact/" data-track="business_contact_intent" data-track-id="home-closing">Talk to Poesis</a>
+        <p class="closing__mail">Or write to <a href={`mailto:${contactEmail}`} data-track="business_contact_intent" data-track-id="home-closing-email">{contactEmail}</a></p>
       </div>
-      <Faq items={homeFaq} />
     </div>
   </section>
-
-  <ContactSection source="home" title="Let's explore your first agentic use case.">
-    <p>Tell us the scope you have in mind and what you would want to see change.</p>
-  </ContactSection>
 </BaseLayout>
 
 <script is:inline>
@@ -282,79 +260,34 @@ const ratioOf = (view: { width: number; height: number }) => `${view.width} / ${
       .catch(function () { /* the home page stays as it is */ });
   })();
 
-  // Hero film. The still diagram is the default for everyone, and the film starts on
-  // that same picture. The film is fetched only where the diagram sits beside the
-  // words (1100px and more), when the visitor has not asked for reduced motion or
-  // reduced data, and it can be paused at any time.
+  // Hero scene. The complete picture is the default for everyone. The style sheet
+  // plays it in six beats only when scripts run and the visitor accepts motion;
+  // this script adds the control that pauses it, remembers that choice for the
+  // session, and holds the loop while the scene is off screen.
   (function () {
-    var video = document.querySelector('.hero-diagram__film');
-    var toggle = document.querySelector('.hero-diagram__toggle');
-    if (!video || !toggle || typeof video.play !== 'function') return;
-    var wide = window.matchMedia('(min-width: 1100px)');
+    var scene = document.querySelector('[data-scene]');
+    var toggle = scene && scene.querySelector('.scene__toggle');
+    if (!scene || !toggle || !window.matchMedia) return;
     var still = window.matchMedia('(prefers-reduced-motion: reduce)');
-    var connection = navigator.connection || {};
-    var lean = Boolean(connection.saveData) || /(^|-)2g$/.test(connection.effectiveType || '') || window.matchMedia('(prefers-reduced-data: reduce)').matches;
     var choice = null;
-    try { choice = sessionStorage.getItem('poesis-hero-film'); } catch (error) { /* storage unavailable */ }
-    var loaded = false;
-
-    // The chat beside the diagram: the line the film is showing comes forward, the others step back.
-    var lines = Array.prototype.slice.call(document.querySelectorAll('.hero-chat li'));
-    function follow() {
-      // A paused film shows no particular step: every line is then equally readable.
-      var at = video.duration && !video.paused ? video.currentTime / video.duration : -1;
-      var active = false;
-      lines.forEach(function (line) {
-        var on = at >= Number(line.getAttribute('data-from')) && at < Number(line.getAttribute('data-to'));
-        line.classList.toggle('is-now', on);
-        active = active || on;
-      });
-      if (lines.length) lines[0].parentNode.classList.toggle('is-following', active);
-    }
-    function label(paused) {
-      var name = paused ? 'Play animation' : 'Pause animation';
-      toggle.setAttribute('aria-label', name);
-      toggle.title = name;
-      toggle.setAttribute('data-state', paused ? 'paused' : 'playing');
-    }
-    function load() {
-      if (loaded) return;
-      loaded = true;
-      JSON.parse(video.getAttribute('data-sources')).forEach(function (source) {
-        var element = document.createElement('source');
-        element.src = source.src;
-        element.type = source.type;
-        video.appendChild(element);
-      });
-      video.addEventListener('playing', function () { video.classList.add('is-playing'); });
-      video.addEventListener('timeupdate', follow);
-      video.load();
-    }
-    function play() {
-      load();
-      var started = video.play();
-      if (started && started.catch) started.catch(function () { label(true); });
-    }
+    try { choice = sessionStorage.getItem('poesis-hero-scene'); } catch (error) { /* storage unavailable */ }
     function apply() {
-      var allowed = wide.matches && !still.matches && !lean;
-      toggle.hidden = !allowed;
-      if (!allowed) { video.pause(); video.classList.remove('is-playing'); if (lines.length) lines[0].parentNode.classList.remove('is-following'); return; }
-      if (choice === 'paused') { label(true); return; }
-      label(false);
-      play();
+      var paused = choice === 'paused';
+      toggle.hidden = still.matches;
+      scene.classList.toggle('is-paused', paused);
+      toggle.textContent = paused ? 'Play animation' : 'Pause animation';
     }
     toggle.addEventListener('click', function () {
-      var pausing = loaded && !video.paused;
-      choice = pausing ? 'paused' : 'playing';
-      try { sessionStorage.setItem('poesis-hero-film', choice); } catch (error) { /* storage unavailable */ }
-      if (pausing) video.pause(); else play();
-      follow();
-      label(pausing);
+      choice = choice === 'paused' ? 'playing' : 'paused';
+      try { sessionStorage.setItem('poesis-hero-scene', choice); } catch (error) { /* storage unavailable */ }
+      apply();
     });
-    // Older Safari has no addEventListener on a media query list: the page then simply keeps its first answer.
-    if (wide.addEventListener) {
-      wide.addEventListener('change', apply);
-      still.addEventListener('change', apply);
+    // Older Safari has no addEventListener on a media query list: the page then keeps its first answer.
+    if (still.addEventListener) still.addEventListener('change', apply);
+    if ('IntersectionObserver' in window) {
+      new IntersectionObserver(function (entries) {
+        scene.classList.toggle('is-offscreen', !entries[0].isIntersecting);
+      }).observe(scene);
     }
     apply();
   })();

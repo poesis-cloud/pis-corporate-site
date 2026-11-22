@@ -8,17 +8,22 @@
  */
 
 /** Date the repositories, releases and marketplace manifests below were last read. */
-export const verifiedOn = '2026-11-21';
+export const verifiedOn = '2026-11-22';
 
 /** Public maturity label. The exact public version wording is a Poesis decision. */
 export const maturityLabel = 'Alpha preview';
 
-/** Latest tagged pre-release, identical on both product repositories. */
-export const latestPreRelease = {
-  version: '1.0.0-alpha.3',
-  tag: 'v1.0.0-alpha.3',
-  publishedOn: '2026-11-08',
+/**
+ * Latest tagged pre-release of each product. The two repositories are released
+ * separately and no longer carry the same version: never print one for both.
+ */
+export const preReleases = {
+  harness: { version: '1.0.0-alpha.3', tag: 'v1.0.0-alpha.3', publishedOn: '2026-11-08' },
+  organization: { version: '1.0.0-alpha.4', tag: 'v1.0.0-alpha.4', publishedOn: '2026-11-22' },
 } as const;
+
+/** The most recent of the two, for the places that date the state of the project. */
+export const latestPreRelease = preReleases.organization;
 
 const repo = (name: string) => `https://github.com/poesis-cloud/${name}`;
 
@@ -37,7 +42,8 @@ export interface SafProduct {
   contributing: string;
   issues: string;
   docs: string;
-  license: 'Apache-2.0';
+  /** The licence file of the repository. No licence name is printed until those files match their declared licence. */
+  licenceFile: string;
 }
 
 export const harness: SafProduct = {
@@ -57,7 +63,7 @@ export const harness: SafProduct = {
   contributing: `${repo('saf-agentic-harness')}/blob/main/CONTRIBUTING.md`,
   issues: `${repo('saf-agentic-harness')}/issues`,
   docs: 'https://docs.poesis.cloud/saf/agentic-harness/',
-  license: 'Apache-2.0',
+  licenceFile: `${repo('saf-agentic-harness')}/blob/main/LICENSE`,
 };
 
 export const organization: SafProduct = {
@@ -66,10 +72,10 @@ export const organization: SafProduct = {
   technicalName: 'saf-agentic-organization',
   plugin: 'poesis-saf-agentic-organization',
   audience: 'For teams and end users',
-  summary: 'A first ready-made agentic organization for scaled agile delivery: portfolio, program and team orchestrators with a specialist bench, run by the harness. You talk to an orchestrator; it dispatches the steps the harness resolves and names the next workflow.',
+  summary: 'A first ready-made agentic organization for scaled agile delivery, run by the harness. You talk to an orchestrator; role agents draft, expert agents challenge each main artifact, and every workflow ends with your decision.',
   provides: [
-    'Three orchestrators (portfolio, program, team) and a bench of specialist agents for authoring, architecture, development, QA, security, operations, documentation and UX',
-    'Workflows across the portfolio, program and team levels: planning, refinement, synchronization, review and retrospective',
+    'Orchestrators for the portfolio, large solution, release train and team levels, each naming the next workflow',
+    'Role agents that author, and a bench of expert agents that challenge what was written before it reaches you',
     'Skills, role instructions, artifact templates and schemas the harness checks',
   ],
   repository: repo('saf-agentic-organization'),
@@ -77,13 +83,16 @@ export const organization: SafProduct = {
   contributing: `${repo('saf-agentic-organization')}/blob/main/CONTRIBUTING.md`,
   issues: `${repo('saf-agentic-organization')}/issues`,
   docs: 'https://docs.poesis.cloud/saf/safe-agentic-organization/',
-  license: 'Apache-2.0',
+  licenceFile: `${repo('saf-agentic-organization')}/blob/main/LICENSE`,
 };
 
 export const safProducts: SafProduct[] = [harness, organization];
 
-/** Counted in the `main` branch of saf-agentic-organization on `verifiedOn`. */
-export const organizationInventory = { agents: 14, skills: 37, workflows: 25 } as const;
+/**
+ * The roster and the workflow catalog of the organization, kept by its repository.
+ * The pages link to it and print no count: the numbers changed between two pre-releases.
+ */
+export const organizationCatalog = `${repo('saf-agentic-organization')}/blob/main/docs/catalog.md`;
 
 export const marketplace = {
   repository: repo('saf-marketplace'),
@@ -105,7 +114,7 @@ export const installCommands: string[] = [
 
 export const firstRunCommand = `copilot --agent ${organization.plugin}:value-management-officer`;
 
-export const orchestrators = ['value-management-officer', 'release-train-engineer', 'scrum-master'] as const;
+export const orchestrators = ['value-management-officer', 'solution-train-engineer', 'release-train-engineer', 'scrum-master'] as const;
 
 export const prerequisites: string[] = [
   'GitHub Copilot CLI (the GitHub Copilot app and VS Code install from the same marketplace)',
@@ -137,7 +146,7 @@ export const safLinks = {
  */
 export const maturity: { published: string[]; implemented: string[]; partial: string[]; planned: string[] } = {
   published: [
-    `Both plugins as pre-release ${latestPreRelease.version}, on the preview channel of the marketplace`,
+    `Both plugins as pre-releases, on the preview channel of the marketplace: harness ${preReleases.harness.version}, organization ${preReleases.organization.version}`,
     'The source code, specifications and tests of both, in public repositories',
   ],
   implemented: [
@@ -149,10 +158,10 @@ export const maturity: { published: string[]; implemented: string[]; partial: st
     'A journal of harness calls for each session, and validated writes committed to Git',
   ],
   partial: [
-    'The ready-made organization: its agents and instructions are complete; checks of skills, workflows and artifact templates are still in progress',
+    'The ready-made organization: it was rebuilt for its latest pre-release, and its documentation is still being aligned with it',
   ],
   planned: [
-    'Authenticated human approval: today every workflow ends by handing its results to a person, who accepts, raises concerns or rejects; the harness neither records nor verifies that decision',
+    'Authenticated human approval: today every workflow ends at a human gate, where a person accepts, raises concerns or rejects, and that decision is recorded as a committed artifact; who decided is not yet authenticated',
     'A final release on the stable channel: none has been published',
     'Agent hosts other than GitHub Copilot: none is supported',
   ],
@@ -169,7 +178,7 @@ export const knownLimits: string[] = [
 ];
 
 /**
- * Observed on 2026-11-21, not taken from the documentation: Copilot CLI 0.0.423
+ * Observed on 2026-11-21 and not replayed since, not taken from the documentation: Copilot CLI 0.0.423
  * (March 2026) rejects the `#preview` marketplace reference. The SAF sources
  * state no minimum version, so the page asks for a current one.
  */

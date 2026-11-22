@@ -68,15 +68,15 @@ const text = (node) => node.nodeName === '#text' ? node.value : (node.childNodes
 const elements = (node, predicate) => [...(predicate(node) ? [node] : []), ...(node.childNodes ?? []).flatMap((child) => elements(child, predicate))];
 const hasClass = (node, name) => attribute(node, 'class')?.split(/\s+/).includes(name) ?? false;
 
-test('the primary menu is four destinations and one call to action, with no Platform or Partnerships entry', () => {
+test('the primary menu is three destinations and one call to action, with no Platform or Partnerships entry', () => {
+  // Decision of the team, 22 November 2026: the service, the developer path, the Knowledge corpus.
   // Case Studies joins the menu with the first published case, and not before.
   assert.deepEqual(siteNavigation, [
     { href: '/transformation/', label: 'Transformation' },
-    { href: '/how-it-works/', label: 'How It Works' },
-    { href: '/open-source/', label: 'Open Source' },
+    { href: '/developers/', label: 'Developers' },
     { href: '/knowledge/', label: 'Knowledge' },
   ]);
-  assert.deepEqual(navigationCta, { href: '/contact/', label: "Let's talk" });
+  assert.deepEqual(navigationCta, { href: '/contact/', label: 'Talk to Poesis' });
   const everywhere = [...siteNavigation, navigationCta, ...footerNavigation.flatMap((group) => group.items)];
   assert.ok(everywhere.every((item) => !/platform|partnership/i.test(item.label)));
   // An archived offer is never one click away from the menu or the footer.

@@ -1,7 +1,9 @@
 /**
  * site-navigation.ts — the conversion menu, the footer and the catalog views.
  *
- * The primary menu is deliberately four destinations and one call to action.
+ * The primary menu is deliberately three destinations and one call to action:
+ * the service, the developer path and the Knowledge corpus. About and Contact
+ * are in the footer.
  * Everything that describes the wider Poesis stack is reached through Knowledge
  * (see knowledge.ts), never from the primary menu.
  */
@@ -55,14 +57,13 @@ const caseStudiesEntry: SiteNavigationItem[] = publishedCaseStudies.length ? [{ 
 /** The primary menu, in display order. */
 export const siteNavigation: SiteNavigationItem[] = [
   { href: '/transformation/', label: 'Transformation' },
-  { href: '/how-it-works/', label: 'How It Works' },
+  { href: '/developers/', label: 'Developers' },
   ...caseStudiesEntry,
-  { href: '/open-source/', label: 'Open Source' },
   { href: '/knowledge/', label: 'Knowledge' },
 ];
 
 /** The single highlighted action of the header. */
-export const navigationCta: SiteNavigationItem = { href: '/contact/', label: "Let's talk" };
+export const navigationCta: SiteNavigationItem = { href: '/contact/', label: 'Talk to Poesis' };
 
 export const footerNavigation: FooterGroup[] = [
   {
@@ -75,10 +76,10 @@ export const footerNavigation: FooterGroup[] = [
     ],
   },
   {
-    label: 'Open source',
+    label: 'Developers',
     items: [
-      { href: '/open-source/', label: 'SAF overview' },
-      { href: '/open-source/#install', label: 'Install' },
+      { href: '/developers/', label: 'Build with SAF' },
+      { href: '/developers/#install', label: 'Install' },
       { href: safLinks.docs, label: 'SAF documentation', external: true },
       { href: externalLinks.github, label: 'GitHub', external: true },
     ],
