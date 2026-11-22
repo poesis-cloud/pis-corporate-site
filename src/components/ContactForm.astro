@@ -12,7 +12,7 @@
  */
 import Icon from './Icon.astro';
 import { contact, contactEmail } from '../data/site.ts';
-import { contactFields } from '../scripts/contact-brief.ts';
+import { contactFields, interestOptions } from '../scripts/contact-brief.ts';
 
 interface Props {
   /** Names the placement in the request and in the measurement events, e.g. `home` or `contact`. */
@@ -35,8 +35,8 @@ const posts = contact !== null;
   >
     <div class="field-row">
       <div>
-        <label for="brief-name">Full name</label>
-        <input id="brief-name" name="Full name" data-key="name" type="text" autocomplete="name" maxlength={limit.name} required aria-describedby="brief-name-error" />
+        <label for="brief-name">Name</label>
+        <input id="brief-name" name="Name" data-key="name" type="text" autocomplete="name" maxlength={limit.name} required aria-describedby="brief-name-error" />
         <p class="field-error" id="brief-name-error" hidden>Enter your name.</p>
       </div>
       <div>
@@ -47,25 +47,28 @@ const posts = contact !== null;
     </div>
 
     <div>
-      <label for="brief-company">Company / Organization <span class="optional">(optional)</span></label>
-      <input id="brief-company" name="Company / Organization" data-key="company" type="text" autocomplete="organization" maxlength={limit.company} />
+      <label for="brief-company">Organization <span class="optional">(optional)</span></label>
+      <input id="brief-company" name="Organization" data-key="company" type="text" autocomplete="organization" maxlength={limit.company} />
     </div>
 
     <div>
       <label for="brief-goal">What would you like to transform?</label>
-      <textarea id="brief-goal" name="What we would like to transform" data-key="goal" rows="3" maxlength={limit.goal} required aria-describedby="brief-goal-hint brief-goal-error"></textarea>
-      <p class="field-hint" id="brief-goal-hint">A team, a function or a process, and what you would want to see change. Two lines are enough.</p>
+      <textarea id="brief-goal" name="What we would like to transform" data-key="goal" rows="4" maxlength={limit.goal} required aria-describedby="brief-goal-hint brief-goal-error"></textarea>
+      <p class="field-hint" id="brief-goal-hint">One team, function or process, and what you would want to see change. Two lines are enough.</p>
       <p class="field-error" id="brief-goal-error" hidden>Tell us, in a sentence or two, what you would like to transform.</p>
     </div>
 
     <div>
-      <label for="brief-message">Additional context <span class="optional">(optional)</span></label>
-      <textarea id="brief-message" name="Additional context" data-key="message" rows="3" maxlength={limit.message}></textarea>
+      <label for="brief-interest">What would you like to discuss first? <span class="optional">(optional)</span></label>
+      <select id="brief-interest" name="We would like to discuss" data-key="interest">
+        <option value="">Choose one</option>
+        {interestOptions.map((option) => <option value={option.value}>{option.label}</option>)}
+      </select>
     </div>
 
     <div class="actions">
       {posts
-        ? <button class="btn btn-primary btn-lg" type="submit"><Icon name="message" /> Discuss your transformation</button>
+        ? <button class="btn btn-primary btn-lg" type="submit"><Icon name="message" /> Send my request</button>
         : <button class="btn btn-primary btn-lg" type="submit"><Icon name="mail" /> Open in my email app</button>}
       {!posts && <button class="btn btn-ghost" type="button" data-contact-copy hidden><Icon name="copy" /> Copy the request</button>}
     </div>

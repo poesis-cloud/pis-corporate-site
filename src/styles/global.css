@@ -464,7 +464,7 @@ a:hover {
 }
 
 .compare thead th {
-  font-size: .74rem;
+  font-size: .75rem;
   letter-spacing: .07em;
   text-transform: uppercase;
   color: var(--muted);

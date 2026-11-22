@@ -13,6 +13,8 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       <p class="legal-note">Last updated: 2026-08-16.</p>
 
       <h2>What we use</h2>
+      {/* Four columns do not fit a phone: the table scrolls inside its own box, and the page never does. */}
+      <div class="compare-wrap" role="region" aria-label="Cookies used by this site" tabindex="0">
       <table class="compare">
         <thead>
           <tr>
@@ -37,6 +39,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
           </tr>
         </tbody>
       </table>
+      </div>
       <p>
         These cookies are <strong>only set if you accept</strong> analytics
         cookies. If you reject them, the Google Analytics script is not loaded

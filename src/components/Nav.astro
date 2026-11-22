@@ -3,7 +3,7 @@
  * Nav — a handful of destinations and one call to action.
  *
  * Without JavaScript every link is visible and the header simply wraps. With
- * JavaScript (the `js` class set in the document head), below 760px the links
+ * JavaScript (the `js` class set in the document head), below 860px the links
  * fold into a disclosure panel; the call to action stays in the bar at every
  * width. The folded layout is pure CSS, so the page does not shift on load.
  */
@@ -46,7 +46,7 @@ const trackingOf = (href: string) => (href === '/transformation/' ? { 'data-trac
   const nav = document.querySelector<HTMLElement>('#primary-navigation');
   const toggle = document.querySelector<HTMLButtonElement>('.nav-toggle');
   if (header && nav && toggle) {
-    const compact = window.matchMedia('(max-width: 759px)');
+    const compact = window.matchMedia('(max-width: 859px)');
     const setOpen = (open: boolean, restoreFocus = false) => {
       const next = compact.matches && open;
       header.classList.toggle('menu-open', next);

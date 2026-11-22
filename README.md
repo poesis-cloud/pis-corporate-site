@@ -1,7 +1,7 @@
 # Poesis — corporate site (`poesis.cloud`)
 
 The Poesis conversion site. Its first job is to bring Poesis qualified conversations with
-decision-makers about one service, **Agentic Organization Transformation**. Its second is to
+decision-makers about one service, **Agentic Transformation**. Its second is to
 grow the community around **SAF**, the open-source Systemic Agentic Framework that is the
 method and the engine of that service. OAP is out of scope: the site offers no SaaS, no
 subscription and no price.
@@ -20,8 +20,8 @@ GitHub organization (the code). It is not the OAP application.
 | Decision-makers | `/` → `/transformation/` → `/contact/` (the form, and the address `partner@poesis.cloud`) | A request reaching Poesis |
 | Developers and architects | `/` → `/developers/` → GitHub, Quickstart, Contributing | Repository visit, install, issue, contribution |
 
-Menu: `Transformation` · `Developers` · `Knowledge` · **Talk to Poesis** (decision of the team,
-22 November 2026). There is no Platform, Services or Partnerships entry. `Case Studies` joins the menu with the first
+Menu: `Transformation` · `Developers` · `Knowledge` · **Discuss your transformation** (decision of the team,
+22 November 2026; the hero of the home page words its own two actions, `Talk to Poesis` and `Build with SAF`). Below 860 px the menu folds into a button. There is no Platform, Services or Partnerships entry. `Case Studies` joins the menu with the first
 published case. About, Contact and the legal pages are in the footer.
 
 On the home page the prospect's action is the one filled button; the developer path is a quiet
@@ -144,8 +144,10 @@ inspectable evidence, stated limits or a method for each figure.
 
 ## Contact form
 
-One component, `ContactForm`, on `/contact/` and at the end of the Transformation, How It Works
-and Pilot pages. The home page sends to `/contact/` and prints the address. Five fields, three required. Its transport is a build setting:
+One component, `ContactForm`, on `/contact/` and at the end of the How It Works and Pilot pages.
+The home page and the Transformation page send to `/contact/`. Five fields, three required (name,
+work email, what to transform); the organization and one choice ("where to start", "a first
+pilot", "not sure yet") are optional. A marked field is cleared while it is being corrected. Its transport is a build setting:
 
 | Build | What the form does |
 | --- | --- |
@@ -175,9 +177,8 @@ An element opts in with `data-track` and `data-track-id`.
 
 - One H1 per page; title and H1 are the same words on every conversion page, the home page
   included (rule 12 of the SEO register, `strategy/seo.md` in the `poesis` repository). The home
-  page's H1 is "Plant one seed. Grow a governed organization of AI agents." (decision of the
-  team, 22 November 2026; a test holds the eyebrow, the title, the sentence and the line under
-  it). The founder's longer sentence is the intent behind it and is no longer printed. The
+  page's H1 is "Turn your organization into a governed AI operating model." (hero brief of
+  22 November 2026; a test holds the title, the sentence under it and the two actions). The
   register itself must be updated by its owner for the new keyword owners: `/` (agentic
   organization), `/transformation/` (agentic transformation), `/developers/` (Systemic Agentic
   Framework), `/knowledge/platform/` (Organizational Intelligence Platform, formerly `/`).
@@ -207,17 +208,33 @@ status badge (`test:usage`, "built catalog cards…").
 flow. Workspace checks (`CHECK_WORKSPACE_PORTFOLIO=1`) need the sibling strategy and
 documentation repositories.
 
-## Hero scene
+## Hero and its two demonstrations
 
-The hero of the home page ends with one workflow shown as an illustration, in six beats: a
-request, a draft, the checks of the harness (write rule, schema, journal), a human decision, the
-commit, and the organization that gains a branch. It is markup and CSS in `src/pages/index.astro`
-and `src/styles/site.css`: no film, no picture file, no dependency. The whole picture is the
-default; it plays only with scripts on (so that the pause control exists) and for visitors who
-accept motion, and it holds while off screen. Captures: `docs/review/2026-11-22/`.
+The home page opens on `.masthead` (`src/pages/index.astro`, `src/styles/site.css`): the promise
+and two actions on one side, `src/components/DemoChat.astro` on the other. The block is not
+called `.hero`: that class belongs to the Knowledge pages (`global.css`) and carries an animated
+aurora that halved the frame rate when it applied here by accident.
+
+`DemoChat` is one panel with two tabs, "For organizations" and "For developers". Each is a
+scripted conversation followed by the steps of one governed workflow. It is a demonstration and
+says so ("Illustrative demo"): nothing calls a model, Git or a backend. The developer scenario
+prints only what the SAF repositories document: the preview-channel install commands of
+`src/data/saf.ts`, file names of `saf-agentic-organization`, its `make verify` target and the
+artifact patterns of its `conf/workspace.conf.yaml`. Check them again when `saf.ts` is refreshed.
+
+- `src/scripts/demo-chat.ts` only decides which steps are shown; every word is in the page.
+- Scripts on and motion accepted: it plays once when it comes on screen, waits while off screen,
+  and offers pause or play, next step and replay. Changing tab starts the other scenario.
+- Reduced motion: the complete picture at once, no controls, tabs still working.
+- No scripts: both scenarios, complete, one under the other.
+- Only `opacity` and `transform` are animated, and the panel keeps its size while it plays.
+- It lays itself out from its own width (container queries), so it can be placed on another
+  page: `<DemoChat id="…" initial="developers" source="…" />`.
+
+Captures: `docs/review/2026-11-22-hero-demo/`.
 
 The former hero film is no longer shipped. Its source stays in `scripts/hero-film/`, with its
-geometry in `src/data/hero-diagram.json`, until the new hero is validated.
+geometry in `src/data/hero-diagram.json`.
 
 ## Deploy
 

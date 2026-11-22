@@ -24,7 +24,7 @@ Origin: https://poesis.cloud
 Content-Type: application/json
 Accept: application/json
 
-{ "name": "...", "email": "...", "company": "...", "goal": "...", "message": "...",
+{ "name": "...", "email": "...", "company": "...", "goal": "...", "interest": "pilot",
   "source": "home", "elapsedMs": 8400, "_gotcha": "" }
 ```
 

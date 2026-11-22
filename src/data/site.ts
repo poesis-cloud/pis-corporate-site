@@ -64,4 +64,11 @@ export type TrackEvent =
   | 'developer_install_click';
 
 /** The service Poesis sells. One offer, one name. */
-export const offerName = 'Agentic Organization Transformation';
+export const offerName = 'Agentic Transformation';
+
+/**
+ * How far the offer goes today, said beside it. The catalog records the service as planned and a
+ * pilot as available by agreement: no standard package exists. The exact wording is a decision for
+ * Poesis (proposed on 22 November 2026, to be approved).
+ */
+export const offerQualifier = 'Exploratory engagements, scoped with your team.';

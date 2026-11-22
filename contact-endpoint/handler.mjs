@@ -9,7 +9,7 @@
  *
  * Contract, also honoured by the page (src/scripts/contact-brief.ts):
  *   POST, `Content-Type: application/json`, from an allowed origin
- *   body   { name, email, company, goal, message, source, elapsedMs, _gotcha }
+ *   body   { name, email, company, goal, interest, source, elapsedMs, _gotcha }
  *   200    { "ok": true }                     the request was delivered
  *   422    { "ok": false, "errors": {...} }   a field was refused, or the post looked automated
  *   429    { "ok": false }                    too many requests from one client
@@ -18,11 +18,13 @@
  */
 
 /** Bounds of each field, identical to those of the form. */
-export const LIMITS = { name: 120, email: 254, company: 160, goal: 2000, message: 2000, source: 60 };
+export const LIMITS = { name: 120, email: 254, company: 160, goal: 2000, interest: 40, source: 60 };
+/** The optional choice of the form, by its codes: the same list as `interestOptions` in src/scripts/contact-brief.ts. */
+export const INTERESTS = { 'starting-point': 'Where to start', pilot: 'A first pilot', unsure: 'Not sure yet' };
 export const MAX_BODY_BYTES = 16 * 1024;
 
 const REQUIRED = ['name', 'email', 'goal'];
-const SINGLE_LINE = ['name', 'email', 'company', 'source'];
+const SINGLE_LINE = ['name', 'email', 'company', 'interest', 'source'];
 /** Deliberately loose: the browser already checked the syntax. Apostrophes are legal in the local part (o'brien@...). */
 const EMAIL = /^[^\s@<>"]+@[^\s@<>"']+\.[^\s@<>"']{2,}$/;
 
@@ -44,19 +46,21 @@ export function validate(input) {
   }
   for (const key of REQUIRED) if (!values[key]) errors[key] = 'required';
   if (values.email && !errors.email && !EMAIL.test(values.email)) errors.email = 'invalid';
+  // A choice outside the list is refused, not passed on: nothing unexpected reaches the mailbox.
+  if (values.interest && !Object.hasOwn(INTERESTS, values.interest)) errors.interest = 'invalid';
   return { values, errors };
 }
 
 /** The request as the plain text of a message, for whichever transport delivers it. */
 export function toMessage(values, receivedAt) {
   const lines = [
-    `Full name: ${values.name}`,
+    `Name: ${values.name}`,
     `Work email: ${values.email}`,
-    ...(values.company ? [`Company / Organization: ${values.company}`] : []),
+    ...(values.company ? [`Organization: ${values.company}`] : []),
+    ...(values.interest ? [`They would like to discuss: ${INTERESTS[values.interest]}`] : []),
     '',
     'What they would like to transform:',
     values.goal,
-    ...(values.message ? ['', 'Additional context:', values.message] : []),
     '',
     `Sent from poesis.cloud (${values.source || 'contact'}) on ${receivedAt}`,
   ];

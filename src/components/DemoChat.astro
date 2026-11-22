@@ -1,0 +1,1251 @@
+---
+/**
+ * DemoChat — two scripted demonstrations in one panel: one for the people who run
+ * an organization, one for the people who build with SAF.
+ *
+ * It is a demonstration and says so ("Illustrative demo"): nothing here calls a
+ * model, Git or a backend. Each scenario is a short conversation followed by the
+ * steps of one governed workflow. Every word is real text in the page; the script
+ * only decides when each part becomes visible, so the panel never changes size
+ * while it plays.
+ *
+ * Three ways to read it:
+ *   scripts on, motion accepted   it plays once, with pause, next step and replay
+ *   reduced motion                the complete picture, tabs still working
+ *   no scripts                    both scenarios, complete, one under the other
+ *
+ * The developer scenario prints only what the SAF repositories document: the
+ * preview-channel install commands of src/data/saf.ts, file names that exist in
+ * saf-agentic-organization, the `make verify` target of its README, and the
+ * artifact file patterns of its conf/workspace.conf.yaml.
+ */
+import { harness, installCommands, safLinks } from '../data/saf.ts';
+import { externalLinkAttributes } from '../data/site.ts';
+import { navigationCta } from '../data/site-navigation.ts';
+
+interface Props {
+  /** Prefix of the element ids: one per instance on a page. */
+  id?: string;
+  /** The scenario shown first. */
+  initial?: 'organizations' | 'developers';
+  /** Names the placement in the measurement events, e.g. `home`. */
+  source?: string;
+}
+const { id = 'demo', initial = 'organizations', source = 'home' } = Astro.props;
+
+const paths: Record<string, string[]> = {
+  users: ['M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2', 'M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z', 'M22 21v-2a4 4 0 0 0-3-3.87', 'M16 3.13a4 4 0 0 1 0 7.75'],
+  user: ['M20 21a8 8 0 0 0-16 0', 'M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z'],
+  code: ['m16 18 6-6-6-6', 'm8 6-6 6 6 6'],
+  file: ['M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z', 'M14 2v6h6', 'M8 13h8', 'M8 17h5'],
+  shield: ['M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z', 'm9 12 2 2 4-4'],
+  check: ['m5 12.5 4.5 4.5L19 7.5'],
+  play: ['M8 5.5v13l10.5-6.5z'],
+  pause: ['M8.5 5v14', 'M15.5 5v14'],
+  replay: ['M3 12a9 9 0 1 0 3-6.7', 'M3 4v5h5'],
+  next: ['M6 5.5v13l9.5-6.5z', 'M18.5 5v14'],
+  info: ['M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20z', 'M12 11v6', 'M12 7.5v.01'],
+  arrow: ['M5 12h14', 'm13 6 6 6-6 6'],
+  copy: ['M9 9h11v11H9z', 'M5 15V4h11'],
+  external: ['M14 4h6v6', 'M20 4 10 14', 'M18 14v6H4V6h6'],
+};
+const icon = (name: string) => '<svg class="demo__icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">' + paths[name].map((d) => '<path d="' + d + '"/>').join('') + '</svg>';
+
+/** A reply split into words, so that it can arrive the way a chat answer does. */
+const words = (text: string) => text.split(' ');
+
+const organizations = {
+  ask: 'Help us structure our release approval workflow.',
+  reply: 'I mapped the workflow, drafted a governed artifact, and prepared it for review.',
+  steps: [
+    { step: 3, icon: 'file', title: 'Artifact drafted', detail: 'Workflow and roles' },
+    { step: 4, icon: 'shield', title: 'Harness checks', detail: 'Rules · Schema · Traceability', checks: ['Rules', 'Schema', 'Traceability'] },
+    { step: 5, icon: 'users', title: 'Human approval', detail: 'Reviewed and accepted', pending: 'In review' },
+  ],
+  result: 'Committed to governed workspace',
+};
+
+const developers = {
+  ask: 'Help me set up a governed agentic organization.',
+  reply: 'Let’s configure an organization with declared agents, workflows and governance rules.',
+  steps: [
+    {
+      step: 3,
+      title: 'Install SAF harness',
+      window: 'Terminal',
+      lines: installCommands.slice(0, 2).map((command) => ({ prompt: true, text: command })),
+    },
+    {
+      step: 4,
+      title: 'Declare organization components',
+      window: 'saf-agentic-organization',
+      lines: [
+        { text: 'agents/release-manager.agent.md' },
+        { text: 'workflows/art/release-on-demand.workflow.conf.yaml' },
+        { text: 'artifacts/art/release.artifact.schema.json' },
+        { text: 'conf/access-control-list.conf.yaml' },
+      ],
+    },
+    {
+      step: 5,
+      title: 'Validate with the harness',
+      window: 'Terminal',
+      lines: [
+        { prompt: true, text: 'make verify' },
+        { note: true, text: '# loads the organization through the harness' },
+        { note: true, text: '# runs every workflow to its human gate' },
+        { note: true, text: '# proves each refusal' },
+      ],
+    },
+    {
+      step: 6,
+      title: 'Review artifacts in Git',
+      window: 'Your Git workspace',
+      lines: [
+        { text: '<release-slug>.release.md', tag: 'one commit per step' },
+        { text: '<decision-slug>.gate-decision.md', tag: 'accept · concerns · reject' },
+      ],
+    },
+  ],
+};
+
+const tabs = [
+  { key: 'organizations', label: 'For organizations', icon: 'users' },
+  { key: 'developers', label: 'For developers', icon: 'code' },
+] as const;
+const lastStep = 6;
+---
+<div class="demo" data-demo data-initial={initial} data-last={lastStep}>
+  <div class="demo__tabs" role="tablist" aria-label="Choose a demonstration">
+    {tabs.map((tab) => (
+      <button
+        class="demo__tab"
+        type="button"
+        role="tab"
+        id={`${id}-tab-${tab.key}`}
+        aria-controls={`${id}-panel-${tab.key}`}
+        aria-selected={tab.key === initial ? 'true' : 'false'}
+        tabindex={tab.key === initial ? 0 : -1}
+        data-tab={tab.key}
+      >
+        <Fragment set:html={icon(tab.icon)} /> <span>{tab.label}</span>
+      </button>
+    ))}
+  </div>
+
+  <div class="demo__panels">
+    {/* ---- For organizations: one business request, up to a human decision ---- */}
+    <div
+      class:list={['demo__panel', { 'is-active': initial === 'organizations' }]}
+      id={`${id}-panel-organizations`}
+      role="tabpanel"
+      aria-labelledby={`${id}-tab-organizations`}
+      data-panel="organizations"
+      data-delays="700,1000,2700,1300,2300,2100"
+    >
+      <p class="demo__title">For organizations</p>
+      <div class="demo__talk">
+        <div class="demo__row demo__row--you" data-step="1" data-say="The request">
+          <p class="demo__bubble"><span class="sr-only">A team asks: </span>{organizations.ask}</p>
+          <span class="demo__avatar" aria-hidden="true"><Fragment set:html={icon('user')} /></span>
+        </div>
+        <div class="demo__row demo__row--poesis" data-step="2" data-say="Poesis answers">
+          <span class="demo__avatar demo__avatar--poesis" aria-hidden="true"><img src="/poesis-logo.png" alt="" width="22" height="22" loading="lazy" decoding="async" /></span>
+          <div class="demo__said">
+            <p class="demo__who">Poesis</p>
+            <p class="demo__bubble demo__bubble--poesis">
+              <span class="sr-only">{organizations.reply}</span>
+              <span class="demo__dots" aria-hidden="true"><i></i><i></i><i></i></span>
+              <span class="demo__words" aria-hidden="true">{words(organizations.reply).map((word, index) => <><span class="demo__word" style={`--i:${index}`}>{word}</span>{' '}</>)}</span>
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <ol class="demo__flow">
+        {organizations.steps.map((step) => (
+          <li class:list={['demo__card', { 'demo__card--checks': step.checks, 'demo__card--approval': step.pending }]} data-step={step.step} data-say={step.title}>
+            <span class="demo__card-icon" aria-hidden="true"><Fragment set:html={icon(step.icon)} /></span>
+            <span class="demo__card-text">
+              <b>{step.title}</b>
+              {step.checks
+                ? <span class="demo__checks">{step.checks.map((check, index) => <span class="demo__check" style={`--i:${index}`}><Fragment set:html={icon('check')} />{check}</span>)}</span>
+                : step.pending
+                  ? <span class="demo__swap"><span class="demo__swap-from" aria-hidden="true">{step.pending}</span><span class="demo__swap-to">{step.detail}</span></span>
+                  : <span>{step.detail}</span>}
+            </span>
+            <span class="demo__badge" aria-hidden="true"><Fragment set:html={icon('check')} /></span>
+          </li>
+        ))}
+      </ol>
+
+      <p class="demo__result" data-step="6" data-say={organizations.result}>
+        <span class="demo__result-mark" aria-hidden="true"><Fragment set:html={icon('check')} /></span>
+        {organizations.result}
+      </p>
+
+      <div class="demo__actions">
+        <a class="demo__cta" href={navigationCta.href} data-track="business_contact_intent" data-track-id={`${source}-demo-organizations`}>{navigationCta.label} <Fragment set:html={icon('arrow')} /></a>
+      </div>
+    </div>
+
+    {/* ---- For developers: the same governance, seen from the files ---- */}
+    <div
+      class:list={['demo__panel', { 'is-active': initial === 'developers' }]}
+      id={`${id}-panel-developers`}
+      role="tabpanel"
+      aria-labelledby={`${id}-tab-developers`}
+      data-panel="developers"
+      data-delays="700,1000,2700,2300,2300,2300"
+    >
+      <p class="demo__title">For developers</p>
+      <div class="demo__talk">
+        <div class="demo__row demo__row--you" data-step="1" data-say="The request">
+          <p class="demo__bubble"><span class="sr-only">A developer asks: </span>{developers.ask}</p>
+          <span class="demo__avatar" aria-hidden="true"><Fragment set:html={icon('user')} /></span>
+        </div>
+        <div class="demo__row demo__row--poesis" data-step="2" data-say="Poesis answers">
+          <span class="demo__avatar demo__avatar--poesis" aria-hidden="true"><img src="/poesis-logo.png" alt="" width="22" height="22" loading="lazy" decoding="async" /></span>
+          <div class="demo__said">
+            <p class="demo__who">Poesis</p>
+            <p class="demo__bubble demo__bubble--poesis">
+              <span class="sr-only">{developers.reply}</span>
+              <span class="demo__dots" aria-hidden="true"><i></i><i></i><i></i></span>
+              <span class="demo__words" aria-hidden="true">{words(developers.reply).map((word, index) => <><span class="demo__word" style={`--i:${index}`}>{word}</span>{' '}</>)}</span>
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div class="demo__build" data-step="3">
+        <ol class="demo__path">
+          {developers.steps.map((step, index) => (
+            <li>
+              <button class="demo__chip" type="button" data-chip={step.step} aria-controls={`${id}-view-${step.step}`}>
+                <span class="demo__chip-mark" aria-hidden="true"><i>{index + 1}</i><Fragment set:html={icon('check')} /></span>
+                <span>{step.title}</span>
+              </button>
+            </li>
+          ))}
+        </ol>
+        <div class="demo__views">
+          {developers.steps.map((step) => (
+            <div class="demo__view" id={`${id}-view-${step.step}`} data-view={step.step}>
+              <p class="demo__view-title"><span aria-hidden="true"><i></i><i></i><i></i></span>{step.window}<span class="sr-only">: {step.title}</span></p>
+              <ul class="demo__lines">
+                {step.lines.map((line, index) => (
+                  <li class:list={['demo__line', { 'demo__line--note': line.note }]} style={`--i:${index}`}>
+                    {line.prompt && <span class="demo__prompt" aria-hidden="true">$</span>}
+                    <code>{line.text}</code>
+                    {line.tag && <span class="demo__tag">{line.tag}</span>}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div class="demo__actions">
+        <a class="demo__cta" href={safLinks.repositories} {...externalLinkAttributes} data-track="developer_repo_click" data-track-id={`${source}-demo-developers`}>Explore SAF on GitHub <Fragment set:html={icon('external')} /></a>
+        <button class="demo__copy" type="button" data-demo-copy={installCommands.join('\n')} aria-label="Copy the install commands"><Fragment set:html={icon('copy')} /> <span data-demo-copy-label>Copy install</span></button>
+        <span class="demo__links">
+          <a href={safLinks.docs} {...externalLinkAttributes} data-track="developer_docs_click" data-track-id={`${source}-demo-docs`}>Read the docs</a>
+          <a href={harness.contributing} {...externalLinkAttributes} data-track="developer_repo_click" data-track-id={`${source}-demo-contributing`}>Contribute</a>
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <div class="demo__foot">
+    <p class="demo__note"><Fragment set:html={icon('info')} /> Illustrative demo. Scripted, not a live run of SAF.</p>
+    <div class="demo__controls" role="group" aria-label="Demonstration controls">
+      <button class="demo__control" type="button" data-demo-toggle aria-label="Pause the demonstration">
+        <span class="demo__control-pause"><Fragment set:html={icon('pause')} /></span>
+        <span class="demo__control-play"><Fragment set:html={icon('play')} /></span>
+      </button>
+      <button class="demo__control" type="button" data-demo-next aria-label="Show the next step"><Fragment set:html={icon('next')} /></button>
+      <button class="demo__control" type="button" data-demo-replay aria-label="Replay the demonstration"><Fragment set:html={icon('replay')} /></button>
+      <span class="demo__dots-track" aria-hidden="true">{Array.from({ length: lastStep }, () => <i></i>)}</span>
+    </div>
+    <p class="sr-only" role="status" aria-live="polite" data-demo-status></p>
+  </div>
+</div>
+
+<script>
+  import '../scripts/demo-chat.ts';
+</script>
+
+<style is:global>
+  /* ---- shell ------------------------------------------------------------------ */
+  .demo {
+    --demo-line: rgba(148, 197, 222, .16);
+    --demo-line-strong: rgba(94, 234, 212, .34);
+    --demo-ok: #4ade80;
+    --demo-ease: cubic-bezier(.22, .61, .36, 1);
+    container-type: inline-size;
+    position: relative;
+    display: grid;
+    gap: clamp(.85rem, 2.6cqi, 1.15rem);
+    width: 100%;
+    padding: clamp(.85rem, 3.4cqi, 1.5rem);
+    border: 1px solid var(--demo-line-strong);
+    border-radius: clamp(18px, 4.5cqi, 26px);
+    background:
+      radial-gradient(120% 70% at 100% 0%, rgba(56, 189, 248, .1), transparent 60%),
+      linear-gradient(180deg, rgba(17, 27, 46, .94), rgba(8, 13, 25, .96));
+    box-shadow: 0 0 0 1px rgba(255, 255, 255, .03) inset, 0 34px 80px -34px rgba(0, 0, 0, .8), 0 0 70px -28px rgba(45, 212, 191, .38);
+    font-family: var(--font-sans);
+    font-size: .95rem;
+    line-height: 1.4;
+    color: var(--ink);
+    text-align: left;
+  }
+
+  .demo p,
+  .demo ol,
+  .demo ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    max-width: none;
+  }
+
+  .demo__icon {
+    flex: none;
+    width: 1.15em;
+    height: 1.15em;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  /* ---- tabs -------------------------------------------------------------------- */
+  .demo__tabs {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: .3rem;
+    padding: .3rem;
+    border: 1px solid var(--demo-line);
+    border-radius: 999px;
+    background: rgba(4, 9, 18, .55);
+  }
+
+  .demo__tab {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: .5rem;
+    min-height: 44px;
+    padding: .3rem .6rem;
+    border: 1px solid transparent;
+    border-radius: 999px;
+    background: none;
+    font: inherit;
+    font-weight: 600;
+    font-size: clamp(.82rem, 3.6cqi, .98rem);
+    line-height: 1.15;
+    color: var(--ink-soft);
+    cursor: pointer;
+    transition: color .2s, background-color .2s, border-color .2s, box-shadow .2s;
+  }
+
+  .demo__tab:hover {
+    color: #fff;
+  }
+
+  .demo__tab[aria-selected="true"] {
+    border-color: rgba(94, 234, 212, .6);
+    background: linear-gradient(180deg, rgba(45, 212, 191, .32), rgba(56, 189, 248, .16));
+    box-shadow: 0 0 22px -6px rgba(45, 212, 191, .6), 0 1px 0 rgba(255, 255, 255, .12) inset;
+    color: #fff;
+  }
+
+  .demo :focus-visible {
+    outline: 2px solid #a5f3fc;
+    outline-offset: 2px;
+  }
+
+  /* ---- panels: with scripts, one at a time ------------------------------------- */
+  .demo__panels {
+    display: grid;
+    gap: 1.5rem;
+  }
+
+  .demo__panel {
+    display: flex;
+    flex-direction: column;
+    gap: clamp(.65rem, 2.4cqi, .9rem);
+    min-width: 0;
+    transition: opacity .18s;
+  }
+
+  .demo__panel.is-resetting {
+    opacity: 0;
+  }
+
+  .demo .demo__title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--flow-ink);
+  }
+
+  /* With scripts the tab names the scenario. */
+  .js .demo .demo__title {
+    display: none;
+  }
+
+  .js .demo__panel:not(.is-active) {
+    display: none;
+  }
+
+  html:not(.js) .demo__tabs {
+    display: none;
+  }
+
+  /* ---- the conversation -------------------------------------------------------- */
+  .demo__talk {
+    display: grid;
+    gap: clamp(.6rem, 2.2cqi, .8rem);
+  }
+
+  .demo__row {
+    display: flex;
+    align-items: flex-start;
+    gap: .6rem;
+    min-width: 0;
+  }
+
+  .demo__row--you {
+    justify-content: flex-end;
+    padding-left: 12%;
+  }
+
+  .demo__row--poesis {
+    padding-right: 8%;
+  }
+
+  .demo__avatar {
+    display: grid;
+    place-items: center;
+    flex: none;
+    width: 2.25rem;
+    height: 2.25rem;
+    border: 1px solid var(--demo-line);
+    border-radius: 50%;
+    background: rgba(148, 163, 184, .16);
+    color: var(--ink-soft);
+  }
+
+  .demo__avatar--poesis {
+    border-radius: 11px;
+    border-color: var(--demo-line-strong);
+    background: rgba(45, 212, 191, .1);
+  }
+
+  .demo__avatar img {
+    display: block;
+    width: 22px;
+    height: 22px;
+  }
+
+  .demo__said {
+    display: grid;
+    gap: .25rem;
+    min-width: 0;
+  }
+
+  .demo .demo__who {
+    font-size: .75rem;
+    font-weight: 700;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--flow-ink);
+  }
+
+  .demo .demo__bubble {
+    position: relative;
+    min-width: 0;
+    padding: .6rem .85rem;
+    border: 1px solid var(--demo-line);
+    border-radius: 14px 14px 4px 14px;
+    background: rgba(148, 163, 184, .12);
+    color: var(--ink);
+    overflow-wrap: break-word;
+  }
+
+  .demo .demo__bubble--poesis {
+    border-color: rgba(94, 234, 212, .26);
+    border-radius: 4px 14px 14px 14px;
+    background: rgba(45, 212, 191, .07);
+  }
+
+  .demo__dots {
+    position: absolute;
+    top: .95rem;
+    left: .9rem;
+    display: none;
+    gap: .28rem;
+  }
+
+  .demo__dots i {
+    width: .4rem;
+    height: .4rem;
+    border-radius: 50%;
+    background: var(--flow-ink);
+  }
+
+  /* ---- organizations: three steps, then the result ----------------------------- */
+  .demo__flow {
+    display: grid;
+    gap: .5rem;
+  }
+
+  .demo__card {
+    position: relative;
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    gap: .7rem;
+    min-height: 3.25rem;
+    padding: .55rem .75rem;
+    border: 1px solid var(--demo-line);
+    border-radius: 14px;
+    background: rgba(15, 23, 42, .62);
+  }
+
+  .demo__card-icon {
+    display: grid;
+    place-items: center;
+    color: var(--flow-ink);
+    font-size: 1.15rem;
+  }
+
+  .demo__card-text {
+    display: grid;
+    gap: .05rem .6rem;
+    min-width: 0;
+  }
+
+  .demo__card-text b {
+    font-weight: 650;
+    color: #fff;
+  }
+
+  .demo__card-text > span {
+    font-size: .82rem;
+    color: var(--ink-soft);
+  }
+
+  .demo__checks {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .1rem .6rem;
+  }
+
+  .demo__check {
+    display: inline-flex;
+    align-items: center;
+    gap: .25rem;
+    white-space: nowrap;
+  }
+
+  .demo__check .demo__icon {
+    width: .85em;
+    height: .85em;
+    stroke-width: 2.6;
+    color: var(--demo-ok);
+  }
+
+  .demo__swap {
+    display: grid;
+  }
+
+  .demo__swap > * {
+    grid-area: 1 / 1;
+  }
+
+  .demo__swap-from {
+    opacity: 0;
+    color: var(--gov);
+  }
+
+  .demo__badge,
+  .demo__result-mark {
+    display: grid;
+    place-items: center;
+    flex: none;
+    width: 1.45rem;
+    height: 1.45rem;
+    border-radius: 50%;
+    background: var(--demo-ok);
+    color: #052e16;
+    font-size: .8rem;
+  }
+
+  .demo__badge .demo__icon,
+  .demo__result-mark .demo__icon {
+    stroke-width: 3;
+  }
+
+  .demo .demo__result {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: .65rem;
+    min-height: 3.1rem;
+    padding: .55rem .9rem;
+    border: 1px solid rgba(74, 222, 128, .45);
+    border-radius: 14px;
+    background: linear-gradient(90deg, rgba(34, 197, 94, .13), rgba(45, 212, 191, .1));
+    font-weight: 650;
+    color: #fff;
+    text-align: center;
+    overflow: hidden;
+  }
+
+  /* ---- developers: four steps and the file or command each one is about -------- */
+  .demo__build {
+    display: grid;
+    gap: .6rem;
+    min-width: 0;
+  }
+
+  .demo__path {
+    display: grid;
+    gap: .3rem;
+  }
+
+  .demo__chip {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: center;
+    gap: .6rem;
+    width: 100%;
+    min-height: 44px;
+    padding: .3rem .65rem;
+    border: 1px solid var(--demo-line);
+    border-radius: 12px;
+    background: rgba(15, 23, 42, .5);
+    font: inherit;
+    font-size: .9rem;
+    font-weight: 600;
+    line-height: 1.2;
+    color: var(--ink-soft);
+    text-align: left;
+    cursor: pointer;
+    transition: color .25s, border-color .25s, background-color .25s;
+  }
+
+  .demo__chip:hover {
+    color: #fff;
+    border-color: var(--demo-line-strong);
+  }
+
+  .demo__chip-mark {
+    display: grid;
+    place-items: center;
+    width: 1.45rem;
+    height: 1.45rem;
+    border: 1px solid var(--demo-line-strong);
+    border-radius: 50%;
+    font-size: .78rem;
+    color: var(--flow-ink);
+    transition: background-color .25s, border-color .25s, color .25s;
+  }
+
+  .demo__chip-mark > * {
+    grid-area: 1 / 1;
+    transition: opacity .25s, transform .25s var(--demo-ease);
+  }
+
+  .demo__chip-mark i {
+    font-style: normal;
+    font-weight: 700;
+  }
+
+  .demo__chip-mark .demo__icon {
+    opacity: 0;
+    transform: scale(.5);
+    stroke-width: 3;
+  }
+
+  .demo__chip.is-done {
+    color: var(--ink);
+  }
+
+  .demo__chip.is-done .demo__chip-mark {
+    border-color: var(--demo-ok);
+    background: var(--demo-ok);
+    color: #052e16;
+  }
+
+  .demo__chip.is-done .demo__chip-mark i {
+    opacity: 0;
+  }
+
+  .demo__chip.is-done .demo__chip-mark .demo__icon {
+    opacity: 1;
+    transform: none;
+  }
+
+  .demo__chip[aria-current="step"] {
+    border-color: rgba(94, 234, 212, .6);
+    background: rgba(45, 212, 191, .1);
+    color: #fff;
+  }
+
+  .demo__views {
+    display: grid;
+    gap: .5rem;
+    min-width: 0;
+  }
+
+  .demo__view {
+    display: grid;
+    align-content: start;
+    gap: .5rem;
+    min-width: 0;
+    padding: .6rem .75rem .7rem;
+    border: 1px solid var(--demo-line);
+    border-radius: 12px;
+    background: rgba(3, 7, 15, .72);
+  }
+
+  .demo .demo__view-title {
+    display: flex;
+    align-items: center;
+    gap: .55rem;
+    font-size: .75rem;
+    font-weight: 600;
+    letter-spacing: .02em;
+    color: var(--muted);
+  }
+
+  .demo__view-title > span[aria-hidden] {
+    display: inline-flex;
+    gap: .25rem;
+  }
+
+  .demo__view-title i {
+    width: .45rem;
+    height: .45rem;
+    border-radius: 50%;
+    background: rgba(148, 163, 184, .35);
+  }
+
+  .demo__lines {
+    display: grid;
+    gap: .3rem;
+  }
+
+  .demo__line {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: .1rem .5rem;
+    min-width: 0;
+    font-family: var(--font-mono);
+    font-size: .76rem;
+    line-height: 1.45;
+    color: #d6e4f5;
+  }
+
+  .demo__line code {
+    min-width: 0;
+    padding: 0;
+    border: 0;
+    background: none;
+    font: inherit;
+    color: inherit;
+    overflow-wrap: anywhere;
+  }
+
+  .demo__prompt {
+    color: var(--flow-ink);
+    user-select: none;
+  }
+
+  .demo__line--note {
+    color: #94a3b8;
+  }
+
+  .demo__tag {
+    font-family: var(--font-sans);
+    font-size: .75rem;
+    color: var(--flow-ink);
+  }
+
+  /* With scripts the four views share one place, and one shows at a time. */
+  .js .demo__views > .demo__view {
+    grid-area: 1 / 1;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity .28s, visibility 0s .28s;
+  }
+
+  .js .demo__panel.is-active .demo__views > .demo__view.is-current {
+    opacity: 1;
+    visibility: visible;
+    transition: opacity .28s;
+  }
+
+  /* ---- actions of each scenario ------------------------------------------------ */
+  .demo__actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: .4rem .6rem;
+  }
+
+  .demo__cta,
+  .demo__copy {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: .5rem;
+    min-height: 44px;
+    padding: .35rem .95rem;
+    border: 1px solid rgba(94, 234, 212, .55);
+    border-radius: 12px;
+    background: rgba(45, 212, 191, .1);
+    font: inherit;
+    font-size: .92rem;
+    font-weight: 650;
+    line-height: 1.2;
+    color: #fff;
+    text-decoration: none;
+    cursor: pointer;
+    transition: background-color .2s, border-color .2s, box-shadow .2s;
+  }
+
+  .demo__cta:hover,
+  .demo__copy:hover {
+    border-color: var(--accent-ink);
+    background: rgba(45, 212, 191, .2);
+    box-shadow: 0 0 24px -8px rgba(45, 212, 191, .7);
+    color: #fff;
+  }
+
+  .demo__copy {
+    border-color: var(--demo-line);
+    background: rgba(15, 23, 42, .5);
+    font-weight: 600;
+    color: var(--ink-soft);
+  }
+
+  .demo__links {
+    display: inline-flex;
+    flex-wrap: wrap;
+    gap: 0 .35rem;
+  }
+
+  .demo__links a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    padding-inline: .45rem;
+    font-size: .9rem;
+    font-weight: 600;
+    color: var(--flow-ink);
+    text-decoration: underline;
+    text-decoration-color: rgba(94, 234, 212, .4);
+    text-underline-offset: 3px;
+  }
+
+  .demo__links a:hover {
+    color: #fff;
+  }
+
+  /* ---- foot: what this is, and the controls ------------------------------------ */
+  .demo__foot {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: .35rem 1rem;
+    padding-top: clamp(.6rem, 2.2cqi, .85rem);
+    border-top: 1px solid var(--demo-line);
+  }
+
+  .demo .demo__note {
+    display: inline-flex;
+    align-items: center;
+    gap: .45rem;
+    min-height: 2rem;
+    font-size: .8rem;
+    color: var(--muted);
+  }
+
+  .demo__controls {
+    display: flex;
+    align-items: center;
+    gap: .35rem;
+    margin-left: auto;
+  }
+
+  /* The controls and the copy button need the script. Where it will show them, their place is
+     kept from the first paint, so that nothing moves when they appear. */
+  .demo .demo__controls,
+  .demo .demo__copy {
+    display: none;
+  }
+
+  .js .demo .demo__copy {
+    display: inline-flex;
+    visibility: hidden;
+  }
+
+  /* Only in the scenario on show: a visible child would show through a hidden panel. */
+  .js .demo .demo__panel.is-active .demo__copy.is-on {
+    visibility: visible;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .js .demo .demo__controls {
+      display: flex;
+      visibility: hidden;
+    }
+
+    .js .demo.is-live .demo__controls {
+      visibility: visible;
+    }
+  }
+
+  .demo__control {
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    border: 1px solid var(--demo-line-strong);
+    border-radius: 50%;
+    background: rgba(15, 23, 42, .55);
+    color: var(--ink);
+    font-size: 1rem;
+    cursor: pointer;
+    transition: color .2s, border-color .2s, background-color .2s, opacity .2s;
+  }
+
+  .demo__control:hover {
+    border-color: var(--accent-ink);
+    color: #fff;
+  }
+
+  .demo__control[aria-disabled="true"] {
+    opacity: .38;
+    cursor: default;
+  }
+
+  .demo__control > span {
+    display: grid;
+    grid-area: 1 / 1;
+  }
+
+  .demo .demo__control-pause,
+  .demo.is-playing .demo__control-play {
+    display: none;
+  }
+
+  .demo.is-playing .demo__control-pause {
+    display: grid;
+  }
+
+  .demo__control-play .demo__icon {
+    fill: currentColor;
+    stroke-width: 1.2;
+  }
+
+  .demo__dots-track {
+    display: inline-flex;
+    gap: .32rem;
+    margin-left: .45rem;
+  }
+
+  .demo__dots-track i {
+    width: .42rem;
+    height: .42rem;
+    border-radius: 50%;
+    background: rgba(148, 163, 184, .32);
+    transition: background-color .3s, transform .3s;
+  }
+
+  .demo__dots-track i.is-done {
+    background: rgba(94, 234, 212, .6);
+  }
+
+  .demo__dots-track i.is-now {
+    background: #5eead4;
+    transform: scale(1.3);
+  }
+
+  /* A narrow panel: the bubbles take the width they can. */
+  @container (max-width: 23.99rem) {
+    .demo__row--you {
+      padding-left: 5%;
+    }
+
+    .demo__row--poesis {
+      padding-right: 0;
+    }
+
+    .demo__avatar {
+      width: 2rem;
+      height: 2rem;
+    }
+  }
+
+  /* ---- room to spare: the steps side by side ------------------------------------ */
+  @container (min-width: 35rem) {
+    .demo__flow {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 1.6rem;
+    }
+
+    .demo__card {
+      grid-template-columns: minmax(0, 1fr);
+      align-content: start;
+      align-items: start;
+      gap: .45rem;
+      padding: .8rem .85rem .85rem;
+    }
+
+    .demo__card-icon {
+      justify-self: start;
+      font-size: 1.3rem;
+    }
+
+    .demo__badge {
+      position: absolute;
+      top: -.5rem;
+      right: -.5rem;
+      box-shadow: 0 0 0 3px #0b1322;
+    }
+
+    /* the arrow from one step to the next */
+    .demo__card + .demo__card::before {
+      content: "";
+      position: absolute;
+      top: 50%;
+      left: -1.6rem;
+      width: 1.6rem;
+      height: 1px;
+      margin-left: 0;
+      background: linear-gradient(90deg, transparent 12%, rgba(148, 197, 222, .6) 12% 88%, transparent 88%);
+    }
+
+    .demo__card + .demo__card::after {
+      content: "";
+      position: absolute;
+      top: calc(50% - 3px);
+      left: -.62rem;
+      width: 6px;
+      height: 6px;
+      border-top: 1px solid rgba(148, 197, 222, .8);
+      border-right: 1px solid rgba(148, 197, 222, .8);
+      transform: rotate(45deg);
+    }
+
+    .demo__checks {
+      gap: .05rem .5rem;
+    }
+  }
+
+  /* A little narrower still leaves room for the steps beside their file. */
+  @container (min-width: 27rem) {
+    .demo__build {
+      grid-template-columns: minmax(0, .82fr) minmax(0, 1fr);
+      align-items: stretch;
+      gap: .75rem;
+    }
+
+    .demo__view {
+      height: 100%;
+    }
+
+    /* Both scenarios keep the same footprint, so changing tab moves nothing on the page. */
+    .js .demo__panels {
+      gap: 0;
+    }
+
+    .js .demo__panels > .demo__panel {
+      grid-area: 1 / 1;
+    }
+
+    .js .demo__panels > .demo__panel:not(.is-active) {
+      display: flex;
+      visibility: hidden;
+    }
+
+    .demo__actions {
+      margin-top: auto;
+    }
+  }
+
+  /* ---- played: each part arrives in turn --------------------------------------- */
+  /* Before the script answers, the parts wait hidden; if it never does, they show. */
+  @media (prefers-reduced-motion: no-preference) {
+    .js .demo:not(.is-ready) [data-step] {
+      animation: demo-in .5s 4s both;
+    }
+
+    .demo.is-live [data-step] {
+      opacity: 0;
+    }
+
+    .demo.is-live [data-step].is-on {
+      animation: demo-in .55s var(--demo-ease) both;
+    }
+
+    /* the answer: three dots, then the words */
+    .demo.is-live .demo__dots {
+      display: inline-flex;
+      opacity: 0;
+    }
+
+    .demo.is-live .is-on .demo__dots {
+      animation: demo-dots .8s linear both;
+    }
+
+    .demo.is-live .is-on .demo__dots i {
+      animation: demo-dot .8s ease-in-out both;
+    }
+
+    .demo.is-live .is-on .demo__dots i:nth-child(2) {
+      animation-delay: .12s;
+    }
+
+    .demo.is-live .is-on .demo__dots i:nth-child(3) {
+      animation-delay: .24s;
+    }
+
+    .demo.is-live .demo__word {
+      opacity: 0;
+    }
+
+    .demo.is-live .is-on .demo__word {
+      animation: demo-word .3s ease-out both;
+      animation-delay: calc(.8s + var(--i) * 60ms);
+    }
+
+    /* each step, then its tick */
+    .demo.is-live .demo__badge,
+    .demo.is-live .demo__result-mark {
+      opacity: 0;
+    }
+
+    .demo.is-live .is-on .demo__badge {
+      animation: demo-pop .45s var(--demo-ease) .55s both;
+    }
+
+    .demo.is-live .demo__check .demo__icon {
+      opacity: 0;
+    }
+
+    .demo.is-live .is-on .demo__check .demo__icon {
+      animation: demo-pop .35s var(--demo-ease) both;
+      animation-delay: calc(.45s + var(--i) * .38s);
+    }
+
+    .demo.is-live .demo__card--checks.is-on .demo__badge {
+      animation-delay: 1.65s;
+    }
+
+    .demo.is-live .is-on .demo__swap-from {
+      animation: demo-swap-from 1.2s ease both;
+    }
+
+    .demo.is-live .demo__swap-to {
+      opacity: 0;
+    }
+
+    .demo.is-live .is-on .demo__swap-to {
+      animation: demo-word .35s ease-out 1.05s both;
+    }
+
+    .demo.is-live .demo__card--approval.is-on .demo__badge {
+      animation-delay: 1.25s;
+    }
+
+    /* the result: it settles, and a light passes over it once */
+    .demo.is-live .demo__result.is-on .demo__result-mark {
+      animation: demo-pop .5s var(--demo-ease) .3s both;
+    }
+
+    .demo.is-live .demo__result::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(100deg, transparent 30%, rgba(187, 247, 208, .22) 50%, transparent 70%);
+      transform: translateX(-100%);
+      pointer-events: none;
+    }
+
+    .demo.is-live .demo__result.is-on::after {
+      animation: demo-sheen 1.1s ease-out .45s both;
+    }
+
+    /* the lines of a file or a command, one after the other */
+    .demo.is-live .demo__view .demo__line {
+      opacity: 0;
+    }
+
+    .demo.is-live .demo__view.is-current .demo__line {
+      animation: demo-word .3s ease-out both;
+      animation-delay: calc(.25s + var(--i) * .2s);
+    }
+
+    /* held: by the visitor, or while the panel is off screen */
+    .demo.is-paused *,
+    .demo.is-paused *::after,
+    .demo.is-held *,
+    .demo.is-held *::after {
+      animation-play-state: paused !important;
+    }
+
+    /* shown at once: a step chosen by hand never replays its entrance */
+    .demo.is-instant *,
+    .demo.is-instant *::after {
+      animation-duration: .01s !important;
+      animation-delay: 0s !important;
+    }
+  }
+
+  @keyframes demo-in {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: none; }
+  }
+
+  @keyframes demo-word {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  @keyframes demo-dots {
+    0%, 82% { opacity: 1; }
+    100% { opacity: 0; }
+  }
+
+  @keyframes demo-dot {
+    0%, 100% { transform: none; opacity: .45; }
+    40% { transform: translateY(-3px); opacity: 1; }
+  }
+
+  @keyframes demo-pop {
+    from { opacity: 0; transform: scale(.4); }
+    to { opacity: 1; transform: none; }
+  }
+
+  @keyframes demo-swap-from {
+    0%, 70% { opacity: 1; }
+    100% { opacity: 0; }
+  }
+
+  @keyframes demo-sheen {
+    from { transform: translateX(-100%); }
+    to { transform: translateX(100%); }
+  }
+</style>

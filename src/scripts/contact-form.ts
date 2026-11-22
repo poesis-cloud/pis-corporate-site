@@ -10,7 +10,7 @@
  */
 import { briefMailto, buildPayload, composeBrief, contactFields, interpretResponse, type ContactValues, type FieldKey, type Outcome } from './contact-brief.ts';
 
-type Field = HTMLInputElement | HTMLTextAreaElement;
+type Field = HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement;
 
 const SEND_TIMEOUT_MS = 20_000;
 
@@ -87,8 +87,13 @@ function mount(form: HTMLFormElement): void {
     started = true;
     track('business_contact_form_start', placement);
   });
+  // A marked field is cleared while it is being corrected, not when the visitor leaves it: leaving it is
+  // often the press on the submit button, and a message vanishing at that instant moves the button from
+  // under the pointer, so the press is lost.
   for (const element of fieldsOf(fieldKeys)) {
-    element.addEventListener('blur', () => { if (element.getAttribute('aria-invalid') === 'true') check(element); });
+    const recheck = () => { if (element.getAttribute('aria-invalid') === 'true' && (!element.required || element.value.trim() !== '') && element.checkValidity()) mark(element, true); };
+    element.addEventListener('input', recheck);
+    element.addEventListener('change', recheck);
   }
 
   const offerEmail = (request: ContactValues): void => {

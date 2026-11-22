@@ -1,54 +1,73 @@
 ---
 /**
- * Transformation — the single commercial service of Poesis.
- * Outcome, audience and scope, difficulties, method, proof, engagement terms
- * and limits, questions, then one call to action.
+ * Transformation — the one commercial offer of Poesis, told to a decision-maker.
+ *
+ * Seven short sections, each answering one question a first-time visitor has:
+ * what it is, whether it is for them, what would change, how it unfolds, why it
+ * holds, what proof exists, and what to do next. The one action is "Discuss
+ * your transformation", and it leads to the contact page.
+ *
+ * What the page may not do: present the offer as a standard package (the
+ * catalog records it as planned, and a pilot as "by agreement"), state a
+ * price, a duration or a result, or show a client the site cannot name. The
+ * aims of the method are written as aims. Every statement about SAF is one its
+ * documentation supports; the links go there.
  */
 import BaseLayout from '../layouts/BaseLayout.astro';
-import ContactSection from '../components/ContactSection.astro';
-import Faq from '../components/Faq.astro';
-import { faqLd, transformationFaq } from '../data/faq.ts';
 import { publishedCaseStudies } from '../data/case-studies.ts';
-import { methodSteps } from '../data/method.ts';
-import { maturityLabel, supportedHost } from '../data/saf.ts';
-import { offerName } from '../data/site.ts';
+import { harness, maturityLabel, safLinks, supportedHost } from '../data/saf.ts';
+import { contactEmail, externalLinkAttributes, offerName, offerQualifier } from '../data/site.ts';
+import { navigationCta } from '../data/site-navigation.ts';
 
-const title = offerName;
-const description = 'Poesis guides the agentic transformation of an organization or of one of its parts: scope, model of roles and workflows, pilot with SAF under human review, evidence review and next step.';
+const title = `${offerName}, one governed workflow at a time`;
+const description = 'Agentic Transformation by Poesis: turn real work into agent-assisted work your people can review, trace and decide on. Exploratory engagements, starting with one workflow.';
 
-const audiences = [
-  { who: 'Executives and business owners', need: 'who want AI to change how a unit works, not only which tools it uses.' },
-  { who: 'Transformation and operations leads', need: 'who must turn scattered experiments into a way of working that holds.' },
-  { who: 'CIOs, CTOs and architects', need: 'who are asked to let agents act, and need to see the boundary they act within.' },
-];
-
+/** The scope is the client's to choose. None of these is a claim of a completed deployment. */
 const scopes = [
-  { name: 'A process', body: 'One recurring flow of work, from its trigger to its result.' },
-  { name: 'A team or a function', body: 'The roles of a team, the handoffs between them and what they deliver.' },
-  { name: 'A department or business unit', body: 'Several teams, with the coordination and decisions that link them.' },
-  { name: 'A whole organization', body: 'Addressed perimeter by perimeter, each one building on the evidence of the last.' },
+  { name: 'One team', body: 'Its roles, its handoffs and what it delivers.' },
+  { name: 'A function or a profession', body: 'A practice shared by several teams, with its own standards and documents.' },
+  { name: 'An entity or business unit', body: 'Several teams, and the decisions that link them.' },
+  { name: 'A whole organization', body: 'Approached one scope at a time, each building on the evidence of the last.' },
 ];
 
-const difficulties = [
-  { title: 'Pilots that never leave the lab', body: 'A demonstration impresses, then nothing changes in how the work is organized. The missing piece is an operating model: responsibilities, workflows and human decisions that people can adopt.' },
-  { title: 'Delegation nobody can account for', body: 'Agents are given tools and access, and no one can say afterwards what they were allowed to do, what they did, or who accepted the result.' },
-  { title: 'Knowledge that lives in a few heads', body: 'The prompts, the habits and the judgment that make AI useful stay with the people who found them. The second team starts from zero.' },
+/** What the method aims at. An aim, not a result a contract would promise. */
+const aims = [
+  { today: 'Isolated chatbot prototypes.', aim: 'Explicit workflows: who does what, in which order, written down.' },
+  { today: 'Outputs nobody controls.', aim: 'Documents checked against a declared format before they are kept.' },
+  { today: 'Diffuse responsibilities.', aim: 'Decisions assigned to people, at the end of every workflow.' },
 ];
 
-const terms = [
-  { term: 'How it starts', detail: 'With a conversation about your scope. There is no qualification questionnaire and no standard package to pick.' },
-  { term: 'How it is scoped', detail: 'By agreement: perimeter, access, responsibilities, timing and commercial terms are written down before any work begins.' },
-  { term: 'What Poesis brings', detail: 'The method, the modelling work and the people who build SAF.' },
-  { term: 'What you bring', detail: 'The people who own the perimeter, time for review and decisions, and access to an agent host SAF supports.' },
-  { term: 'Where it runs', detail: 'Locally, on your repositories, inside the agent host your organization already uses. Poesis hosts nothing.' },
-  { term: 'What you keep', detail: 'The model, the workflows and the artifacts. They are files in your repository, on open-source software.' },
+/** The engagement in three stages. Each says what is done, what is proposed as a deliverable, and what the client decides. */
+const stages = [
+  {
+    id: 'discover',
+    name: 'Discover',
+    activity: 'We look with you at how one scope really works, and choose the workflow worth delegating first.',
+    deliverable: 'A written scope: the workflow, its roles, what stays with people, and what would count as success.',
+    decision: 'Whether to go on, and on which workflow.',
+  },
+  {
+    id: 'pilot',
+    name: 'Design and pilot',
+    activity: 'We write that workflow as a governed organization of AI agents with SAF, then run it on real work, by agreement.',
+    deliverable: 'The model, as files in your repository, and the documents the pilot produced.',
+    decision: 'You accept, question or reject what each workflow hands you.',
+  },
+  {
+    id: 'evaluate',
+    name: 'Evaluate and evolve',
+    activity: 'We read what the pilot produced against the criteria agreed at the start, including what did not work.',
+    deliverable: 'A review of the evidence and, if you continue, a plan for the next scope.',
+    decision: 'Extend, adjust or stop. Stopping is a legitimate outcome.',
+  },
 ];
 
-const limits = [
-  `SAF is in ${maturityLabel.toLowerCase()}. It is suited to a bounded pilot under human review, not to unattended production work.`,
-  `One agent host is supported today: ${supportedHost.name}.`,
-  'Authenticated human approval is planned. Today each workflow ends by handing its results to a person, and the system does not verify who decided.',
-  'Poesis publishes no price list and no committed duration. Both depend on the scope.',
+/** Four things SAF does today, each with the page of its documentation that says so. */
+const proofs = [
+  { name: 'Explicit workflows', body: 'Steps, roles and expected documents are declared before a workflow runs.', link: { href: safLinks.usage, label: 'How workflows run' } },
+  { name: 'Artifact contracts', body: 'Each document is validated against its declared schema before it is committed. The check covers its structure, not its judgment.', link: { href: safLinks.writeGovernance, label: 'How writes are governed' } },
+  { name: 'Human decisions', body: 'Every workflow ends with a person who accepts, raises concerns or rejects. The decision is recorded; the person is not yet authenticated.', link: { href: safLinks.usageModel, label: 'The usage model' } },
+  { name: 'A trace in Git', body: 'Validated work is committed to your own repository. Poesis hosts nothing.', link: { href: harness.docs, label: 'The harness' } },
 ];
 ---
 <BaseLayout
@@ -60,140 +79,138 @@ const limits = [
     {
       '@type': 'Service',
       name: offerName,
-      serviceType: 'Agentic organizational transformation consulting',
+      serviceType: 'Agentic transformation consulting',
       description,
       url: 'https://poesis.cloud/transformation/',
       provider: { '@type': 'Organization', name: 'Poesis', url: 'https://poesis.cloud/' },
       audience: { '@type': 'BusinessAudience', name: 'Organizations and the people leading their transformation' },
     },
-    faqLd(transformationFaq),
   ]}
 >
-  <section class="intro">
+  <section class="intro" aria-labelledby="offer-title">
     <div class="container">
       <ol class="crumbs" aria-label="Breadcrumb">
         <li><a href="/">Poesis</a></li>
         <li aria-current="page">Transformation</li>
       </ol>
-      <h1>{offerName}.</h1>
-      <p class="intro__lead">Poesis works with you to turn a part of your organization, or all of it, into an agentic organization: one where AI agents carry defined responsibilities inside explicit workflows, and people decide where it matters.</p>
-      <p class="intro__lead">You do not buy a tool. You engage a team to model your perimeter, run it on SAF in a focused pilot, and judge the result on evidence.</p>
+      <h1 id="offer-title">{title}.</h1>
+      <p class="intro__lead">Poesis helps your organization turn real work into agent-assisted work that your people can review, trace and decide on. It starts small: one team, one function or one process.</p>
+      <p class="intro__note">{offerQualifier} A pilot is agreed case by case.</p>
       <div class="actions">
-        <a class="btn btn-primary btn-lg" href="#contact" data-track="business_contact_intent" data-track-id="transformation-intro">Talk to Poesis</a>
-        <a class="btn btn-quiet" href="/how-it-works/">See how it works</a>
+        <a class="btn btn-primary btn-lg" href={navigationCta.href} data-track="business_contact_intent" data-track-id="transformation-intro">{navigationCta.label}</a>
+        <a class="btn btn-quiet" href="#path">See the engagement path</a>
       </div>
     </div>
   </section>
 
-  <section class="band band--raised" aria-labelledby="who-title">
+  <section class="band band--raised" id="who" aria-labelledby="who-title">
     <div class="container">
       <div class="band-head">
-        <h2 id="who-title">For the people accountable for how work gets done.</h2>
+        <h2 id="who-title">Choose the scope. Start with one workflow.</h2>
+        <p>For the people accountable for how a scope runs: its executives, its transformation and operations leads, its CIO or its architects.</p>
       </div>
-      <ul class="plain-list prose-narrow">
-        {audiences.map((audience) => <li><strong>{audience.who}</strong> {audience.need}</li>)}
-      </ul>
-      <div class="split">
-        <div>
-          <h3>Choose where to begin</h3>
-          <p>The engagement adapts to the perimeter. A small scope is not a lesser one: it is how the method earns the next.</p>
-        </div>
-        <dl class="spec">
-          {scopes.map((scope) => (
-            <div>
-              <dt>{scope.name}</dt>
-              <dd>{scope.body}</dd>
-            </div>
-          ))}
-        </dl>
-      </div>
+      <dl class="qualities">
+        {scopes.map((scope) => (
+          <div>
+            <dt>{scope.name}</dt>
+            <dd>{scope.body}</dd>
+          </div>
+        ))}
+      </dl>
+      <p class="fineprint">Every scope starts with a single workflow. The larger ones are a direction to grow in, not a list of deployments Poesis has completed.</p>
     </div>
   </section>
 
-  <section class="band" aria-labelledby="difficulties-title">
+  <section class="band" id="changes" aria-labelledby="changes-title">
     <div class="container">
       <div class="band-head">
-        <h2 id="difficulties-title">Three situations this work is meant for.</h2>
+        <h2 id="changes-title">What the method aims to change.</h2>
       </div>
-      <ul class="ledger ledger--pair">
-        {difficulties.map((item) => (
-          <li class="ledger__row">
-            <h3>{item.title}</h3>
-            <p>{item.body}</p>
+      <ul class="changes">
+        <li class="changes__head" aria-hidden="true">
+          <span>Today</span>
+          <span>The aim</span>
+        </li>
+        {aims.map((row) => (
+          <li>
+            <p class="changes__pain"><span class="changes__label">Today</span> {row.today}</p>
+            <p class="changes__result"><span class="changes__label">The aim</span> {row.aim}</p>
           </li>
         ))}
       </ul>
+      <p class="fineprint">These are the aims of the method, not contractual results. A pilot is judged on its own evidence.</p>
     </div>
   </section>
 
-  <section class="band band--raised" id="method" aria-labelledby="method-title">
+  <section class="band band--raised" id="path" aria-labelledby="path-title">
     <div class="container">
       <div class="band-head">
-        <h2 id="method-title">The method: plant a seed, then let evidence decide.</h2>
-        <p>The seed is a small, complete model of your perimeter as an agentic organization. It is planted on a real scope, observed, and changed by what the work shows. Five steps get you there; they are indicative, not contractual.</p>
+        <h2 id="path-title">The engagement path.</h2>
+        <p>Three stages. Each one ends with a decision that is yours.</p>
       </div>
-      <ol class="steps steps--five">
-        {methodSteps.map((step) => (
-          <li>
-            <h3>{step.title}</h3>
-            <p>{step.summary}</p>
-            <p class="steps__output">{step.result}</p>
+      <ol class="growth growth--three">
+        {stages.map((stage) => (
+          <li id={stage.id}>
+            <h3>{stage.name}</h3>
+            <p>{stage.activity}</p>
+            <dl class="stage">
+              <div>
+                <dt>Proposed deliverable</dt>
+                <dd>{stage.deliverable}</dd>
+              </div>
+              <div class="stage__decision">
+                <dt>Your decision</dt>
+                <dd>{stage.decision}</dd>
+              </div>
+            </dl>
           </li>
         ))}
       </ol>
-      <div class="actions">
-        <a class="btn btn-ghost" href="/how-it-works/">Each step in detail</a>
-        <a class="btn btn-quiet" href="/developers/" data-track="developer_docs_click" data-track-id="transformation-method">The framework it runs on</a>
-      </div>
+      <p class="fineprint">A pilot is agreed case by case: scope, access, timing and terms are written down before any work starts. Poesis publishes no price list and no standard duration. <a href="/how-it-works/">Read each step in detail</a>.</p>
     </div>
   </section>
 
-  {publishedCaseStudies.length > 0 && (
-    <section class="band" id="proof" aria-labelledby="proof-title">
-      <div class="container">
-        <div class="band-head">
-          <h2 id="proof-title">Proof you can inspect.</h2>
-          <p>Each case states whether it is a demonstration, a pilot or an operational deployment, and links to its evidence.</p>
-        </div>
-        <div class="actions"><a class="btn btn-ghost" href="/case-studies/">Read the case studies</a></div>
-      </div>
-    </section>
-  )}
-
-  <section class="band band--raised" id="engagement" aria-labelledby="engagement-title">
+  <section class="band" id="why" aria-labelledby="why-title">
     <div class="container">
       <div class="band-head">
-        <h2 id="engagement-title">How an engagement is framed, and where it stops.</h2>
+        <h2 id="why-title">Why Poesis, and why SAF.</h2>
+        <p>Poesis builds SAF, the open-source framework the method runs on. Four things it does today can be checked in its documentation.</p>
       </div>
-      <div class="split split--flush">
-        <dl class="spec">
-          {terms.map((item) => (
-            <div>
-              <dt>{item.term}</dt>
-              <dd>{item.detail}</dd>
-            </div>
-          ))}
-        </dl>
-        <div>
-          <h3>Limits you should know before we talk</h3>
-          <ul class="plain-list">
-            {limits.map((limit) => <li>{limit}</li>)}
-          </ul>
-        </div>
-      </div>
+      <dl class="qualities">
+        {proofs.map((proof) => (
+          <div>
+            <dt>{proof.name}</dt>
+            <dd>{proof.body} <a href={proof.link.href} {...externalLinkAttributes} data-track="developer_docs_click" data-track-id={`transformation-proof-${proof.name.toLowerCase().replaceAll(' ', '-')}`}>{proof.link.label}</a></dd>
+          </div>
+        ))}
+      </dl>
+      <p class="fineprint">SAF is in {maturityLabel.toLowerCase()} and runs in one agent host today, {supportedHost.name}. Its checks reduce errors and make them visible; they do not guarantee their absence. <a href="/developers/#status">Read what it does today, and where it stops</a>.</p>
     </div>
   </section>
 
-  <section class="band" id="faq" aria-labelledby="faq-title">
+  <section class="band band--raised" id="evidence" aria-labelledby="evidence-title">
     <div class="container">
       <div class="band-head">
-        <h2 id="faq-title">Questions before a first conversation.</h2>
+        <h2 id="evidence-title">How a pilot is evaluated.</h2>
+        <p>Success criteria are agreed in writing before a pilot starts. At the end we read what was produced against them: the documents, the record of each step, where people decided, and what did not work.</p>
+        {publishedCaseStudies.length > 0
+          ? <p><a href="/case-studies/">Read the published cases</a>.</p>
+          : <p>No client case is published yet. One will be published only with the client’s approval. <a href="/case-studies/">See how a pilot is documented</a>.</p>}
       </div>
-      <Faq items={transformationFaq} />
     </div>
   </section>
 
-  <ContactSection source="transformation" title="Start with the scope you have in mind.">
-    <p>Describe the team, function or process, and what you would want to see change.</p>
-  </ContactSection>
+  <section class="closing closing--home" id="start" aria-labelledby="start-title">
+    <div class="container closing__split">
+      <div>
+        <h2 id="start-title">Start with one workflow that matters.</h2>
+        <p>Tell us which team, function or process you have in mind, and what you would want to see change. A few lines are enough.</p>
+      </div>
+      <div class="closing__call">
+        <p class="closing__question">Which workflow would you start with?</p>
+        <a class="btn btn-primary btn-lg" href={navigationCta.href} data-track="business_contact_intent" data-track-id="transformation-closing">{navigationCta.label}</a>
+        <p class="closing__mail">Or write to <a href={`mailto:${contactEmail}`} data-track="business_contact_intent" data-track-id="transformation-closing-email">{contactEmail}</a></p>
+      </div>
+    </div>
+  </section>
 </BaseLayout>

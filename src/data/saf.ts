@@ -133,6 +133,10 @@ export const safLinks = {
   docs: 'https://docs.poesis.cloud/saf/',
   quickstart: 'https://docs.poesis.cloud/saf/quickstart/',
   usage: 'https://docs.poesis.cloud/saf/usage/',
+  /** How the harness authorizes and validates what agents write. */
+  writeGovernance: 'https://docs.poesis.cloud/saf/agentic-harness/write-governance/',
+  /** How a person works with the ready-made organization: workflows, challenges, gates. */
+  usageModel: `${repo('saf-agentic-organization')}/blob/main/docs/usage-model.md`,
   limitations: 'https://docs.poesis.cloud/saf/agentic-harness/limitations/',
   /** The SAF repositories of the organization, listed together so a visitor can star them. */
   repositories: 'https://github.com/orgs/poesis-cloud/repositories?q=saf',

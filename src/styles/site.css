@@ -223,7 +223,7 @@ a {
   transform: rotate(-45deg);
 }
 
-@media (max-width: 759px) {
+@media (max-width: 859px) {
   /* Without JavaScript the links wrap onto a second row and stay reachable. */
   .nav-links {
     order: 4;
@@ -283,8 +283,9 @@ a {
   }
 }
 
-/* Phones: the call to action keeps its full name, so the menu button keeps only its icon. */
-@media (max-width: 419px) {
+/* Phones: the call to action keeps its full name, on two lines, and the menu button keeps
+   only its icon. Nothing is hidden: the name of the site stays beside its mark. */
+@media (max-width: 30rem) {
   .nav {
     gap: .5rem;
   }
@@ -292,6 +293,15 @@ a {
   .brand {
     font-size: 1.25rem;
     gap: .45rem;
+  }
+
+  .nav-cta {
+    max-width: 8.6rem;
+    padding-inline: .75rem;
+    font-size: .84rem;
+    line-height: 1.15;
+    text-align: center;
+    white-space: normal;
   }
 
   .nav-toggle__label {
@@ -304,14 +314,26 @@ a {
   }
 }
 
-/* The narrowest screens: the mark alone stands for the name, which the link still carries. */
-@media (max-width: 339px) {
-  .brand span {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    overflow: hidden;
-    clip-path: inset(50%);
+/* The narrowest phones: the same three things, a little closer together. */
+@media (max-width: 22.5rem) {
+  .nav {
+    gap: .4rem;
+  }
+
+  .brand {
+    font-size: 1.12rem;
+    gap: .35rem;
+  }
+
+  .brand-mark {
+    width: 24px;
+    height: 24px;
+  }
+
+  .nav-cta {
+    max-width: 7.6rem;
+    padding-inline: .6rem;
+    font-size: .8rem;
   }
 }
 
@@ -373,8 +395,9 @@ a {
   line-height: 1.25;
 }
 
+/* Smaller in type, never in reach: every button is at least 44 px tall. */
 .btn-sm {
-  min-height: 40px;
+  min-height: 44px;
 }
 
 .btn-lg {
@@ -486,486 +509,225 @@ h3.stack-gap {
   color: var(--flow-ink);
 }
 
-/* ---- home hero: the promise, then one workflow shown as an illustration ----- */
-.home-hero {
+/* ---- home hero: the promise on one side, two demonstrations on the other ------
+   Named `masthead`: `.hero` belongs to the Knowledge pages (global.css) and would bring
+   their animated aurora with it. */
+.masthead {
+  --font-hero: ui-sans-serif, system-ui, -apple-system, "Segoe UI Variable Display", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   position: relative;
-  padding-block: clamp(2.5rem, 1.7rem + 3.6vw, 4.75rem) clamp(3.5rem, 2.5rem + 5vw, 6.5rem);
-  background: radial-gradient(58rem 26rem at 50% -8rem, rgba(45, 212, 191, .08), transparent 70%);
-}
-
-.home-hero__words {
-  max-width: 60rem;
-  margin-inline: auto;
-  text-align: center;
-}
-
-.home-hero__eyebrow {
-  margin: 0 0 1.4rem;
-  font-size: .8rem;
-  font-weight: 600;
-  letter-spacing: .14em;
-  text-transform: uppercase;
-  color: var(--flow-ink);
-}
-
-.home-hero h1 {
-  max-width: none;
-  margin: 0;
-  font-size: clamp(2.2rem, 1.3rem + 3.9vw, 4rem);
-  line-height: 1.06;
-  letter-spacing: -.02em;
-  text-wrap: balance;
-}
-
-.home-hero h1 span {
-  display: block;
-}
-
-.home-hero__lead {
-  max-width: 41rem;
-  margin: 1.6rem auto 0;
-  font-size: clamp(1.08rem, 1rem + .5vw, 1.3rem);
-  line-height: 1.5;
-  color: var(--ink-soft);
-  text-wrap: pretty;
-}
-
-.home-hero__note {
-  margin: .85rem 0 0;
-  font-size: .98rem;
-  color: var(--muted);
-}
-
-.home-hero__actions {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: .75rem 1rem;
-  margin-top: 2.1rem;
-}
-
-/* The scene: three groups read from left to right on wide screens, top to bottom
-   on narrow ones. Complete and still by default; the six beats are further down. */
-.scene {
-  max-width: 62rem;
-  margin: clamp(2.25rem, 1.8rem + 2.4vw, 3.75rem) auto 0;
-}
-
-.scene p {
-  margin: 0;
-}
-
-.scene__stage {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr) minmax(0, .95fr);
-  gap: clamp(1.25rem, 3vw, 2.75rem);
-  align-items: center;
-  padding: clamp(1.25rem, 1rem + 1.8vw, 2.5rem);
-  border: 1px solid var(--line);
-  border-radius: var(--radius-lg);
-  background: var(--surface);
-  font-size: .9rem;
-  line-height: 1.4;
-  text-align: left;
-}
-
-.scene__talk,
-.scene__work {
-  display: flex;
-  flex-direction: column;
-  gap: .8rem;
-  min-width: 0;
-}
-
-.scene__bubble {
-  max-width: 15rem;
-  padding: .65rem .9rem;
-  border: 1px solid var(--line-strong);
-}
-
-.scene__bubble--you {
-  align-self: flex-end;
-  border-radius: 14px 14px 3px 14px;
-  background: var(--surface-2);
-  color: var(--ink);
-}
-
-.scene__bubble--agent {
-  display: flex;
-  align-items: flex-start;
-  gap: .55rem;
-  align-self: flex-start;
-  border-radius: 3px 14px 14px 14px;
-  color: var(--ink-soft);
-}
-
-.scene__mark {
-  flex: none;
-  margin-top: .12rem;
-  fill: none;
-  stroke: var(--flow);
-  stroke-width: 2;
-  stroke-linecap: round;
-}
-
-/* The draft, and the trellis the harness lays over it: a faint grid, and three named checks. */
-.scene__doc {
-  position: relative;
+  isolation: isolate;
   overflow: hidden;
-  padding: .9rem 1rem;
-  border: 1px solid rgba(94, 234, 212, .55);
-  border-radius: 10px;
-  background: var(--bg);
+  padding-block: clamp(1.5rem, .6rem + 2.4vw, 3.5rem) clamp(4.5rem, 3rem + 7vw, 8.5rem);
+  /* From the top down: two glows, a veil that fades the grid towards the edges, the grid, the night blue.
+     All in one background: a separate layer for the grid cost two frames out of three while the demonstration played. */
+  background:
+    radial-gradient(54rem 32rem at 84% 20%, rgba(56, 189, 248, .12), transparent 68%),
+    radial-gradient(46rem 28rem at 2% 92%, rgba(45, 212, 191, .14), transparent 70%),
+    radial-gradient(80% 90% at 50% 22%, transparent 32%, rgba(6, 11, 23, .94) 100%),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='72' height='72'%3E%3Cpath d='M72 .5H.5V72' fill='none' stroke='%2394c5de' stroke-opacity='.1'/%3E%3C/svg%3E") 0 0 / 72px 72px,
+    linear-gradient(180deg, #050a15, #070d1b 62%, var(--bg));
 }
 
-.scene__doc::before {
-  content: "";
+.masthead__wave {
   position: absolute;
-  inset: 0;
-  background-image: linear-gradient(rgba(94, 234, 212, .09) 1px, transparent 1px), linear-gradient(90deg, rgba(94, 234, 212, .09) 1px, transparent 1px);
-  background-size: 18px 18px;
+  inset: auto 0 0;
+  z-index: -1;
+  width: 100%;
+  height: clamp(6rem, 17vw, 15rem);
   pointer-events: none;
 }
 
-.scene__doc > * {
-  position: relative;
+/* The hero is wider than the sections under it; on this page the header follows it, so that the logo and the title share one edge. */
+.masthead .container,
+[data-page-type="Home"] .site-header .container {
+  max-width: 82rem;
 }
 
-.scene__file {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: .75rem;
-  font-family: var(--font-mono);
-  font-size: .8rem;
-  color: var(--ink);
+.masthead__grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: clamp(1.75rem, 5vw, 2.75rem);
 }
 
-/* The state of the document: a draft until a person has decided. Still, it shows the decision. */
-.scene__state {
-  position: relative;
-  font-family: var(--font-sans);
-  font-size: .76rem;
-  font-weight: 600;
-  white-space: nowrap;
+/* The title is sized from the width of its own column, so that it keeps to three lines wherever the column allows. */
+.masthead__words {
+  container-type: inline-size;
+  width: 100%;
+  max-width: 41rem;
 }
 
-.scene__state i {
-  font-style: normal;
-  color: var(--gov);
+.masthead h1 {
+  max-width: none;
+  margin: 0;
+  font-family: var(--font-hero);
+  font-size: clamp(1.75rem, 9.6cqi, 4.2rem);
+  font-weight: 700;
+  line-height: 1.08;
+  letter-spacing: -.03em;
+  color: #fff;
+  text-wrap: balance;
 }
 
-.scene__state i:first-child {
-  position: absolute;
-  right: 0;
-  color: var(--alpha);
-  opacity: 0;
+.masthead__accent {
+  color: var(--accent-ink);
 }
 
-.scene__rule {
-  display: block;
-  width: 86%;
-  height: 5px;
-  margin-top: .55rem;
-  border-radius: 3px;
-  background: var(--line-strong);
+@supports ((-webkit-background-clip: text) or (background-clip: text)) {
+  .masthead__accent {
+    background: linear-gradient(92deg, #5eead4, #67e8f9 55%, #7dd3fc);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    -webkit-text-fill-color: transparent;
+  }
 }
 
-.scene__file + .scene__rule {
-  margin-top: .85rem;
+.masthead__lead {
+  max-width: 36rem;
+  margin: clamp(1rem, 3.6cqi, 1.5rem) 0 0;
+  font-size: clamp(1.03rem, .96rem + .42vw, 1.24rem);
+  line-height: 1.5;
+  color: var(--ink-soft);
+  text-wrap: balance;
 }
 
-.scene__rule + .scene__rule {
-  width: 70%;
+.masthead__lead strong {
+  font-weight: 700;
+  color: #fff;
 }
 
-.scene__rule + .scene__rule + .scene__rule {
-  width: 78%;
-}
-
-.scene__checks {
+.masthead__actions {
   display: flex;
   flex-wrap: wrap;
-  gap: .2rem .9rem;
-  margin: .9rem 0 0;
-  padding: .7rem 0 0;
-  border-top: 1px solid var(--line-strong);
-  list-style: none;
-  font-size: .8rem;
-  color: var(--ink-soft);
+  gap: .75rem;
+  margin-top: clamp(1.4rem, 4.6cqi, 2.1rem);
 }
 
-.scene__checks li:not(.scene__harness)::before {
-  content: "";
-  display: inline-block;
-  width: .42em;
-  height: .72em;
-  margin-right: .45em;
-  border: solid var(--flow);
-  border-width: 0 2px 2px 0;
-  transform: translateY(-.08em) rotate(45deg);
+.masthead__actions .btn {
+  flex: 1 1 auto;
+  justify-content: center;
+  gap: .6rem;
+  font-family: var(--font-hero);
+  font-weight: 650;
 }
 
-.scene__harness {
-  flex-basis: 100%;
-  font-weight: 600;
-  color: var(--flow-ink);
-}
-
-.scene__decision,
-.scene__commit {
-  display: flex;
-  align-items: center;
-  gap: .55rem;
-}
-
-.scene__decision svg,
-.scene__commit svg {
-  flex: none;
+.masthead__code {
+  width: 1.1em;
+  height: 1.1em;
   fill: none;
+  stroke: currentColor;
   stroke-width: 2;
-  stroke-linecap: round;
-}
-
-.scene__decision {
-  color: var(--ink-soft);
-}
-
-.scene__decision b {
-  font-weight: 600;
-  color: var(--gov);
-}
-
-.scene__decision svg {
-  stroke: var(--gov);
-}
-
-.scene__commit {
-  font-size: .84rem;
-  color: var(--ink-soft);
-}
-
-.scene__commit svg {
-  stroke: var(--flow);
-}
-
-/* The organization: two rails and their rungs, a strand laid flat, climbing a trellis. */
-.scene__growth {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: .35rem;
-  min-width: 0;
-}
-
-.scene__plant {
-  width: 100%;
-  max-width: 15rem;
-  height: auto;
-  fill: none;
   stroke-linecap: round;
   stroke-linejoin: round;
 }
 
-.scene__trellis {
-  stroke: rgba(255, 255, 255, .07);
-  stroke-width: 1;
+.masthead__demo {
+  min-width: 0;
 }
 
-.scene__ground {
-  stroke: var(--line-strong);
-  stroke-width: 1.5;
+.masthead__points {
+  display: grid;
+  gap: .7rem 1.5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: .95rem;
+  line-height: 1.3;
+  color: var(--ink-soft);
 }
 
-.scene__rail {
-  stroke-width: 2;
-}
-
-.scene__rail--a {
-  stroke: var(--flow);
-}
-
-.scene__rail--b {
-  stroke: var(--flow-2);
-}
-
-.scene__rungs {
-  stroke: rgba(94, 234, 212, .55);
-  stroke-width: 1.5;
-}
-
-.scene__branch {
-  stroke: var(--flow);
-  stroke-width: 1.8;
-}
-
-.scene__node {
-  fill: var(--surface);
-  stroke: var(--flow);
-  stroke-width: 2;
-}
-
-.scene__new .scene__node {
-  fill: var(--flow);
-}
-
-.scene__seed {
-  fill: var(--flow-2);
-}
-
-.scene__evolves {
-  font-weight: 600;
-  color: var(--flow-ink);
-  text-align: center;
-}
-
-.scene__caption {
+.masthead__points li {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-  min-height: 44px;
-  margin-top: .6rem;
-  padding-inline: .35rem;
-  font-size: .84rem;
-  color: var(--muted);
+  gap: .7rem;
 }
 
-.scene__toggle {
-  min-height: 44px;
-  padding: 0 .9rem;
-  border: 1px solid var(--line-strong);
-  border-radius: 10px;
-  background: transparent;
-  color: var(--ink-soft);
-  font: inherit;
-  cursor: pointer;
+.masthead__points svg {
+  flex: none;
+  color: var(--flow-ink);
 }
 
-.scene__toggle:hover {
-  border-color: var(--muted);
-  color: #fff;
-}
-
-/* Six beats in a twelve-second loop: the request, the draft, the checks, the decision,
-   the commit, the new branch. Played only with scripts on, so that the pause control
-   exists, and only for visitors who accept motion. Paused, the whole picture shows. */
-@media (prefers-reduced-motion: no-preference) {
-  .js .scene:not(.is-paused) [data-beat] {
-    animation: scene-beat-1 12s linear infinite both;
+@media (min-width: 40rem) {
+  .masthead__actions .btn {
+    flex: 0 0 auto;
   }
 
-  .js .scene:not(.is-paused) [data-beat="2"] {
-    animation-name: scene-beat-2;
+  .masthead__points {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    max-width: 41rem;
   }
 
-  .js .scene:not(.is-paused) [data-beat="3"],
-  .js .scene:not(.is-paused) .scene__doc::before {
-    animation: scene-beat-3 12s linear infinite both;
-  }
-
-  .js .scene:not(.is-paused) [data-beat="4"] {
-    animation-name: scene-beat-4;
-  }
-
-  .js .scene:not(.is-paused) [data-beat="5"] {
-    animation-name: scene-beat-5;
-  }
-
-  .js .scene:not(.is-paused) [data-beat="6"] {
-    animation-name: scene-beat-6;
-  }
-
-  .js .scene:not(.is-paused) .scene__doc {
-    animation: scene-beat-2 12s linear infinite both, scene-frame 12s linear infinite both;
-  }
-
-  .js .scene:not(.is-paused) .scene__state i:first-child {
-    animation: scene-draft 12s linear infinite both;
-  }
-
-  .js .scene.is-offscreen [data-beat],
-  .js .scene.is-offscreen .scene__state i,
-  .js .scene.is-offscreen .scene__doc::before {
-    animation-play-state: paused;
+  .masthead__points li {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: .45rem;
   }
 }
 
-@keyframes scene-beat-1 {
-  0%, 3% { opacity: 0; transform: translateY(8px); }
-  7%, 94% { opacity: 1; transform: none; }
-  100% { opacity: 0; transform: none; }
-}
-
-@keyframes scene-beat-2 {
-  0%, 15% { opacity: 0; transform: translateY(8px); }
-  19%, 94% { opacity: 1; transform: none; }
-  100% { opacity: 0; transform: none; }
-}
-
-@keyframes scene-beat-3 {
-  0%, 31% { opacity: 0; }
-  35%, 94% { opacity: 1; }
-  100% { opacity: 0; }
-}
-
-@keyframes scene-beat-4 {
-  0%, 48% { opacity: 0; transform: translateY(8px); }
-  52%, 94% { opacity: 1; transform: none; }
-  100% { opacity: 0; transform: none; }
-}
-
-@keyframes scene-beat-5 {
-  0%, 63% { opacity: 0; transform: translateY(8px); }
-  67%, 94% { opacity: 1; transform: none; }
-  100% { opacity: 0; transform: none; }
-}
-
-@keyframes scene-beat-6 {
-  0%, 76% { opacity: 0; }
-  81%, 94% { opacity: 1; }
-  100% { opacity: 0; }
-}
-
-@keyframes scene-draft {
-  0%, 48% { opacity: 1; }
-  52%, 100% { opacity: 0; }
-}
-
-@keyframes scene-frame {
-  0%, 31% { border-color: var(--line-strong); }
-  35%, 100% { border-color: rgba(94, 234, 212, .55); }
-}
-
-@media (max-width: 859px) {
-  .scene__stage {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    align-items: start;
+/* A phone held sideways: little height, so the title and the lead step down to leave the two actions on the first screen. */
+@media (max-height: 30rem) and (orientation: landscape) and (max-width: 63.99rem) {
+  .masthead {
+    padding-top: .75rem;
   }
 
-  .scene__growth {
-    grid-column: 1 / -1;
+  .masthead__words {
+    max-width: none;
   }
 
-  .scene__plant {
-    max-width: 13rem;
+  .masthead h1 {
+    font-size: clamp(1.6rem, min(9.6cqi, 9.4vh), 4.2rem);
+  }
+
+  .masthead__lead {
+    max-width: none;
+    margin-top: .6rem;
+    font-size: 1rem;
+    line-height: 1.45;
+  }
+
+  .masthead__actions {
+    margin-top: .9rem;
+  }
+
+  .masthead__actions .btn {
+    min-height: 46px;
+    padding-block: .55rem;
   }
 }
 
-@media (max-width: 559px) {
-  .scene__stage {
-    grid-template-columns: minmax(0, 1fr);
+/* A wide screen: the words on the left, the demonstration on the right. */
+@media (min-width: 64rem) {
+  .masthead__grid {
+    grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr);
+    grid-template-rows: auto auto;
+    align-items: center;
+    column-gap: clamp(2rem, 4.2vw, 4.25rem);
+    row-gap: clamp(1.5rem, 2.6vw, 2.4rem);
   }
 
-  .home-hero__actions .btn {
-    flex: 1 1 100%;
+  .masthead__words {
+    grid-area: 1 / 1;
+    align-self: end;
+    max-width: none;
+  }
+
+  .masthead__points {
+    grid-area: 2 / 1;
+    align-self: start;
+    max-width: 34rem;
+  }
+
+  /* Its height is kept from the first paint, a little under what it measures, so that the words
+     beside it stay where they are if the panel arrives in two paints. */
+  .masthead__demo {
+    grid-area: 1 / 2 / 3 / 3;
+    min-height: 43rem;
   }
 }
 
-/* The smallest phones: the optional line gives way, so that the first action stays on the first screen. */
-@media (max-width: 359px) {
-  .home-hero__note {
-    display: none;
+@media (min-width: 77rem) {
+  .masthead__demo {
+    min-height: 36rem;
   }
 }
 
@@ -1082,9 +844,41 @@ h3.stack-gap {
   color: var(--ink-soft);
 }
 
+/* The engagement path of the Transformation page: three stages, each with what is proposed and what the client decides. */
+.growth--three {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.stage {
+  display: grid;
+  gap: .9rem;
+  margin: 1.25rem 0 0;
+}
+
+.stage dt {
+  font-size: .82rem;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.stage dd {
+  margin: .2rem 0 0;
+  font-size: .98rem;
+  color: var(--ink-soft);
+}
+
+/* A human decision is said in the colour of human decisions. */
+.stage__decision dt {
+  color: var(--gov);
+}
+
 @media (max-width: 959px) {
   .growth {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .growth--three {
+    grid-template-columns: minmax(0, 1fr);
   }
 }
 
@@ -1781,7 +1575,7 @@ h3.stack-gap {
   display: inline-flex;
   align-items: center;
   gap: .4rem;
-  min-height: 40px;
+  min-height: 44px;
   padding: 0 .75rem;
   border: 0;
   border-radius: var(--radius-sm);
@@ -2030,15 +1824,43 @@ h3.stack-gap {
   margin-top: 1rem;
 }
 
+/* How far something goes today, said in a sentence under the lead: never a badge. */
+.intro__note {
+  max-width: var(--measure);
+  margin: 1rem 0 0;
+  font-size: .98rem;
+  color: var(--muted);
+}
+
+/* The contact page: the form is the page, so its intro stays short. */
+.intro--tight {
+  padding-block: clamp(2.25rem, 1.6rem + 3vw, 4rem) clamp(.5rem, .25rem + 1vw, 1.25rem);
+}
+
 .crumbs {
   display: flex;
   flex-wrap: wrap;
-  gap: .4rem;
-  margin: 0 0 1.5rem;
+  align-items: center;
+  gap: 0 .4rem;
+  margin: 0 0 .75rem;
   padding: 0;
   list-style: none;
   font-size: .9rem;
   color: var(--muted);
+}
+
+/* A small line of text, but a link all the same: it is as easy to reach as any other. */
+.crumbs li {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+}
+
+.crumbs a {
+  display: inline-flex;
+  align-items: center;
+  min-width: 44px;
+  min-height: 44px;
 }
 
 .crumbs li + li::before {
@@ -2341,9 +2163,56 @@ h3.stack-gap {
 }
 
 .brief-aside .address {
+  margin-bottom: .6rem;
   font-family: var(--font-mono);
   font-size: 1rem;
   word-break: break-all;
+}
+
+.brief-aside .address a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+}
+
+.brief-aside .btn {
+  min-height: 44px;
+}
+
+.copy-status {
+  min-height: 1.4em;
+  margin: .4rem 0 .6rem;
+  font-size: .9rem;
+  color: var(--flow-ink);
+}
+
+.copy-status:empty {
+  display: none;
+}
+
+.brief-aside .plain-list {
+  gap: 0;
+}
+
+.brief-aside .plain-list li {
+  display: flex;
+  align-items: center;
+  min-height: 44px;
+}
+
+.brief-aside .plain-list li::before {
+  top: 50%;
+}
+
+.brief-aside .plain-list a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+}
+
+.brief-aside .btn + p,
+.brief-aside .copy-status + p {
+  margin-top: 1rem;
 }
 
 @media (max-width: 859px) {
@@ -2393,6 +2262,13 @@ h3.stack-gap {
   color: var(--flow-ink);
 }
 
+/* The one link of a person's card: as easy to reach as a button. */
+.person p a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+}
+
 .person p {
   font-size: .96rem;
 }
@@ -2435,7 +2311,8 @@ h3.stack-gap {
 .site-footer li a {
   display: inline-flex;
   align-items: center;
-  min-height: 40px;
+  min-width: 44px;
+  min-height: 44px;
   color: var(--ink-soft);
   font-size: .95rem;
   overflow-wrap: anywhere;

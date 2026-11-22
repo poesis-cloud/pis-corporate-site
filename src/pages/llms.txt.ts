@@ -36,7 +36,7 @@ ${publishedCaseStudies.length ? `- [Case studies](${site}/case-studies/): publis
 
 ## Developers
 
-- [Build with SAF](${site}/developers/): the two products, what exists today, how a step goes through SAF, install commands, first workflow, contribution
+- [Explore SAF](${site}/developers/): the two products, what exists today, how a step goes through SAF, install commands, first workflow, contribution
 - [SAF documentation](${safLinks.docs}): reference documentation and quickstart
 - [${harness.technicalName}](${harness.repository}): source code and specification of the harness
 - [${organization.technicalName}](${organization.repository}): source code of the organization

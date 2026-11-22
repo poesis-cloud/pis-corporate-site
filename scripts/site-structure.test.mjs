@@ -13,30 +13,32 @@ import { test } from 'node:test';
 import { createHash } from 'node:crypto';
 import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { parse } from 'parse5';
-import { siteNavigation, navigationCta, footerNavigation, legalNavigation } from '../src/data/site-navigation.ts';
+import { developerCta, siteNavigation, navigationCta, footerNavigation, legalNavigation } from '../src/data/site-navigation.ts';
 import { archivePaths, archivePrefixes, knowledgeContext, knowledgePrefixes, platformOverviewPath, thesisPath } from '../src/data/knowledge.ts';
 import { cliVersionNote, harness, installCommands, knownLimits, latestPreRelease, marketplace, maturity, maturityLabel, organization, organizationCatalog, preReleases, safLinks, safProducts, supportedHost, verifiedOn } from '../src/data/saf.ts';
 import { homeFaq, howItWorksFaq, pilotFaq, transformationFaq, faqLd } from '../src/data/faq.ts';
 import { caseStudies, fictionalNotice, illustrativeExample, publicationChecklist, publishedCaseStudies, shownExample, validateCaseStudies } from '../src/data/case-studies.ts';
-import { briefMailto, buildPayload, composeBrief, contactFields, interpretResponse, MAILTO_LIMIT } from '../src/scripts/contact-brief.ts';
-import { LIMITS } from '../contact-endpoint/handler.mjs';
+import { briefMailto, buildPayload, composeBrief, contactFields, interestOptions, interpretResponse, MAILTO_LIMIT } from '../src/scripts/contact-brief.ts';
+import { INTERESTS, LIMITS } from '../contact-endpoint/handler.mjs';
 import { methodSteps } from '../src/data/method.ts';
-import { contact, contactEmail, contactTransport, offerName } from '../src/data/site.ts';
+import { contact, contactEmail, contactTransport, offerName, offerQualifier } from '../src/data/site.ts';
 import { platformSolutions, solutionHref } from '../src/data/poesis-platform.ts';
 import { alternatives } from '../src/data/alternatives.ts';
 
 /**
- * Decision of the Poesis team, 22 November 2026: the home page takes the structure of concept B
- * and the identity of concept A, and its hero says these words. They are held here word for word:
- * changing them is a decision for Poesis, not for a refactor.
+ * Decisions of the Poesis team, 22 November 2026. The home page takes the structure of concept B
+ * and the identity of concept A; the offer has one name, and each of the two actions of the site
+ * has one label. The words of the hero are held here as approved (iteration 4A): changing them is
+ * a decision for Poesis, not for a refactor.
  */
-const HERO_EYEBROW = 'Poesis · Agentic transformation';
-const HERO_TITLE = 'Plant one seed. Grow a governed organization of AI agents.';
-const HERO_LEAD = 'Transform the way your teams work with AI agents — built around your organization, guided by humans, and powered by SAF.';
-const HERO_NOTE = 'From a focused pilot to an evolving agentic operating model.';
-/** The two actions of the site, named the same way wherever they appear. */
-const CONTACT_ACTION = 'Talk to Poesis';
-const DEVELOPER_ACTION = 'Build with SAF';
+const OFFER_NAME = 'Agentic Transformation';
+const HERO_TITLE = 'Turn your organization into a governed AI operating model.';
+const HERO_LEAD = 'Poesis helps organizations and developers design, govern and grow agentic systems around real work — with SAF at the core.';
+/** The two actions of the hero, as worded for it; the header and every other page keep CONTACT_ACTION. */
+const HERO_ACTION = 'Talk to Poesis';
+const HERO_DEVELOPER_ACTION = 'Build with SAF';
+const CONTACT_ACTION = 'Discuss your transformation';
+const DEVELOPER_ACTION = 'Explore SAF';
 
 const here = (path) => new URL(path, import.meta.url);
 const read = (path) => readFileSync(here(path), 'utf8');
@@ -60,8 +62,8 @@ const mainOf = (document) => first(document, 'main');
 
 /** The pages that sell or explain the offer, all indexable. */
 const conversionPages = ['/', '/transformation/', '/how-it-works/', '/developers/', '/pilot/', '/about/', '/contact/'];
-/** The pages that end with the contact form, or are it. The home page sends to the contact page instead. */
-const formPages = ['/transformation/', '/how-it-works/', '/pilot/', '/contact/'];
+/** The pages that end with the contact form, or are it. The home and Transformation pages send to the contact page instead. */
+const formPages = ['/how-it-works/', '/pilot/', '/contact/'];
 const noteFiles = () => readdirSync(here('../src/content/insights/')).filter((file) => file.endsWith('.md'));
 
 // ---- 1. the Knowledge corpus is untouched -------------------------------------------------
@@ -177,7 +179,10 @@ test('FAQ covers the questions buyers and developers ask, and structured data re
   // The guard itself: it catches a figure, and does not trip on ordinary words.
   for (const text of ['cuts lead time by 30% in the pilot', 'done in 6 weeks', 'a 3x gain', 'a clear ROI', 'we guarantee it']) assert.match(text, promise, text);
   for (const text of ['an android app', 'five steps', 'the first three steps']) assert.doesNotMatch(text, promise, text);
-  assert.equal(offerName, 'Agentic Organization Transformation');
+  // One commercial name, and the earlier one is gone from the pages that sell.
+  assert.equal(offerName, OFFER_NAME);
+  // How far the offer goes is said in a sentence, never as a package: the catalog records it as planned.
+  assert.match(offerQualifier, /^Exploratory engagements, scoped with your team\.$/);
   const readiness = homeFaq.at(-1).answer.join(' ');
   assert.match(readiness, /^No\./);
   assert.ok(readiness.includes(latestPreRelease.version));
@@ -208,13 +213,16 @@ test('no case study is published without evidence, stated limits and clearance',
 });
 
 test('a contact request becomes an email draft or a payload, within the bounds the receiver enforces', () => {
-  const values = { name: 'Ada Lovelace', email: 'ada@example.org', company: '', goal: 'Our release process.', message: '' };
+  const values = { name: 'Ada Lovelace', email: 'ada@example.org', company: '', goal: 'Our release process.', interest: '' };
   const brief = composeBrief(values);
   assert.ok(brief.startsWith('Transformation request'));
-  assert.ok(brief.includes('Full name: Ada Lovelace'));
+  assert.ok(brief.includes('Name: Ada Lovelace'));
   assert.ok(brief.includes('Our release process.'));
-  assert.ok(!brief.includes('Company'), 'empty optional fields are left out');
-  assert.ok(!brief.includes('Additional context'));
+  assert.ok(!brief.includes('Organization'), 'empty optional fields are left out');
+  assert.ok(!brief.includes('We would like to discuss'));
+  // The optional choice is written in words, the way a reader of the email will see it.
+  assert.ok(composeBrief({ ...values, interest: 'pilot' }).includes('We would like to discuss: A first pilot'));
+  assert.deepEqual(Object.entries(INTERESTS), interestOptions.map((option) => [option.value, option.label]));
   const { href, shortened } = briefMailto(contactEmail, values);
   assert.equal(shortened, false);
   assert.ok(href.startsWith(`mailto:${contactEmail}?subject=`));
@@ -233,7 +241,7 @@ test('a contact request becomes an email draft or a payload, within the bounds t
   assert.doesNotMatch(hostile.href, /[\r\n]/);
 
   // The form and the receiver agree on names and bounds.
-  assert.deepEqual(contactFields.map((field) => field.key), ['name', 'email', 'company', 'goal', 'message']);
+  assert.deepEqual(contactFields.map((field) => field.key), ['name', 'email', 'company', 'goal', 'interest']);
   assert.deepEqual(contactFields.filter((field) => field.required).map((field) => field.key), ['name', 'email', 'goal']);
   for (const field of contactFields) assert.equal(field.maxLength, LIMITS[field.key], field.key);
   assert.deepEqual(buildPayload(values, { source: 'home', elapsedMs: 4321.6, trap: '' }), { ...values, source: 'home', elapsedMs: 4322, _gotcha: '' });
@@ -273,6 +281,7 @@ test('menu, call to action, footer and legal links point at distinct, well-forme
   assert.deepEqual(footerNavigation.map((group) => group.label), ['Transformation', 'Developers', 'Knowledge', 'Company']);
   assert.deepEqual(siteNavigation.map((item) => [item.label, item.href]), [['Transformation', '/transformation/'], ['Developers', '/developers/'], ['Knowledge', '/knowledge/']]);
   assert.deepEqual([navigationCta.label, navigationCta.href], [CONTACT_ACTION, '/contact/']);
+  assert.deepEqual([developerCta.label, developerCta.href], [DEVELOPER_ACTION, '/developers/']);
 });
 
 // ---- 3. the built site ------------------------------------------------------------------------
@@ -290,29 +299,31 @@ builtTest('the home page sells the transformation in its title, in six short sec
   const headings = elements(home, (node) => node.tagName === 'h1');
   assert.equal(headings.length, 1);
   assert.equal(clean(text(headings[0])), HERO_TITLE);
-  const hero = elements(main, (node) => hasClass(node, 'home-hero'))[0];
-  // The words approved by the team, each in its place: an orientation, the title, one sentence, one line.
-  assert.equal(clean(text(elements(hero, (node) => hasClass(node, 'home-hero__eyebrow'))[0])), HERO_EYEBROW);
-  assert.equal(clean(text(elements(hero, (node) => hasClass(node, 'home-hero__lead'))[0])), HERO_LEAD);
-  assert.equal(clean(text(elements(hero, (node) => hasClass(node, 'home-hero__note'))[0])), HERO_NOTE);
+  const hero = elements(main, (node) => node.tagName === 'section' && hasClass(node, 'masthead'))[0];
+  // The words approved for the hero: the promise, with "governed AI" set apart, then one sentence.
+  assert.equal(clean(text(elements(hero, (node) => hasClass(node, 'masthead__accent'))[0])), 'governed AI');
+  assert.equal(clean(text(elements(hero, (node) => hasClass(node, 'masthead__lead'))[0])), HERO_LEAD);
   // The founder's long sentence is the intent behind the title, never a heading of thirty words.
   for (const heading of elements(home, (node) => /^h[1-6]$/.test(node.tagName ?? ''))) assert.ok(clean(text(heading)).split(' ').length <= 14, clean(text(heading)));
   // Nothing in the hero promises an organization that runs itself.
   assert.doesNotMatch(clean(text(hero)), /fully automat|autonomous|without (people|humans)|no human|instantly/i);
-  // Two actions of comparable weight: the conversation with Poesis first, the developer path second. No repository link competes in the hero.
+  // Two actions of comparable weight: the conversation with Poesis first, the developer path second.
   const actions = elements(hero, (node) => node.tagName === 'a' && hasClass(node, 'btn'));
-  assert.deepEqual(actions.map((node) => [clean(text(node)), attr(node, 'href')]), [[CONTACT_ACTION, '/contact/'], [DEVELOPER_ACTION, '/developers/']]);
+  assert.deepEqual(actions.map((node) => [clean(text(node)), attr(node, 'href')]), [[HERO_ACTION, '/contact/'], [HERO_DEVELOPER_ACTION, '/developers/']]);
   assert.ok(hasClass(actions[0], 'btn-primary') && hasClass(actions[0], 'btn-lg'));
   assert.ok(hasClass(actions[1], 'btn-lg') && !hasClass(actions[1], 'btn-primary'));
-  assert.equal(elements(hero, (node) => attr(node, 'href')?.startsWith('https://')).length, 0);
+  // In reading order: the words and their two actions, the demonstration, then three short points.
+  const heroOrder = elements(hero, (node) => ['masthead__words', 'masthead__demo', 'masthead__points'].includes(attr(node, 'class'))).map((node) => attr(node, 'class'));
+  assert.deepEqual(heroOrder, ['masthead__words', 'masthead__demo', 'masthead__points']);
+  assert.deepEqual(elements(elements(hero, (node) => hasClass(node, 'masthead__points'))[0], (node) => node.tagName === 'li').map((node) => clean(text(node))), ['Organize work with AI agents', 'Keep people in control', 'Trace every decision in Git']);
   // Six sections and no more, in the order of the argument.
   const sections = elements(main, (node) => node.tagName === 'section');
   assert.deepEqual(sections.map((node) => attr(node, 'id') ?? 'hero'), ['hero', 'change', 'grow', 'paths', 'governed', 'evidence']);
   for (const section of sections) assert.ok(hasAttr(section, 'aria-labelledby'), attr(section, 'id'));
   const copy = clean(text(main));
-  // Short: a few hundred words, every word of the scene included.
+  // Short: a few hundred words. The two demonstrations count here, and each answer counts twice (once for screen readers, once word by word).
   const words = copy.split(' ').length;
-  assert.ok(words >= 300 && words <= 480, `${words} words`);
+  assert.ok(words >= 300 && words <= 680, `${words} words`);
   // The service is what is sold: the earlier platform positioning, a booking that does not exist and a community that does not exist are not on the page.
   for (const phrase of ['Organizational Intelligence Platform', 'OIP', 'Run a Pilot', 'Partnership', 'Book a', 'community', 'Apache', 'SaaS']) assert.ok(!copy.includes(phrase), phrase);
   // Nothing that moves from one pre-release to the next, and nothing no check can back.
@@ -331,7 +342,8 @@ builtTest('the home page sells the transformation in its title, in six short sec
   // Two paths, told apart: the service, then the open-source framework, each with a real destination.
   const paths = elements(main, (node) => attr(node, 'id') === 'paths')[0];
   const [service, framework] = elements(paths, (node) => node.tagName === 'article');
-  assert.deepEqual([service, framework].map((node) => clean(text(first(node, 'h3')))), ['Transform your organization', DEVELOPER_ACTION]);
+  assert.deepEqual([service, framework].map((node) => clean(text(first(node, 'h3')))), ['Transform your organization', 'Build with SAF']);
+  assert.deepEqual([service, framework].map((node) => clean(text(elements(node, (child) => child.tagName === 'a' && hasClass(child, 'btn'))[0]))), [CONTACT_ACTION, DEVELOPER_ACTION]);
   assert.deepEqual(elements(service, (node) => node.tagName === 'a').map((node) => attr(node, 'href')), ['/contact/', '/transformation/']);
   assert.deepEqual(elements(framework, (node) => node.tagName === 'a').map((node) => attr(node, 'href')), ['/developers/', safLinks.quickstart, safLinks.repositories, harness.contributing]);
   assert.ok(clean(text(framework)).includes(`${supportedHost.name} plugins`));
@@ -346,7 +358,7 @@ builtTest('the home page sells the transformation in its title, in six short sec
   assert.ok(clean(text(evidence)).includes('No case is published yet.'));
   for (const href of ['/case-studies/', safLinks.repositories, safLinks.limitations, safLinks.docs, '/contact/', `mailto:${contactEmail}`]) assert.equal(elements(evidence, (node) => attr(node, 'href') === href).length, 1, href);
   assert.equal(clean(text(elements(evidence, (node) => attr(node, 'href') === '/contact/')[0])), CONTACT_ACTION);
-  // Install commands live on the developers page, not here.
+  // The page prints no block of commands: the two lines of the developer demonstration are its only ones.
   assert.equal(elements(main, (node) => node.tagName === 'pre').length, 0);
   // Every link of the page leads somewhere: no empty or placeholder target.
   for (const link of elements(main, (node) => node.tagName === 'a')) assert.match(attr(link, 'href') ?? '', /^(\/[a-z-]+\/(#[a-z-]+)?|https:\/\/[^\s]+|mailto:[^\s]+)$/, clean(text(link)));
@@ -358,49 +370,71 @@ builtTest('the home page sells the transformation in its title, in six short sec
   assert.ok(html.includes("location.replace('/knowledge/platform/#' + hash)"));
 });
 
-builtTest('the hero scene tells one workflow in six beats, in real words, and claims nothing the harness does not do', () => {
-  const hero = elements(built('/'), (node) => hasClass(node, 'home-hero'))[0];
-  const figure = elements(hero, (node) => node.tagName === 'figure' && hasClass(node, 'scene'))[0];
-  // The request, the draft, the checks of the harness, the human decision, the commit, the new branch.
-  const beat = (number) => elements(figure, (node) => attr(node, 'data-beat') === String(number));
-  assert.deepEqual([1, 2, 3, 4, 5, 6].map((number) => beat(number).length > 0), [true, true, true, true, true, true]);
-  assert.equal(clean(text(beat(1)[0])), 'Map our release process.');
-  assert.ok(clean(text(elements(figure, (node) => hasClass(node, 'scene__doc'))[0])).startsWith('release-process.md'));
-  // The checks are named and limited: a write rule, a schema, a journal. The word is "checks", never "approved".
-  assert.deepEqual(elements(beat(3)[0], (node) => node.tagName === 'li').map((node) => clean(text(node))), ['Harness', 'write rule', 'schema', 'journal']);
-  assert.doesNotMatch(clean(text(beat(3)[0])), /approv|verified|validated by AI/i);
-  // The decision belongs to a person, apart from the checks, and comes after them.
-  const decision = elements(figure, (node) => hasClass(node, 'scene__decision'))[0];
-  assert.equal(clean(text(decision)), 'A person decides: accepted');
-  assert.equal(attr(decision, 'data-beat'), '4');
-  assert.equal(clean(text(elements(figure, (node) => hasClass(node, 'scene__commit'))[0])), 'Committed to your Git workspace');
-  assert.equal(clean(text(elements(figure, (node) => hasClass(node, 'scene__evolves'))[0])), 'The organization gains a branch');
-  // Said for what it is.
-  const caption = first(figure, 'figcaption');
-  assert.ok(clean(text(caption)).startsWith('Illustrative workflow'));
-  // An illustration, not a product screen: the only control is the one that pauses it, and it appears only when the scene can move.
-  const controls = elements(figure, (node) => ['a', 'button', 'input', 'select', 'textarea'].includes(node.tagName) || hasAttr(node, 'tabindex'));
-  assert.equal(controls.length, 1);
-  assert.equal(controls[0].tagName, 'button');
-  assert.equal(attr(controls[0], 'type'), 'button');
-  assert.ok(hasAttr(controls[0], 'hidden'));
-  assert.equal(clean(text(controls[0])), 'Pause animation');
-  // Drawn in the page: no film, no picture file, nothing fetched. The drawings are silent for screen readers; the words are text.
-  assert.equal(elements(hero, (node) => ['video', 'img', 'picture', 'source', 'canvas', 'iframe'].includes(node.tagName)).length, 0);
-  for (const drawing of elements(figure, (node) => node.tagName === 'svg')) assert.equal(attr(drawing, 'aria-hidden'), 'true');
+builtTest('the hero holds two scripted demonstrations, in real words, and shows only what SAF documents', () => {
+  const hero = elements(built('/'), (node) => node.tagName === 'section' && hasClass(node, 'masthead'))[0];
+  const demo = elements(hero, (node) => hasAttr(node, 'data-demo'))[0];
+  // Two tabs, wired as tabs, the organizations first.
+  const tabs = elements(demo, (node) => attr(node, 'role') === 'tab');
+  assert.deepEqual(tabs.map((node) => clean(text(node))), ['For organizations', 'For developers']);
+  assert.deepEqual(tabs.map((node) => [attr(node, 'aria-selected'), attr(node, 'tabindex'), node.tagName, attr(node, 'type')]), [['true', '0', 'button', 'button'], ['false', '-1', 'button', 'button']]);
+  assert.equal(attr(elements(demo, (node) => attr(node, 'role') === 'tablist')[0], 'aria-label'), 'Choose a demonstration');
+  const panels = elements(demo, (node) => attr(node, 'role') === 'tabpanel');
+  assert.deepEqual(panels.map((node) => attr(node, 'id')), tabs.map((node) => attr(node, 'aria-controls')));
+  assert.deepEqual(panels.map((node) => attr(node, 'aria-labelledby')), tabs.map((node) => attr(node, 'id')));
+  const [organizations, developers] = panels;
+  const step = (panel, number) => elements(panel, (node) => attr(node, 'data-step') === String(number));
+
+  // For organizations: a request, an answer, three steps, a result, one action.
+  assert.ok(clean(text(step(organizations, 1)[0])).endsWith('Help us structure our release approval workflow.'));
+  assert.ok(clean(text(step(organizations, 2)[0])).includes('I mapped the workflow, drafted a governed artifact, and prepared it for review.'));
+  assert.deepEqual([3, 4, 5].map((number) => clean(text(first(step(organizations, number)[0], 'b')))), ['Artifact drafted', 'Harness checks', 'Human approval']);
+  assert.deepEqual(elements(step(organizations, 4)[0], (node) => hasClass(node, 'demo__check')).map((node) => clean(text(node))), ['Rules', 'Schema', 'Traceability']);
+  assert.ok(clean(text(step(organizations, 5)[0])).includes('Reviewed and accepted'));
+  assert.equal(clean(text(step(organizations, 6)[0])), 'Committed to governed workspace');
+  assert.deepEqual(elements(organizations, (node) => node.tagName === 'a').map((node) => [clean(text(node)), attr(node, 'href')]), [[CONTACT_ACTION, '/contact/']]);
+
+  // For developers: another request, another answer, four steps, each with a file or a command that exists.
+  assert.ok(clean(text(step(developers, 1)[0])).endsWith('Help me set up a governed agentic organization.'));
+  assert.ok(clean(text(step(developers, 2)[0])).includes('Let’s configure an organization with declared agents, workflows and governance rules.'));
+  const chips = elements(developers, (node) => hasAttr(node, 'data-chip'));
+  assert.deepEqual(chips.map((node) => clean(text(node)).replace(/^\d+\s*/, '')), ['Install SAF harness', 'Declare organization components', 'Validate with the harness', 'Review artifacts in Git']);
+  assert.deepEqual(chips.map((node) => [node.tagName, attr(node, 'type'), attr(node, 'data-chip')]), [['button', 'button', '3'], ['button', 'button', '4'], ['button', 'button', '5'], ['button', 'button', '6']]);
+  const views = elements(developers, (node) => hasAttr(node, 'data-view'));
+  assert.deepEqual(views.map((node) => attr(node, 'id')), chips.map((node) => attr(node, 'aria-controls')));
+  const lines = (view) => elements(view, (node) => node.tagName === 'code').map((node) => clean(text(node)));
+  // The preview-channel commands of the Quickstart, word for word; the copy button carries all three.
+  assert.deepEqual(lines(views[0]), installCommands.slice(0, 2));
+  assert.equal(attr(elements(developers, (node) => hasAttr(node, 'data-demo-copy'))[0], 'data-demo-copy'), installCommands.join('\n'));
+  // Files of saf-agentic-organization, its `make verify` target, and the artifact patterns of its workspace configuration.
+  assert.deepEqual(lines(views[1]), ['agents/release-manager.agent.md', 'workflows/art/release-on-demand.workflow.conf.yaml', 'artifacts/art/release.artifact.schema.json', 'conf/access-control-list.conf.yaml']);
+  assert.equal(lines(views[2])[0], 'make verify');
+  assert.deepEqual(lines(views[3]), ['<release-slug>.release.md', '<decision-slug>.gate-decision.md']);
+  assert.deepEqual(elements(developers, (node) => node.tagName === 'a').map((node) => [clean(text(node)), attr(node, 'href')]), [['Explore SAF on GitHub', safLinks.repositories], ['Read the docs', safLinks.docs], ['Contribute', harness.contributing]]);
+
+  // Said for what it is, and controlled: pause or play, next step, replay. The style sheet shows the controls only when it can play.
+  assert.ok(clean(text(elements(demo, (node) => hasClass(node, 'demo__note'))[0])).startsWith('Illustrative demo.'));
+  const controls = elements(demo, (node) => hasClass(node, 'demo__controls'))[0];
+  assert.deepEqual(elements(controls, (node) => node.tagName === 'button').map((node) => attr(node, 'aria-label')), ['Pause the demonstration', 'Show the next step', 'Replay the demonstration']);
+  assert.equal(elements(demo, (node) => attr(node, 'role') === 'status' && attr(node, 'aria-live') === 'polite').length, 1);
+  // Built in the page: no film, no canvas, nothing fetched but the logo. The drawings are silent for screen readers.
+  assert.equal(elements(hero, (node) => ['video', 'picture', 'source', 'canvas', 'iframe', 'input', 'textarea'].includes(node.tagName)).length, 0);
+  assert.deepEqual([...new Set(elements(hero, (node) => node.tagName === 'img').map((node) => attr(node, 'src')))], ['/poesis-logo.png']);
+  for (const drawing of elements(hero, (node) => node.tagName === 'svg')) assert.equal(attr(drawing, 'aria-hidden'), 'true');
   assert.ok(!existsSync(here('../dist/hero/')), 'the former film is no longer shipped');
   assert.equal(elements(built('/'), (node) => node.tagName === 'link' && attr(node, 'rel') === 'preload').length, 0);
-  // It moves only with scripts on (so that it can be paused) and for visitors who accept motion; paused or still, the whole picture shows.
+  // It plays only for visitors who accept motion; otherwise the whole picture shows. It lays itself out from its own width.
   const styles = readdirSync(here('../dist/_astro/')).filter((file) => file.endsWith('.css')).map((file) => read(`../dist/_astro/${file}`)).join('\n');
-  assert.match(styles, /@media\s*\(prefers-reduced-motion:\s*no-preference\)\s*\{\s*\.js \.scene:not\(\.is-paused\) \[data-beat\]/);
-  assert.doesNotMatch(styles, /hero-diagram|hero-chat|hero-seed/);
-  const script = read('../dist/index.html');
-  assert.ok(script.includes("sessionStorage.setItem('poesis-hero-scene'"));
-  // The words promise nothing SAF does not ship.
-  const words = clean(text(figure));
-  for (const claim of ['autonomous', 'guarantee', 'unchecked', 'Claude', 'self-', 'approved by']) assert.ok(!words.toLowerCase().includes(claim.toLowerCase()), claim);
-  // Light: the whole home page, scene included, stays a small document.
-  assert.ok(statSync(here('../dist/index.html')).size < 60_000);
+  assert.match(styles, /@media\s*\(prefers-reduced-motion:\s*no-preference\)\s*\{[^@]*\.demo\.is-live \[data-step\]\s*\{\s*opacity:\s*0/);
+  assert.match(styles, /\.demo \.demo__controls,\s*\.demo \.demo__copy\s*\{\s*display:\s*none/);
+  assert.match(styles, /\.js \.demo\.is-live \.demo__controls\s*\{\s*visibility:\s*visible/);
+  assert.match(styles, /\.demo\s*\{[^}]*container-type:\s*inline-size/);
+  assert.match(styles, /@container\s*\(min-width:\s*35rem\)/);
+  assert.doesNotMatch(styles, /\.scene__|scene-step-|hero-diagram|hero-chat|hero-seed/);
+  // The words promise nothing SAF does not ship, and name no model or provider.
+  const words = clean(text(demo));
+  for (const claim of ['autonomous', 'guarantee', 'unchecked', 'Claude', 'GPT', 'self-', 'approved by', 'compliant', 'certified']) assert.ok(!words.toLowerCase().includes(claim.toLowerCase()), claim);
+  // Light: the whole home page, both demonstrations included, stays a small document.
+  assert.ok(statSync(here('../dist/index.html')).size < 75_000);
 });
 
 builtTest('every page carries the same short menu and the call to action, and none carries the old groups', () => {
@@ -541,9 +575,17 @@ builtTest('the contact form is short, labelled, honest about its transport, and 
     for (const [index, control] of controls.entries()) {
       const id = attr(control, 'id');
       assert.equal(elements(form, (node) => node.tagName === 'label' && attr(node, 'for') === id).length, 1, `${route} ${id}`);
-      assert.equal(Number(attr(control, 'maxlength')), contactFields[index].maxLength, `${route} ${id}`);
       assert.equal(hasAttr(control, 'required'), contactFields[index].required, `${route} ${id}`);
+      if (control.tagName === 'select') {
+        // The one choice of the form: optional, empty by default, and the same list the receiver accepts.
+        assert.deepEqual(elements(control, (node) => node.tagName === 'option').map((node) => [attr(node, 'value'), clean(text(node))]), [['', 'Choose one'], ...interestOptions.map((option) => [option.value, option.label])], `${route} ${id}`);
+      } else {
+        assert.equal(Number(attr(control, 'maxlength')), contactFields[index].maxLength, `${route} ${id}`);
+      }
     }
+    // Four things to type, three of them required, and one optional choice: nothing else is asked.
+    assert.deepEqual(contactFields.map((field) => [field.key, field.required]), [['name', true], ['email', true], ['company', false], ['goal', true], ['interest', false]]);
+    assert.equal(elements(form, (node) => attr(node, 'type') === 'checkbox').length, 0, `${route}: no forced consent, no newsletter`);
     assert.equal(elements(form, (node) => ['file', 'password', 'tel'].includes(attr(node, 'type'))).length, 0, route);
     assert.equal(attr(form, 'data-source'), route.replaceAll('/', ''), route);
     assert.ok(elements(form, (node) => attr(node, 'href') === '/legal/privacy').length, `${route}: privacy link`);
@@ -565,7 +607,7 @@ builtTest('the contact form is short, labelled, honest about its transport, and 
     if (hasAttr(form, 'data-endpoint')) {
       // A receiver is configured: the confirmation exists but is hidden until the receiver answers.
       assert.match(attr(form, 'data-endpoint'), /^https:\/\/|^http:\/\/(127\.0\.0\.1|localhost)[:/]/, route);
-      assert.equal(button, 'Discuss your transformation', route);
+      assert.equal(button, 'Send my request', route);
       assert.equal(done.length, 1, route);
       assert.ok(hasAttr(done[0], 'hidden'), route);
       assert.ok(elements(form, (node) => node.tagName === 'noscript').length, `${route}: wording for visitors without scripts`);
@@ -579,6 +621,17 @@ builtTest('the contact form is short, labelled, honest about its transport, and 
   }
   const contact = built('/contact/');
   for (const destination of [harness.issues, organization.issues]) assert.ok(elements(contact, (node) => attr(node, 'href') === destination).length, destination);
+  // The contact page: one title that says what to do, what happens next without a promised delay, and the address for those who prefer to write.
+  assert.equal(clean(text(first(contact, 'h1'))), 'Tell us what you want to transform.');
+  const contactCopy = clean(text(mainOf(contact)));
+  assert.ok(contactCopy.includes(offerQualifier));
+  assert.equal(elements(mainOf(contact), (node) => hasClass(node, 'next-steps'))[0].childNodes.filter((node) => node.tagName === 'li').length, 3);
+  assert.doesNotMatch(contactCopy, /within \d+|\d+ (hours?|days?|business days?)|book a|calendar|newsletter/i);
+  assert.ok(elements(mainOf(contact), (node) => attr(node, 'href') === `mailto:${contactEmail}`).length >= 1);
+  // The address can be copied in one tap; the control shows only where the browser can copy.
+  const copyAddress = elements(mainOf(contact), (node) => hasAttr(node, 'data-copy-address'))[0];
+  assert.equal(attr(copyAddress, 'data-copy-address'), contactEmail);
+  assert.ok(hasAttr(copyAddress, 'hidden'));
   // No third-party form service and no key in any page that carries the form.
   for (const route of formPages) assert.doesNotMatch(read(distFile(route)), /formspree|getform|netlify|hubspot|typeform|web3forms|api[_-]?key|secret/i, route);
   // The privacy policy describes the transport that was actually built.
@@ -607,6 +660,53 @@ builtTest('the developers page shows the verified install commands, keeps what e
   assert.ok(elements(page, (node) => attr(node, 'href') === '/transformation/').length, 'the way back to the service');
   // The former address of the page was never published: nothing is left at it.
   assert.ok(!existsSync(here('../dist/open-source/')));
+});
+
+builtTest('the Transformation page sells one offer in seven short sections, says how far it goes, and has one action', () => {
+  const page = built('/transformation/');
+  const main = mainOf(page);
+  const copy = clean(text(main));
+  assert.equal(clean(text(first(page, 'h1'))), `${OFFER_NAME}, one governed workflow at a time.`);
+  // Seven sections, each answering one question of a first-time visitor.
+  assert.deepEqual(elements(main, (node) => node.tagName === 'section').map((node) => attr(node, 'id') ?? 'offer'), ['offer', 'who', 'changes', 'path', 'why', 'evidence', 'start']);
+  // The level of the offer is said beside it: exploratory, a pilot by agreement, and no package, price or duration.
+  const intro = elements(main, (node) => hasClass(node, 'intro'))[0];
+  assert.ok(clean(text(intro)).includes(`${offerQualifier} A pilot is agreed case by case.`));
+  assert.ok(copy.includes('Poesis publishes no price list and no standard duration.'));
+  assert.doesNotMatch(copy, /Agentic Organization Transformation|book a|package|production-ready|deployed at scale|Claude|\d+\s*%|\d+\s*(days?|weeks?|months?)\b|\bROI\b|€|\$/i);
+  // Larger scopes are a direction, not a record: the page says so.
+  const who = elements(main, (node) => attr(node, 'id') === 'who')[0];
+  assert.deepEqual(elements(who, (node) => node.tagName === 'dt').map((node) => clean(text(node))), ['One team', 'A function or a profession', 'An entity or business unit', 'A whole organization']);
+  assert.ok(clean(text(who)).includes('not a list of deployments Poesis has completed'));
+  // What changes is written as an aim of the method.
+  const changes = elements(main, (node) => attr(node, 'id') === 'changes')[0];
+  assert.equal(elements(changes, (node) => node.tagName === 'li' && !hasClass(node, 'changes__head')).length, 3);
+  assert.ok(clean(text(changes)).includes('These are the aims of the method, not contractual results.'));
+  // Three stages; each says what is proposed as a deliverable and what the client decides. The pilot keeps an address of its own.
+  const path = elements(main, (node) => attr(node, 'id') === 'path')[0];
+  const stages = elements(path, (node) => node.tagName === 'li');
+  assert.deepEqual(stages.map((node) => [attr(node, 'id'), clean(text(first(node, 'h3')))]), [['discover', 'Discover'], ['pilot', 'Design and pilot'], ['evaluate', 'Evaluate and evolve']]);
+  for (const stage of stages) assert.deepEqual(elements(stage, (node) => node.tagName === 'dt').map((node) => clean(text(node))), ['Proposed deliverable', 'Your decision']);
+  assert.ok(clean(text(stages[1])).includes('by agreement'));
+  // Four things SAF does today, each linked to the documentation that says so, and the limit of what a check proves.
+  const why = elements(main, (node) => attr(node, 'id') === 'why')[0];
+  assert.deepEqual(elements(why, (node) => node.tagName === 'dt').map((node) => clean(text(node))), ['Explicit workflows', 'Artifact contracts', 'Human decisions', 'A trace in Git']);
+  for (const href of [safLinks.usage, safLinks.writeGovernance, safLinks.usageModel, harness.docs, '/developers/#status']) assert.equal(elements(why, (node) => attr(node, 'href') === href).length, 1, href);
+  assert.ok(clean(text(why)).includes('they do not guarantee their absence'));
+  assert.ok(clean(text(why)).includes(maturityLabel.toLowerCase()) && clean(text(why)).includes(supportedHost.name));
+  // Evidence: how a pilot is evaluated, and the plain fact that no case is published. No example, no figure.
+  const evidence = elements(main, (node) => attr(node, 'id') === 'evidence')[0];
+  assert.ok(clean(text(evidence)).includes('No client case is published yet.'));
+  assert.equal(elements(evidence, (node) => attr(node, 'href') === '/case-studies/').length, 1);
+  // One action, named once, leading to the contact page from the top and from the end. No form and no list of questions on this page.
+  const primary = elements(main, (node) => node.tagName === 'a' && hasClass(node, 'btn-primary'));
+  assert.deepEqual(primary.map((node) => [clean(text(node)), attr(node, 'href')]), [[CONTACT_ACTION, '/contact/'], [CONTACT_ACTION, '/contact/']]);
+  assert.equal(elements(main, (node) => node.tagName === 'form' || node.tagName === 'details').length, 0);
+  const blocks = elements(page, (node) => node.tagName === 'script' && attr(node, 'type') === 'application/ld+json').map((node) => JSON.parse(text(node)));
+  assert.ok(blocks.some((block) => block['@type'] === 'Service' && block.name === OFFER_NAME));
+  assert.ok(!blocks.some((block) => block['@type'] === 'FAQPage'));
+  // The earlier name of the offer is on no page that sells.
+  for (const route of conversionPages) assert.ok(!clean(text(mainOf(built(route)))).includes('Agentic Organization Transformation'), route);
 });
 
 builtTest('links that used to reach the former home page or the pilot builder still reach them', () => {
@@ -663,8 +763,8 @@ builtTest('without a published case, the register is a quiet page with no exampl
   assert.equal(attr(elements(register, (node) => node.tagName === 'meta' && attr(node, 'name') === 'robots')[0], 'content'), 'noindex, follow');
   assert.equal(elements(register, (node) => node.tagName === 'link' && attr(node, 'rel') === 'canonical').length, 0);
   assert.equal(elements(first(register, 'header'), (node) => attr(node, 'href')?.startsWith('/case-studies')).length, 0);
-  // Only the evidence section of the home page sends a reader to it, to say how a pilot is documented.
-  for (const route of conversionPages.filter((page) => page !== '/')) assert.equal(elements(mainOf(built(route)), (node) => attr(node, 'href')?.startsWith('/case-studies')).length, 0, route);
+  // Only the evidence sections of the home and Transformation pages send a reader to it, to say how a pilot is documented.
+  for (const route of conversionPages) assert.equal(elements(mainOf(built(route)), (node) => attr(node, 'href')?.startsWith('/case-studies')).length, ['/', '/transformation/'].includes(route) ? 1 : 0, route);
 });
 
 builtTest('the sitemap and the noindex directives agree, and archived offers are in neither index', () => {

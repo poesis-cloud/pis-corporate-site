@@ -12,16 +12,25 @@
  * src/data/saf.ts. The page prints no count, no version and no licence name.
  */
 import BaseLayout from '../layouts/BaseLayout.astro';
+import DemoChat from '../components/DemoChat.astro';
+import Icon from '../components/Icon.astro';
 import { evidenceKinds, publishedCaseStudies } from '../data/case-studies.ts';
 import { harness, maturityLabel, safLinks, supportedHost } from '../data/saf.ts';
 import { contactEmail, externalLinkAttributes } from '../data/site.ts';
+import { developerCta, navigationCta } from '../data/site-navigation.ts';
 
 /** The title of the page and its H1, approved on 22 November 2026. Held word for word by a test. */
-const heroTitle = 'Plant one seed. Grow a governed organization of AI agents';
-/** The same words in two lines: the image first, then what it means for the reader. */
-const [heroSeed, heroPromise] = ['Plant one seed.', 'Grow a governed organization of AI agents.'];
-const heroLead = 'Transform the way your teams work with AI agents — built around your organization, guided by humans, and powered by SAF.';
-const heroNote = 'From a focused pilot to an evolving agentic operating model.';
+/** The promise of the hero. "governed AI" is set apart in the page; the title of the tab is the plain sentence. */
+const heroTitle = 'Turn your organization into a governed AI operating model';
+/** The two actions of the hero, as worded for it. The header keeps the action of the site, `navigationCta`. */
+const heroCta = { href: navigationCta.href, label: 'Talk to Poesis' };
+const heroDeveloperCta = { href: developerCta.href, label: 'Build with SAF' };
+/** Three things the page goes on to show; each is a statement the SAF documentation supports. */
+const heroPoints = [
+  { icon: 'layers', text: 'Organize work with AI agents' },
+  { icon: 'shield', text: 'Keep people in control' },
+  { icon: 'check-badge', text: 'Trace every decision in Git' },
+] as const;
 const description = 'Poesis helps organizations adopt governed AI agents: a transformation service that starts with a focused pilot, built on SAF, its open-source framework.';
 
 /** Three problems a decision-maker recognizes, each with what changes. Only what SAF ships today is on the right. */
@@ -53,83 +62,42 @@ const qualities = [
   pageType="Home"
   jsonLd={[{ '@type': 'WebSite', name: 'Poesis', url: 'https://poesis.cloud/', description }]}
 >
-  <section class="home-hero" aria-labelledby="hero-title">
-    <div class="container">
-      <div class="home-hero__words">
-        <p class="home-hero__eyebrow">Poesis · Agentic transformation</p>
-        <h1 id="hero-title"><span>{heroSeed}</span> <span>{heroPromise}</span></h1>
-        <p class="home-hero__lead">{heroLead}</p>
-        <p class="home-hero__note">{heroNote}</p>
-        <div class="home-hero__actions">
-          <a class="btn btn-primary btn-lg" href="/contact/" data-track="business_contact_intent" data-track-id="home-hero">Talk to Poesis</a>
-          <a class="btn btn-ghost btn-lg" href="/developers/" data-track="developer_docs_click" data-track-id="home-hero">Build with SAF</a>
+  <section class="masthead" aria-labelledby="hero-title">
+    <svg class="masthead__wave" viewBox="0 0 1440 300" preserveAspectRatio="none" aria-hidden="true" focusable="false">
+      <defs>
+        <linearGradient id="hero-wave-line" x1="0" x2="1" y1="0" y2="0">
+          <stop offset="0" stop-color="#2dd4bf" stop-opacity="0" />
+          <stop offset=".3" stop-color="#2dd4bf" stop-opacity=".7" />
+          <stop offset=".68" stop-color="#38bdf8" stop-opacity=".45" />
+          <stop offset="1" stop-color="#38bdf8" stop-opacity="0" />
+        </linearGradient>
+        <linearGradient id="hero-wave-fill" x1="0" x2="0" y1="0" y2="1">
+          <stop offset="0" stop-color="#2dd4bf" stop-opacity=".16" />
+          <stop offset="1" stop-color="#2dd4bf" stop-opacity="0" />
+        </linearGradient>
+      </defs>
+      <path d="M0 150C210 60 420 70 650 160S1120 280 1440 130V300H0Z" fill="url(#hero-wave-fill)" />
+      <path d="M0 150C210 60 420 70 650 160S1120 280 1440 130" fill="none" stroke="url(#hero-wave-line)" stroke-width="1.6" vector-effect="non-scaling-stroke" />
+      <path d="M0 205C250 120 470 150 720 215S1160 290 1440 200" fill="none" stroke="url(#hero-wave-line)" stroke-width="1" opacity=".5" vector-effect="non-scaling-stroke" />
+    </svg>
+    <div class="container masthead__grid">
+      <div class="masthead__words">
+        <h1 id="hero-title">Turn your organization into a <span class="masthead__accent">governed AI</span> operating model.</h1>
+        <p class="masthead__lead">Poesis helps organizations and developers design, govern and grow agentic systems around real work — with <strong>SAF</strong> at the core.</p>
+        <div class="masthead__actions">
+          <a class="btn btn-primary btn-lg" href={heroCta.href} data-track="business_contact_intent" data-track-id="home-hero">{heroCta.label} <Icon name="arrow-right" size={18} /></a>
+          <a class="btn btn-ghost btn-lg" href={heroDeveloperCta.href} data-track="developer_docs_click" data-track-id="home-hero">{heroDeveloperCta.label} <svg class="masthead__code" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="m16 18 6-6-6-6" /><path d="m8 6-6 6 6 6" /></svg></a>
         </div>
       </div>
 
-      {/* One workflow, as an illustration: a request, a draft, the checks of the harness, a human
-          decision, the commit, and the organization that gains a branch. Every word is real text
-          and the whole picture is readable when nothing moves. It animates only with scripts on
-          (so that it can be paused) and when the visitor has not asked for reduced motion. */}
-      <figure class="scene" data-scene>
-        <div class="scene__stage">
-          <div class="scene__talk">
-            <p class="scene__bubble scene__bubble--you" data-beat="1">Map our release process.</p>
-            <p class="scene__bubble scene__bubble--agent" data-beat="2">
-              <svg class="scene__mark" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M8 2c0 5 8 6 8 10s-8 5-8 10M16 2c0 5-8 6-8 10s8 5 8 10" /></svg>
-              <span>Here is a first draft.</span>
-            </p>
-          </div>
+      {/* Two scripted demonstrations, one for each reader of this page. Illustrative, and labelled so. */}
+      <div class="masthead__demo">
+        <DemoChat id="hero-demo" source="home" />
+      </div>
 
-          <div class="scene__work">
-            <div class="scene__doc" data-beat="2">
-              <p class="scene__file"><span>release-process.md</span> <b class="scene__state"><i aria-hidden="true">Draft</i><i data-beat="4">Accepted</i></b></p>
-              <span class="scene__rule" aria-hidden="true"></span>
-              <span class="scene__rule" aria-hidden="true"></span>
-              <span class="scene__rule" aria-hidden="true"></span>
-              <ul class="scene__checks" data-beat="3">
-                <li class="scene__harness">Harness</li>
-                <li>write rule</li>
-                <li>schema</li>
-                <li>journal</li>
-              </ul>
-            </div>
-            <p class="scene__decision" data-beat="4">
-              <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><circle cx="12" cy="8" r="3.5" /><path d="M5 20c1.2-3.6 4-5.4 7-5.4s5.8 1.8 7 5.4" /></svg>
-              <span><b>A person decides:</b> accepted</span>
-            </p>
-            <p class="scene__commit" data-beat="5">
-              <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><circle cx="12" cy="12" r="3.2" /><path d="M2 12h6.8M15.2 12H22" /></svg>
-              <span>Committed to your Git workspace</span>
-            </p>
-          </div>
-
-          <div class="scene__growth">
-            <svg class="scene__plant" viewBox="0 0 240 216" aria-hidden="true">
-              <path class="scene__trellis" d="M30 12V196M60 12V196M90 12V196M120 12V196M150 12V196M180 12V196M210 12V196M12 28H228M12 58H228M12 88H228M12 118H228M12 148H228M12 178H228" />
-              <path class="scene__ground" d="M20 196H220" />
-              <path class="scene__rail scene__rail--a" d="M113 196V88" />
-              <path class="scene__rail scene__rail--b" d="M127 196V88" />
-              <path class="scene__rungs" d="M113 178H127M113 158H127M113 138H127M113 118H127M113 98H127" />
-              <path class="scene__branch" d="M113 148H60V132M127 118H180V102" />
-              <circle class="scene__node" cx="60" cy="124" r="8" />
-              <circle class="scene__node" cx="180" cy="94" r="8" />
-              <g class="scene__new" data-beat="6">
-                <path class="scene__rail scene__rail--a" d="M113 88V58" />
-                <path class="scene__rail scene__rail--b" d="M127 88V58" />
-                <path class="scene__rungs" d="M113 78H127M113 62H127" />
-                <path class="scene__branch" d="M113 68H90V52" />
-                <circle class="scene__node" cx="90" cy="44" r="8" />
-              </g>
-              <ellipse class="scene__seed" cx="120" cy="203" rx="9" ry="5.5" />
-            </svg>
-            <p class="scene__evolves" data-beat="6">The organization gains a branch</p>
-          </div>
-        </div>
-        <figcaption class="scene__caption">
-          <span>Illustrative workflow</span>
-          <button class="scene__toggle" type="button" hidden>Pause animation</button>
-        </figcaption>
-      </figure>
+      <ul class="masthead__points">
+        {heroPoints.map((point) => <li><Icon name={point.icon} size={22} /> <span>{point.text}</span></li>)}
+      </ul>
     </div>
   </section>
 
@@ -179,7 +147,7 @@ const qualities = [
           <h3>Transform your organization</h3>
           <p>A service led by Poesis. It starts with a pilot on one team or one workflow, and you judge it on the work it produces.</p>
           <div class="path__actions">
-            <a class="btn btn-primary" href="/contact/" data-track="business_contact_intent" data-track-id="home-paths">Talk to Poesis</a>
+            <a class="btn btn-primary" href={navigationCta.href} data-track="business_contact_intent" data-track-id="home-paths">{navigationCta.label}</a>
             <a class="btn btn-quiet" href="/transformation/" data-track="business_transformation_click" data-track-id="home-paths">See how an engagement works</a>
           </div>
         </article>
@@ -188,7 +156,7 @@ const qualities = [
           <h3>Build with SAF</h3>
           <p>An open-source framework: a harness, and the organizations that run on it, installed as {supportedHost.name} plugins. {maturityLabel}.</p>
           <div class="path__actions">
-            <a class="btn btn-ghost" href="/developers/" data-track="developer_docs_click" data-track-id="home-paths">Build with SAF</a>
+            <a class="btn btn-ghost" href={developerCta.href} data-track="developer_docs_click" data-track-id="home-paths">{developerCta.label}</a>
             <ul class="path__links">
               <li><a href={safLinks.quickstart} {...externalLinkAttributes} data-track="developer_docs_click" data-track-id="home-paths-quickstart">Quickstart</a></li>
               <li><a href={safLinks.repositories} {...externalLinkAttributes} data-track="developer_repo_click" data-track-id="home-paths-repositories">Repositories</a></li>
@@ -238,7 +206,7 @@ const qualities = [
       </div>
       <div class="closing__call">
         <p class="closing__question">Which team would you start with?</p>
-        <a class="btn btn-primary btn-lg" href="/contact/" data-track="business_contact_intent" data-track-id="home-closing">Talk to Poesis</a>
+        <a class="btn btn-primary btn-lg" href={navigationCta.href} data-track="business_contact_intent" data-track-id="home-closing">{navigationCta.label}</a>
         <p class="closing__mail">Or write to <a href={`mailto:${contactEmail}`} data-track="business_contact_intent" data-track-id="home-closing-email">{contactEmail}</a></p>
       </div>
     </div>
@@ -258,37 +226,5 @@ const qualities = [
       .then(function (response) { return response.ok ? response.text() : ''; })
       .then(function (html) { if (html.indexOf(' id="' + hash + '"') > -1) location.replace('/knowledge/platform/#' + hash); })
       .catch(function () { /* the home page stays as it is */ });
-  })();
-
-  // Hero scene. The complete picture is the default for everyone. The style sheet
-  // plays it in six beats only when scripts run and the visitor accepts motion;
-  // this script adds the control that pauses it, remembers that choice for the
-  // session, and holds the loop while the scene is off screen.
-  (function () {
-    var scene = document.querySelector('[data-scene]');
-    var toggle = scene && scene.querySelector('.scene__toggle');
-    if (!scene || !toggle || !window.matchMedia) return;
-    var still = window.matchMedia('(prefers-reduced-motion: reduce)');
-    var choice = null;
-    try { choice = sessionStorage.getItem('poesis-hero-scene'); } catch (error) { /* storage unavailable */ }
-    function apply() {
-      var paused = choice === 'paused';
-      toggle.hidden = still.matches;
-      scene.classList.toggle('is-paused', paused);
-      toggle.textContent = paused ? 'Play animation' : 'Pause animation';
-    }
-    toggle.addEventListener('click', function () {
-      choice = choice === 'paused' ? 'playing' : 'paused';
-      try { sessionStorage.setItem('poesis-hero-scene', choice); } catch (error) { /* storage unavailable */ }
-      apply();
-    });
-    // Older Safari has no addEventListener on a media query list: the page then keeps its first answer.
-    if (still.addEventListener) still.addEventListener('change', apply);
-    if ('IntersectionObserver' in window) {
-      new IntersectionObserver(function (entries) {
-        scene.classList.toggle('is-offscreen', !entries[0].isIntersecting);
-      }).observe(scene);
-    }
-    apply();
   })();
 </script>

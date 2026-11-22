@@ -63,7 +63,10 @@ export const siteNavigation: SiteNavigationItem[] = [
 ];
 
 /** The single highlighted action of the header. */
-export const navigationCta: SiteNavigationItem = { href: '/contact/', label: 'Talk to Poesis' };
+export const navigationCta: SiteNavigationItem = { href: '/contact/', label: 'Discuss your transformation' };
+
+/** The one name of the developer action, wherever a link leads to the developers page. */
+export const developerCta: SiteNavigationItem = { href: '/developers/', label: 'Explore SAF' };
 
 export const footerNavigation: FooterGroup[] = [
   {
@@ -78,7 +81,7 @@ export const footerNavigation: FooterGroup[] = [
   {
     label: 'Developers',
     items: [
-      { href: '/developers/', label: 'Build with SAF' },
+      { href: developerCta.href, label: developerCta.label },
       { href: '/developers/#install', label: 'Install' },
       { href: safLinks.docs, label: 'SAF documentation', external: true },
       { href: externalLinks.github, label: 'GitHub', external: true },

@@ -76,7 +76,7 @@ test('the primary menu is three destinations and one call to action, with no Pla
     { href: '/developers/', label: 'Developers' },
     { href: '/knowledge/', label: 'Knowledge' },
   ]);
-  assert.deepEqual(navigationCta, { href: '/contact/', label: 'Talk to Poesis' });
+  assert.deepEqual(navigationCta, { href: '/contact/', label: 'Discuss your transformation' });
   const everywhere = [...siteNavigation, navigationCta, ...footerNavigation.flatMap((group) => group.items)];
   assert.ok(everywhere.every((item) => !/platform|partnership/i.test(item.label)));
   // An archived offer is never one click away from the menu or the footer.

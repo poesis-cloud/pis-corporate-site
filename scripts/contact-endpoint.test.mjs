@@ -7,11 +7,11 @@
  */
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { createHandler, LIMITS, MAX_BODY_BYTES, toMessage, validate } from '../contact-endpoint/handler.mjs';
-import { buildPayload, interpretResponse } from '../src/scripts/contact-brief.ts';
+import { createHandler, INTERESTS, LIMITS, MAX_BODY_BYTES, toMessage, validate } from '../contact-endpoint/handler.mjs';
+import { buildPayload, interestOptions, interpretResponse } from '../src/scripts/contact-brief.ts';
 
 const ORIGIN = 'https://poesis.cloud';
-const valid = { name: 'Ada Lovelace', email: 'ada@example.org', company: 'Analytical Engines', goal: 'Our release process.', message: 'Two teams.' };
+const valid = { name: 'Ada Lovelace', email: 'ada@example.org', company: 'Analytical Engines', goal: 'Our release process.', interest: 'pilot' };
 
 function setup(overrides = {}) {
   const delivered = [];
@@ -43,7 +43,10 @@ test('a valid request from the site is delivered once and acknowledged', async (
   const [message] = delivered;
   assert.equal(message.subject, 'Transformation request: Analytical Engines');
   assert.equal(message.replyTo, 'ada@example.org');
-  assert.ok(message.text.includes('Full name: Ada Lovelace'));
+  assert.ok(message.text.includes('Name: Ada Lovelace'));
+  // The optional choice reaches Poesis in words, and the form and the receiver know the same list.
+  assert.ok(message.text.includes('They would like to discuss: A first pilot'));
+  assert.deepEqual(Object.entries(INTERESTS), interestOptions.map((option) => [option.value, option.label]));
   assert.ok(message.text.includes('Our release process.'));
   assert.ok(message.text.includes('Sent from poesis.cloud (contact) on 2027-'));
   // The page reads this reply as "sent", and reads nothing else that way.
@@ -67,6 +70,7 @@ test('missing, malformed and oversized fields are refused, field by field, and n
     [{ ...valid, email: '', goal: '' }, { email: 'required', goal: 'required' }],
     [{ ...valid, goal: 'x'.repeat(LIMITS.goal + 1) }, { goal: 'too-long' }],
     [{ ...valid, company: 'c'.repeat(LIMITS.company + 1) }, { company: 'too-long' }],
+    [{ ...valid, interest: 'something-else' }, { interest: 'invalid' }],
   ];
   for (const [values, errors] of cases) {
     const response = await post(payload(values));
@@ -76,7 +80,7 @@ test('missing, malformed and oversized fields are refused, field by field, and n
     assert.deepEqual(interpretResponse(422, body), { state: 'invalid', fields: Object.keys(errors) });
   }
   // Optional fields may be empty.
-  assert.equal((await post(payload({ ...valid, company: '', message: '' }))).status, 200);
+  assert.equal((await post(payload({ ...valid, company: '', interest: '' }))).status, 200);
   assert.equal(delivered.length, 1);
   assert.equal(delivered[0].subject, 'Transformation request: Ada Lovelace');
   // Addresses a browser accepts are accepted here too: an apostrophe, a plus tag, a subdomain.
@@ -112,7 +116,7 @@ test('only the site may post: other origins, methods and content types are turne
   assert.equal((await post(payload(), { origin: null })).status, 403);
   assert.equal((await post(payload(), { headers: { 'content-type': 'text/plain' } })).status, 415);
   assert.equal((await post(null, { raw: '{not json' })).status, 400);
-  assert.equal((await post(null, { raw: JSON.stringify({ ...payload(), message: 'm'.repeat(MAX_BODY_BYTES) }) })).status, 413);
+  assert.equal((await post(null, { raw: JSON.stringify({ ...payload(), goal: 'm'.repeat(MAX_BODY_BYTES) }) })).status, 413);
   // A declared size over the limit is refused on the header alone, whatever the body holds.
   assert.equal((await post(payload(), { headers: { 'content-length': String(MAX_BODY_BYTES + 1) } })).status, 413);
   const get = await handle(new Request('https://receiver.example/contact', { method: 'GET', headers: { origin: ORIGIN } }));
@@ -145,7 +149,7 @@ test('what a visitor types cannot forge a header or smuggle control characters',
     email: 'ada@example.org\r\nBcc: evil@example.org',
     company: 'Engines\u0000\u0007',
     goal: 'Line one\r\nLine two',
-    message: 42,
+    interest: 42,
     source: 'home',
   });
   assert.equal(values.name, 'Ada Bcc: evil@example.org');
@@ -153,7 +157,7 @@ test('what a visitor types cannot forge a header or smuggle control characters',
   assert.equal(errors.email, 'invalid');
   assert.equal(values.company, 'Engines');
   assert.equal(values.goal, 'Line one\nLine two');
-  assert.equal(values.message, '');
+  assert.equal(values.interest, '');
   const message = toMessage({ ...values, email: 'ada@example.org' }, '2026-11-21T00:00:00.000Z');
   assert.doesNotMatch(message.subject, /[\r\n]/);
   assert.doesNotMatch(message.replyTo, /[\r\n]/);
