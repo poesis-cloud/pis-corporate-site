@@ -1197,7 +1197,7 @@
         },
         {
           "slug": "agentic-safe-operating-model",
-          "name": "Agentic SAFe operating model",
+          "name": "SAFe® operating model, run by agents",
           "blurb": "Organize agentic delivery responsibilities and ceremonies through a shared catalogue of roles, workflow sequences, practice playbooks and versioned instructions. Role and guidance content exists; workflow alignment and behavioral quality remain under integration, and execution needs accepted harness, template and host combinations.",
           "state": "partial",
           "kind": "content",
@@ -1350,7 +1350,7 @@
         },
         {
           "slug": "safe-agentic-organization",
-          "name": "SAFe Agentic Organization",
+          "name": "SAF Agentic Organization",
           "currentVersion": "1.0.0",
           "tagline": "Organize agentic delivery around clear roles, shared practices and reviewable artifacts.",
           "description": "A catalogue of SAFe-oriented roles and versioned guidance is available, with workflow graphs, playbooks and artifact contracts under integration. Planned authenticated human approval will bind decisions to exact revisions. Execution depends on supported harness, template and host combinations.",

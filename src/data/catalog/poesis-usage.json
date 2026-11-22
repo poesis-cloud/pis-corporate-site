@@ -2763,7 +2763,7 @@
     },
     {
       "slug": "adopt-agentic-safe-operating-model",
-      "name": "Adopt the agentic SAFe operating model",
+      "name": "Adopt the SAFe® operating model with agents",
       "goal": "Assign responsibilities from the role catalog, connect their ceremonies and handoffs, and select the practices and instructions each role needs. Qualify the harness, template and host combination separately from adopting the operating model.",
       "actorTypes": [
         "it-head-of-ai",

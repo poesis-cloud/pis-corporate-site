@@ -1,11 +1,11 @@
 ---
-title: 'Agentic SAFe: running the Scaled Agile Framework with AI agents'
+title: 'Running the Scaled Agile Framework (SAFe®) with AI agents'
 category: 'Research'
 date: 2026-08-15
 summary: 'Of everything the agentic era is reaching for, a method may matter most. SAFe already solved the problem agent builders are rediscovering — how to get reliable delivery out of many bounded, fallible workers — which is why we chose to run it with agents rather than invent a new coordination scheme. This note develops the reasoning and shares what running SAFe agentically actually looks like.'
 ---
 
-Two communities are currently converging on the same problem from opposite directions. Agent builders are discovering that fleets of capable agents still need decomposition, cadence, checkpoints, and artifacts — coordination, in a word. And scaled-agile practitioners are asking what their discipline means when some of the delivery work is done by machines. We think each has what the other is missing, and that the meeting point deserves its emerging name: **agentic SAFe**.
+Two communities are currently converging on the same problem from opposite directions. Agent builders are discovering that fleets of capable agents still need decomposition, cadence, checkpoints, and artifacts — coordination, in a word. And scaled-agile practitioners are asking what their discipline means when some of the delivery work is done by machines. We think each has what the other is missing, and that the meeting point — running SAFe® with AI agents — is where the interesting work now is.
 
 ## Why a method — and why this one
 
@@ -31,4 +31,4 @@ What stays is SAFe itself. The method is not simplified for the machines; the ma
 
 Practitioners of scaled agile know better than anyone where the framework's joints carry load. If you are exploring what your discipline becomes in the agentic era — or solving agent coordination and rediscovering cadence, decomposition, and gates — we are working the same problem from both ends, and we would genuinely like to compare notes.
 
-*SAFe® is a registered trademark of Scaled Agile, Inc. "Agentic SAFe" is used descriptively — agents running the framework — and implies no affiliation or endorsement.*
+*SAFe® and Scaled Agile Framework® are registered trademarks of Scaled Agile, Inc. Poesis applies the framework and is not affiliated with or endorsed by Scaled Agile, Inc.*
