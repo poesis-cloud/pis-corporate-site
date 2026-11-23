@@ -1,24 +1,29 @@
 ---
 /**
- * DemoChat — two scripted demonstrations in one panel: one for the people who run
- * an organization, one for the people who build with SAF.
+ * DemoChat — two scripted demonstrations in one panel: "Build agentic
+ * organizations" and "Run agentic organizations". Each speaks to several
+ * profiles, so each holds four short cases asked by four different people
+ * (src/data/demo-scenarios.ts).
  *
  * It is a demonstration and says so ("Illustrative demo"): nothing here calls a
- * model, Git or a backend. Each scenario is a short conversation followed by the
- * steps of one governed workflow. Every word is real text in the page; the script
- * only decides when each part becomes visible, so the panel never changes size
- * while it plays.
+ * model, Git or a backend. Every case has the same shape: a request, an answer,
+ * then four steps, each with the file, the command or the people it is about.
+ * Every word is real text in the page; the script only decides when each part
+ * becomes visible, so the panel does not change size while a case plays.
+ *
+ * With `intro`, the panel opens on a choice: the two sides next to each other, each
+ * with its cases, and nothing plays before the visitor has chosen one.
  *
  * Three ways to read it:
- *   scripts on, motion accepted   it plays once, with pause, next step and replay
- *   reduced motion                the complete picture, tabs still working
- *   no scripts                    both scenarios, complete, one under the other
+ *   scripts on, motion accepted   the cases of a tab play one after the other, once,
+ *                                 with pause, next step and replay
+ *   reduced motion                the complete picture, tabs, cases and steps still working
+ *   no scripts                    the first case of each tab, complete, one under the other
  *
- * The developer scenario prints only what the SAF repositories document: the
- * preview-channel install commands of src/data/saf.ts, file names that exist in
- * saf-agentic-organization, the `make verify` target of its README, and the
- * artifact file patterns of its conf/workspace.conf.yaml.
+ * What a case prints about SAF is what its repositories document: see the sources
+ * listed at the top of src/data/demo-scenarios.ts.
  */
+import { demoTabs, type DemoLine } from '../data/demo-scenarios.ts';
 import { harness, installCommands, safLinks } from '../data/saf.ts';
 import { externalLinkAttributes } from '../data/site.ts';
 import { navigationCta } from '../data/site-navigation.ts';
@@ -26,20 +31,24 @@ import { navigationCta } from '../data/site-navigation.ts';
 interface Props {
   /** Prefix of the element ids: one per instance on a page. */
   id?: string;
-  /** The scenario shown first. */
-  initial?: 'organizations' | 'developers';
+  /** The tab shown first. */
+  initial?: 'build' | 'run';
+  /** The case shown first in that tab, by its key. The first one when omitted. */
+  initialCase?: string;
   /** Names the placement in the measurement events, e.g. `home`. */
   source?: string;
+  /** Opens on the choice between the two sides, instead of playing the first tab. */
+  intro?: boolean;
 }
-const { id = 'demo', initial = 'organizations', source = 'home' } = Astro.props;
+const { id = 'demo', initial = 'build', initialCase, source = 'home', intro = false } = Astro.props;
 
 const paths: Record<string, string[]> = {
-  users: ['M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2', 'M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z', 'M22 21v-2a4 4 0 0 0-3-3.87', 'M16 3.13a4 4 0 0 1 0 7.75'],
   user: ['M20 21a8 8 0 0 0-16 0', 'M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z'],
-  code: ['m16 18 6-6-6-6', 'm8 6-6 6 6 6'],
-  file: ['M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z', 'M14 2v6h6', 'M8 13h8', 'M8 17h5'],
-  shield: ['M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z', 'm9 12 2 2 4-4'],
+  build: ['m12 3 9 5-9 5-9-5z', 'm3 13 9 5 9-5', 'm3 17.5 9 5 9-5'],
+  run: ['M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20z', 'm10 8.3 5.6 3.7-5.6 3.7z'],
   check: ['m5 12.5 4.5 4.5L19 7.5'],
+  cross: ['M6.5 6.5l11 11', 'M17.5 6.5l-11 11'],
+  send: ['M12 19V5.5', 'm6 11 6-6 6 6'],
   play: ['M8 5.5v13l10.5-6.5z'],
   pause: ['M8.5 5v14', 'M15.5 5v14'],
   replay: ['M3 12a9 9 0 1 0 3-6.7', 'M3 4v5h5'],
@@ -51,73 +60,58 @@ const paths: Record<string, string[]> = {
 };
 const icon = (name: string) => '<svg class="demo__icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">' + paths[name].map((d) => '<path d="' + d + '"/>').join('') + '</svg>';
 
-/** A reply split into words, so that it can arrive the way a chat answer does. */
-const words = (text: string) => text.split(' ');
-
-const organizations = {
-  ask: 'Help us structure our release approval workflow.',
-  reply: 'I mapped the workflow, drafted a governed artifact, and prepared it for review.',
-  steps: [
-    { step: 3, icon: 'file', title: 'Artifact drafted', detail: 'Workflow and roles' },
-    { step: 4, icon: 'shield', title: 'Harness checks', detail: 'Rules · Schema · Traceability', checks: ['Rules', 'Schema', 'Traceability'] },
-    { step: 5, icon: 'users', title: 'Human approval', detail: 'Reviewed and accepted', pending: 'In review' },
-  ],
-  result: 'Committed to governed workspace',
+/** A message that opens on a verdict sets that word apart: "Refused." in the colour of a refusal, "Resolved." in the colour of a success. */
+const flag = (text: string) => {
+  for (const [word, tone] of [['Refused.', 'no'], ['Resolved.', 'ok']]) if (text.startsWith(word + ' ')) return { word, tone, rest: text.slice(word.length + 1) };
+  return { word: '', tone: '', rest: text };
 };
+/** The kind of a line, for its class. */
+const kind = (line: DemoLine) => ('code' in line ? 'code' : 'say' in line ? 'say' : 'roster' in line ? 'roster' : 'refused' in line ? 'refused' : 'resolved' in line ? 'resolved' : 'choice');
 
-const developers = {
-  ask: 'Help me set up a governed agentic organization.',
-  reply: 'Let’s configure an organization with declared agents, workflows and governance rules.',
-  steps: [
-    {
-      step: 3,
-      title: 'Install SAF harness',
-      window: 'Terminal',
-      lines: installCommands.slice(0, 2).map((command) => ({ prompt: true, text: command })),
-    },
-    {
-      step: 4,
-      title: 'Declare organization components',
-      window: 'saf-agentic-organization',
-      lines: [
-        { text: 'agents/release-manager.agent.md' },
-        { text: 'workflows/art/release-on-demand.workflow.conf.yaml' },
-        { text: 'artifacts/art/release.artifact.schema.json' },
-        { text: 'conf/access-control-list.conf.yaml' },
-      ],
-    },
-    {
-      step: 5,
-      title: 'Validate with the harness',
-      window: 'Terminal',
-      lines: [
-        { prompt: true, text: 'make verify' },
-        { note: true, text: '# loads the organization through the harness' },
-        { note: true, text: '# runs every workflow to its human gate' },
-        { note: true, text: '# proves each refusal' },
-      ],
-    },
-    {
-      step: 6,
-      title: 'Review artifacts in Git',
-      window: 'Your Git workspace',
-      lines: [
-        { text: '<release-slug>.release.md', tag: 'one commit per step' },
-        { text: '<decision-slug>.gate-decision.md', tag: 'accept · concerns · reject' },
-      ],
-    },
-  ],
-};
-
-const tabs = [
-  { key: 'organizations', label: 'For organizations', icon: 'users' },
-  { key: 'developers', label: 'For developers', icon: 'code' },
-] as const;
+const firstStep = 3;
 const lastStep = 6;
+const scenes = demoTabs.map((tab) => ({
+  ...tab,
+  label: tab.verb + ' ' + tab.rest,
+  current: tab.key === initial ? (tab.cases.find((item) => item.key === initialCase) ?? tab.cases[0]).key : tab.cases[0].key,
+}));
 ---
-<div class="demo" data-demo data-initial={initial} data-last={lastStep}>
+<div class="demo" data-demo data-initial={initial} data-last={lastStep} data-intro={intro ? '' : undefined}>
+ <div class="demo__body">
+  {/* The choice, before anything plays: the two sides, and the cases of each. */}
+  {intro && (
+    <div class="demo__intro" data-demo-intro role="group" aria-labelledby={`${id}-intro-title`}>
+      <p class="demo__intro-title" id={`${id}-intro-title`}>
+        <span class="demo__avatar demo__avatar--poesis" aria-hidden="true"><img src="/poesis-logo.png" alt="" width="26" height="26" decoding="async" /></span>
+        <span class="demo__intro-words"><span>AI agents on their own write what no one checks.</span> <b>Poesis gives them roles, rules and a person who decides.</b></span>
+      </p>
+      <div class="demo__sides">
+        {scenes.map((tab) => (
+          <div class={`demo__side demo__side--${tab.key}`}>
+            <button class="demo__side-start" type="button" data-start={tab.key}>
+              <span class="demo__side-icon" aria-hidden="true"><Fragment set:html={icon(tab.key)} /></span>
+              <span class="demo__side-name"><b>{tab.verb}</b> <span>{tab.rest}</span></span>
+              <Fragment set:html={icon('arrow')} />
+            </button>
+            <p class="demo__side-text">{tab.pitch}</p>
+            <p class="demo__side-for"><b>For</b> {tab.audience}</p>
+            <ol class="demo__side-map">
+              {tab.outline.map((entry, index) => <li style={`--i:${index}`}>{entry.code && <code>{entry.code}</code>}<span>{entry.say}</span></li>)}
+            </ol>
+            <ul class="demo__side-cases" aria-label={`${tab.label}: cases`}>
+              {tab.cases.map((item) => (
+                <li><button class="demo__side-case" type="button" data-start={tab.key} data-start-case={item.key}><b>{item.label}</b> <span>{item.asker}</span></button></li>
+              ))}
+            </ul>
+          </div>
+        ))}
+      </div>
+    </div>
+  )}
+
+ <div class="demo__main">
   <div class="demo__tabs" role="tablist" aria-label="Choose a demonstration">
-    {tabs.map((tab) => (
+    {scenes.map((tab) => (
       <button
         class="demo__tab"
         type="button"
@@ -128,134 +122,135 @@ const lastStep = 6;
         tabindex={tab.key === initial ? 0 : -1}
         data-tab={tab.key}
       >
-        <Fragment set:html={icon(tab.icon)} /> <span>{tab.label}</span>
+        <Fragment set:html={icon(tab.key)} /> <span class="demo__tab-name"><b>{tab.verb}</b> <span>{tab.rest}</span></span>
       </button>
     ))}
   </div>
 
   <div class="demo__panels">
-    {/* ---- For organizations: one business request, up to a human decision ---- */}
-    <div
-      class:list={['demo__panel', { 'is-active': initial === 'organizations' }]}
-      id={`${id}-panel-organizations`}
-      role="tabpanel"
-      aria-labelledby={`${id}-tab-organizations`}
-      data-panel="organizations"
-      data-delays="700,1000,2700,1300,2300,2100"
-    >
-      <p class="demo__title">For organizations</p>
-      <div class="demo__talk">
-        <div class="demo__row demo__row--you" data-step="1" data-say="The request">
-          <p class="demo__bubble"><span class="sr-only">A team asks: </span>{organizations.ask}</p>
-          <span class="demo__avatar" aria-hidden="true"><Fragment set:html={icon('user')} /></span>
-        </div>
-        <div class="demo__row demo__row--poesis" data-step="2" data-say="Poesis answers">
-          <span class="demo__avatar demo__avatar--poesis" aria-hidden="true"><img src="/poesis-logo.png" alt="" width="22" height="22" loading="lazy" decoding="async" /></span>
-          <div class="demo__said">
-            <p class="demo__who">Poesis</p>
-            <p class="demo__bubble demo__bubble--poesis">
-              <span class="sr-only">{organizations.reply}</span>
-              <span class="demo__dots" aria-hidden="true"><i></i><i></i><i></i></span>
-              <span class="demo__words" aria-hidden="true">{words(organizations.reply).map((word, index) => <><span class="demo__word" style={`--i:${index}`}>{word}</span>{' '}</>)}</span>
-            </p>
-          </div>
-        </div>
-      </div>
+    {scenes.map((tab) => (
+      <div
+        class:list={['demo__panel', { 'is-active': tab.key === initial }]}
+        id={`${id}-panel-${tab.key}`}
+        role="tabpanel"
+        aria-labelledby={`${id}-tab-${tab.key}`}
+        data-panel={tab.key}
+      >
+        <p class="demo__title">{tab.label}</p>
 
-      <ol class="demo__flow">
-        {organizations.steps.map((step) => (
-          <li class:list={['demo__card', { 'demo__card--checks': step.checks, 'demo__card--approval': step.pending }]} data-step={step.step} data-say={step.title}>
-            <span class="demo__card-icon" aria-hidden="true"><Fragment set:html={icon(step.icon)} /></span>
-            <span class="demo__card-text">
-              <b>{step.title}</b>
-              {step.checks
-                ? <span class="demo__checks">{step.checks.map((check, index) => <span class="demo__check" style={`--i:${index}`}><Fragment set:html={icon('check')} />{check}</span>)}</span>
-                : step.pending
-                  ? <span class="demo__swap"><span class="demo__swap-from" aria-hidden="true">{step.pending}</span><span class="demo__swap-to">{step.detail}</span></span>
-                  : <span>{step.detail}</span>}
-            </span>
-            <span class="demo__badge" aria-hidden="true"><Fragment set:html={icon('check')} /></span>
-          </li>
-        ))}
-      </ol>
-
-      <p class="demo__result" data-step="6" data-say={organizations.result}>
-        <span class="demo__result-mark" aria-hidden="true"><Fragment set:html={icon('check')} /></span>
-        {organizations.result}
-      </p>
-
-      <div class="demo__actions">
-        <a class="demo__cta" href={navigationCta.href} data-track="business_contact_intent" data-track-id={`${source}-demo-organizations`}>{navigationCta.label} <Fragment set:html={icon('arrow')} /></a>
-      </div>
-    </div>
-
-    {/* ---- For developers: the same governance, seen from the files ---- */}
-    <div
-      class:list={['demo__panel', { 'is-active': initial === 'developers' }]}
-      id={`${id}-panel-developers`}
-      role="tabpanel"
-      aria-labelledby={`${id}-tab-developers`}
-      data-panel="developers"
-      data-delays="700,1000,2700,2300,2300,2300"
-    >
-      <p class="demo__title">For developers</p>
-      <div class="demo__talk">
-        <div class="demo__row demo__row--you" data-step="1" data-say="The request">
-          <p class="demo__bubble"><span class="sr-only">A developer asks: </span>{developers.ask}</p>
-          <span class="demo__avatar" aria-hidden="true"><Fragment set:html={icon('user')} /></span>
-        </div>
-        <div class="demo__row demo__row--poesis" data-step="2" data-say="Poesis answers">
-          <span class="demo__avatar demo__avatar--poesis" aria-hidden="true"><img src="/poesis-logo.png" alt="" width="22" height="22" loading="lazy" decoding="async" /></span>
-          <div class="demo__said">
-            <p class="demo__who">Poesis</p>
-            <p class="demo__bubble demo__bubble--poesis">
-              <span class="sr-only">{developers.reply}</span>
-              <span class="demo__dots" aria-hidden="true"><i></i><i></i><i></i></span>
-              <span class="demo__words" aria-hidden="true">{words(developers.reply).map((word, index) => <><span class="demo__word" style={`--i:${index}`}>{word}</span>{' '}</>)}</span>
-            </p>
-          </div>
-        </div>
-      </div>
-
-      <div class="demo__build" data-step="3">
-        <ol class="demo__path">
-          {developers.steps.map((step, index) => (
-            <li>
-              <button class="demo__chip" type="button" data-chip={step.step} aria-controls={`${id}-view-${step.step}`}>
-                <span class="demo__chip-mark" aria-hidden="true"><i>{index + 1}</i><Fragment set:html={icon('check')} /></span>
-                <span>{step.title}</span>
-              </button>
-            </li>
+        {/* The cases of this tab: one person, one request each. */}
+        <div class="demo__cases" role="group" aria-label={`${tab.label}: choose a case`}>
+          {tab.cases.map((item) => (
+            <button class="demo__case" type="button" data-case={item.key} aria-pressed={item.key === tab.current ? 'true' : 'false'} aria-controls={`${id}-${tab.key}-${item.key}`}>
+              <span>{item.label}</span>
+            </button>
           ))}
-        </ol>
-        <div class="demo__views">
-          {developers.steps.map((step) => (
-            <div class="demo__view" id={`${id}-view-${step.step}`} data-view={step.step}>
-              <p class="demo__view-title"><span aria-hidden="true"><i></i><i></i><i></i></span>{step.window}<span class="sr-only">: {step.title}</span></p>
-              <ul class="demo__lines">
-                {step.lines.map((line, index) => (
-                  <li class:list={['demo__line', { 'demo__line--note': line.note }]} style={`--i:${index}`}>
-                    {line.prompt && <span class="demo__prompt" aria-hidden="true">$</span>}
-                    <code>{line.text}</code>
-                    {line.tag && <span class="demo__tag">{line.tag}</span>}
-                  </li>
-                ))}
-              </ul>
+        </div>
+
+        <div class="demo__stage">
+          {tab.cases.map((item) => (
+            <div
+              class:list={['demo__scene', { 'is-current': item.key === tab.current }]}
+              id={`${id}-${tab.key}-${item.key}`}
+              data-scene={item.key}
+              data-delays="600,1900,3000,3500,3500,3500"
+            >
+              {/* The conversation: what was said scrolls up as in any chat, and the request is typed in the message field. */}
+              <div class="demo__talk">
+                <div class="demo__log" role="group" aria-label="Conversation" tabindex="0" data-log>
+                  <div class="demo__row demo__row--you" data-step="1" data-say="The request">
+                    <div class="demo__said demo__said--you">
+                      <p class="demo__who">{item.asker}</p>
+                      <p class="demo__bubble"><span class="sr-only">{item.asker} asks: </span>{item.ask}</p>
+                    </div>
+                    <span class="demo__avatar" aria-hidden="true"><Fragment set:html={icon('user')} /></span>
+                  </div>
+                  <div class="demo__row demo__row--poesis" data-step="2" data-say={`${item.responder} answers`}>
+                    <span class="demo__avatar demo__avatar--poesis" aria-hidden="true"><img src="/poesis-logo.png" alt="" width="26" height="26" loading="lazy" decoding="async" /></span>
+                    <div class="demo__said">
+                      <p class:list={['demo__who', { 'demo__who--agent': item.responderRole }]}>{item.responder}{item.responderRole && <span> · {item.responderRole}</span>}</p>
+                      <p class="demo__bubble demo__bubble--poesis"><span class="demo__dots" aria-hidden="true"><i></i><i></i><i></i></span><span data-words>{item.reply}</span></p>
+                    </div>
+                  </div>
+                  {item.steps.map((step, index) => {
+                    const said = flag(step.tell);
+                    return (
+                      <div class="demo__row demo__row--poesis demo__row--next" data-step={firstStep + index}>
+                        <p class:list={['demo__bubble', 'demo__bubble--poesis', said.tone && `demo__bubble--${said.tone}`]}><span class="demo__dots" aria-hidden="true"><i></i><i></i><i></i></span>{said.word && <b class="demo__flag">{said.word} </b>}<span data-words>{said.rest}</span></p>
+                      </div>
+                    );
+                  })}
+                </div>
+                <div class="demo__composer" aria-hidden="true">
+                  <span class="demo__field"><span class="demo__typed" data-type={item.ask}></span><span class="demo__placeholder">{tab.placeholder}</span></span>
+                  <span class="demo__send"><Fragment set:html={icon('send')} /></span>
+                </div>
+              </div>
+
+              <div class="demo__build" data-step={firstStep}>
+                <ol class="demo__path">
+                  {item.steps.map((step, index) => (
+                    <li>
+                      <button class:list={['demo__chip', { 'demo__chip--refused': step.refused }]} type="button" data-chip={firstStep + index} aria-controls={`${id}-${tab.key}-${item.key}-view-${firstStep + index}`}>
+                        <span class="demo__chip-mark" aria-hidden="true"><i>{index + 1}</i><Fragment set:html={icon(step.refused ? 'cross' : 'check')} /></span>
+                        <span>{step.title}</span>
+                      </button>
+                    </li>
+                  ))}
+                </ol>
+                <div class="demo__views">
+                  {item.steps.map((step, index) => (
+                    <div class="demo__view" id={`${id}-${tab.key}-${item.key}-view-${firstStep + index}`} data-view={firstStep + index}>
+                      <p class="demo__view-title"><span aria-hidden="true"><i></i><i></i><i></i></span><span class="demo__view-name">{step.window}</span><span class="sr-only">: {step.title}</span></p>
+                      <ul class="demo__lines">
+                        {step.lines.map((line, row) => (
+                          <li class={`demo__line demo__line--${kind(line)}`} style={`--i:${row}`}>
+                            {'code' in line && <>
+                              {line.prompt && <span class="demo__prompt" aria-hidden="true">$</span>}
+                              <code>{line.code}</code>
+                              {line.tag && <span class="demo__tag">{line.tag}</span>}
+                            </>}
+                            {'refused' in line && <><span class="demo__no"><Fragment set:html={icon('cross')} />Refused</span><code>{line.refused}</code></>}
+                            {'resolved' in line && <><span class="demo__yes"><Fragment set:html={icon('check')} />Resolved</span><span>{line.resolved}</span></>}
+                            {'say' in line && line.say}
+                            {'roster' in line && line.roster.map((agent, seat) => <span class="demo__seat" style={`--j:${seat}`}><Fragment set:html={icon('check')} /><code>{agent}</code></span>)}
+                            {'choice' in line && line.choice.map((answer, place) => <span class:list={['demo__answer', { 'is-chosen': place === 0 }]}>{place === 0 && <Fragment set:html={icon('check')} />}{answer}{place === 0 && <span class="sr-only"> (the answer played here)</span>}</span>)}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
           ))}
         </div>
-      </div>
 
-      <div class="demo__actions">
-        <a class="demo__cta" href={safLinks.repositories} {...externalLinkAttributes} data-track="developer_repo_click" data-track-id={`${source}-demo-developers`}>Explore SAF on GitHub <Fragment set:html={icon('external')} /></a>
-        <button class="demo__copy" type="button" data-demo-copy={installCommands.join('\n')} aria-label="Copy the install commands"><Fragment set:html={icon('copy')} /> <span data-demo-copy-label>Copy install</span></button>
-        <span class="demo__links">
-          <a href={safLinks.docs} {...externalLinkAttributes} data-track="developer_docs_click" data-track-id={`${source}-demo-docs`}>Read the docs</a>
-          <a href={harness.contributing} {...externalLinkAttributes} data-track="developer_repo_click" data-track-id={`${source}-demo-contributing`}>Contribute</a>
-        </span>
+        {tab.key === 'run'
+          ? (
+            <div class="demo__actions">
+              <a class="demo__cta" href={navigationCta.href} data-track="business_contact_intent" data-track-id={`${source}-demo-run`}>{navigationCta.label} <Fragment set:html={icon('arrow')} /></a>
+              <span class="demo__links">
+                <a href={safLinks.usageModel} {...externalLinkAttributes} data-track="developer_docs_click" data-track-id={`${source}-demo-usage-model`}>Read the usage model</a>
+              </span>
+            </div>
+          )
+          : (
+            <div class="demo__actions">
+              <a class="demo__cta" href={safLinks.repositories} {...externalLinkAttributes} data-track="developer_repo_click" data-track-id={`${source}-demo-build`}>Explore SAF on GitHub <Fragment set:html={icon('external')} /></a>
+              <button class="demo__copy" type="button" data-demo-copy={installCommands.join('\n')} aria-label="Copy the install commands"><Fragment set:html={icon('copy')} /> <span data-demo-copy-label>Copy install</span></button>
+              <span class="demo__links">
+                <a href={safLinks.docs} {...externalLinkAttributes} data-track="developer_docs_click" data-track-id={`${source}-demo-docs`}>Read the docs</a>
+                <a href={harness.contributing} {...externalLinkAttributes} data-track="developer_repo_click" data-track-id={`${source}-demo-contributing`}>Contribute</a>
+              </span>
+            </div>
+          )}
       </div>
-    </div>
+    ))}
   </div>
+
+ </div>
+ </div>
 
   <div class="demo__foot">
     <p class="demo__note"><Fragment set:html={icon('info')} /> Illustrative demo. Scripted, not a live run of SAF.</p>
@@ -282,6 +277,7 @@ const lastStep = 6;
     --demo-line: rgba(148, 197, 222, .16);
     --demo-line-strong: rgba(94, 234, 212, .34);
     --demo-ok: #4ade80;
+    --demo-no: #f87171;
     --demo-ease: cubic-bezier(.22, .61, .36, 1);
     container-type: inline-size;
     position: relative;
@@ -322,6 +318,308 @@ const lastStep = 6;
     stroke-linejoin: round;
   }
 
+  /* ---- body: the choice first when there is one, then the tabs and their cases --- */
+  .demo__body {
+    display: grid;
+    min-width: 0;
+  }
+
+  .demo__main {
+    display: grid;
+    gap: clamp(.85rem, 2.6cqi, 1.15rem);
+    min-width: 0;
+  }
+
+  /* Build takes the teal end of the brand, Run its blue end. */
+  .demo__side--build,
+  .demo__tab[data-tab="build"] {
+    --side: #5eead4;
+    --side-soft: rgba(45, 212, 191, .14);
+    --side-line: rgba(94, 234, 212, .5);
+  }
+
+  .demo__side--run,
+  .demo__tab[data-tab="run"] {
+    --side: #7dd3fc;
+    --side-soft: rgba(56, 189, 248, .14);
+    --side-line: rgba(125, 211, 252, .5);
+  }
+
+  .demo__intro {
+    display: none;
+    align-content: start;
+    gap: clamp(.85rem, 2.6cqi, 1.15rem);
+    min-width: 0;
+  }
+
+  .js .demo[data-intro]:not(.is-chosen) .demo__intro {
+    display: grid;
+  }
+
+  /* While a visitor chooses, the cases wait out of sight: nothing of them shows or takes focus. */
+  .js .demo[data-intro]:not(.is-chosen) .demo__main {
+    display: none;
+  }
+
+  .js .demo[data-intro]:not(.is-chosen) .demo__controls {
+    visibility: hidden !important;
+  }
+
+  .demo .demo__intro-title {
+    display: flex;
+    align-items: center;
+    gap: .7rem;
+    font-size: clamp(1.02rem, 4.2cqi, 1.2rem);
+    font-weight: 700;
+    line-height: 1.2;
+    color: #fff;
+  }
+
+  /* What Poesis is about, in two short lines: the problem, then the answer. */
+  .demo__intro-words {
+    display: grid;
+    gap: .15rem;
+    min-width: 0;
+  }
+
+  .demo__intro-words > span {
+    font-size: .86rem;
+    font-weight: 500;
+    line-height: 1.35;
+    color: var(--ink-soft);
+  }
+
+  .demo__intro-words > b {
+    font-weight: 700;
+    line-height: 1.25;
+    text-wrap: balance;
+  }
+
+  .demo .demo__intro-title {
+    align-items: flex-start;
+  }
+
+  /* Who a side speaks to. */
+  .demo .demo__side-for {
+    padding-inline: .2rem;
+    font-size: .82rem;
+    line-height: 1.4;
+    color: var(--ink);
+  }
+
+  .demo__side-for b {
+    margin-right: .25rem;
+    font-size: .75rem;
+    font-weight: 700;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--side);
+  }
+
+  .demo__sides {
+    display: grid;
+    gap: .75rem;
+    min-width: 0;
+  }
+
+  .demo__side {
+    display: flex;
+    flex-direction: column;
+    gap: .6rem;
+    min-width: 0;
+    padding: .7rem;
+    border: 1px solid var(--demo-line);
+    border-radius: 18px;
+    background: linear-gradient(180deg, var(--side-soft), rgba(15, 23, 42, .35) 55%);
+  }
+
+  .demo__side-start {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    gap: .7rem;
+    width: 100%;
+    min-height: 3.5rem;
+    padding: .5rem .7rem .5rem .5rem;
+    border: 1px solid var(--side-line);
+    border-radius: 13px;
+    background: rgba(4, 9, 18, .5);
+    font: inherit;
+    line-height: 1.15;
+    color: #fff;
+    text-align: left;
+    cursor: pointer;
+    transition: background-color .2s, border-color .2s, box-shadow .2s;
+  }
+
+  .demo__side-start:hover {
+    border-color: var(--side);
+    background: var(--side-soft);
+    box-shadow: 0 0 26px -10px var(--side);
+  }
+
+  .demo__side-start > .demo__icon {
+    color: var(--side);
+    transition: transform .2s var(--demo-ease);
+  }
+
+  .demo__side-start:hover > .demo__icon {
+    transform: translateX(3px);
+  }
+
+  .demo__side-icon {
+    display: grid;
+    place-items: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 11px;
+    background: var(--side);
+    color: #04121c;
+    font-size: 1.2rem;
+  }
+
+  .demo__side-name {
+    display: grid;
+    gap: .1rem;
+    min-width: 0;
+  }
+
+  .demo__side-name b {
+    font-size: 1.22rem;
+    font-weight: 750;
+    letter-spacing: -.01em;
+  }
+
+  .demo__side-name > span {
+    font-size: .82rem;
+    font-weight: 550;
+    color: var(--ink-soft);
+  }
+
+  .demo .demo__side-text {
+    padding-inline: .2rem;
+    font-size: .88rem;
+    line-height: 1.45;
+    color: var(--ink-soft);
+  }
+
+  /* The side at a glance: a short rail of what is declared, or of what happens. Shown where there is room. */
+  .demo .demo__side-map {
+    display: none;
+    gap: .5rem;
+    margin-block: auto;
+    padding-inline: .35rem;
+  }
+
+  .demo__side-map li {
+    position: relative;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0 .55rem;
+    padding-left: 1.35rem;
+    font-size: .84rem;
+    line-height: 1.35;
+    color: var(--ink-soft);
+  }
+
+  .demo__side-map li::before {
+    content: "";
+    position: absolute;
+    top: .42em;
+    left: 0;
+    width: .5rem;
+    height: .5rem;
+    border: 1.5px solid var(--side);
+    border-radius: 50%;
+  }
+
+  .demo__side-map li + li::after {
+    content: "";
+    position: absolute;
+    bottom: calc(100% - .32em);
+    left: calc(.25rem + .5px);
+    width: 1px;
+    height: calc(.5rem + .55em);
+    background: var(--side-line);
+  }
+
+  .demo__side-map li:last-child::before {
+    background: var(--side);
+    box-shadow: 0 0 10px var(--side);
+  }
+
+  .demo__side-map li:last-child span {
+    font-weight: 650;
+    color: #fff;
+  }
+
+  .demo__side-map code {
+    padding: 0;
+    border: 0;
+    background: none;
+    font-family: var(--font-mono);
+    font-size: .8rem;
+    color: #fff;
+  }
+
+  /* Build is a list of what is declared, with no last step to light up. */
+  .demo__side--build .demo__side-map li:last-child span {
+    font-weight: inherit;
+    color: inherit;
+  }
+
+  .demo__side--build .demo__side-map li:last-child::before {
+    background: none;
+    box-shadow: none;
+  }
+
+  .demo .demo__side-cases {
+    display: grid;
+    gap: .3rem;
+    margin-top: auto;
+  }
+
+  .demo__side-case {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    align-content: center;
+    gap: 0 .6rem;
+    width: 100%;
+    min-height: 44px;
+    padding: .3rem .7rem;
+    border: 1px solid var(--demo-line);
+    border-radius: 11px;
+    background: rgba(15, 23, 42, .5);
+    font: inherit;
+    line-height: 1.2;
+    text-align: left;
+    cursor: pointer;
+    transition: border-color .2s, background-color .2s;
+  }
+
+  .demo__side-case b {
+    font-size: .9rem;
+    font-weight: 650;
+    color: #fff;
+  }
+
+  .demo__side-case span {
+    font-size: .78rem;
+    color: var(--muted);
+  }
+
+  .demo__side-case:hover {
+    border-color: var(--side-line);
+    background: var(--side-soft);
+  }
+
+  .demo__side-case:hover span {
+    color: var(--ink-soft);
+  }
+
   /* ---- tabs -------------------------------------------------------------------- */
   .demo__tabs {
     display: grid;
@@ -356,11 +654,31 @@ const lastStep = 6;
     color: #fff;
   }
 
+  /* "Build" then "agentic organizations": on one line when there is room, one under the other when not. */
+  .demo__tab-name {
+    display: inline-flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0 .32em;
+  }
+
+  .demo__tab-name b {
+    font-weight: 750;
+  }
+
+  .demo__tab-name > span {
+    font-weight: 550;
+  }
+
   .demo__tab[aria-selected="true"] {
-    border-color: rgba(94, 234, 212, .6);
-    background: linear-gradient(180deg, rgba(45, 212, 191, .32), rgba(56, 189, 248, .16));
-    box-shadow: 0 0 22px -6px rgba(45, 212, 191, .6), 0 1px 0 rgba(255, 255, 255, .12) inset;
+    border-color: var(--side-line);
+    background: linear-gradient(180deg, var(--side-soft), rgba(56, 189, 248, .08)), rgba(45, 212, 191, .1);
+    box-shadow: 0 0 22px -8px var(--side), 0 1px 0 rgba(255, 255, 255, .12) inset;
     color: #fff;
+  }
+
+  .demo__tab[aria-selected="true"] > .demo__icon {
+    color: var(--side);
   }
 
   .demo :focus-visible {
@@ -401,14 +719,213 @@ const lastStep = 6;
     display: none;
   }
 
-  html:not(.js) .demo__tabs {
+  html:not(.js) .demo__tabs,
+  html:not(.js) .demo__cases {
+    display: none;
+  }
+
+  /* ---- the cases of a tab: one person, one request each ------------------------- */
+  .demo__cases {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .35rem;
+  }
+
+  .demo__case {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 1 1 auto;
+    min-height: 44px;
+    padding: .3rem .7rem;
+    border: 1px solid var(--demo-line);
+    border-radius: 12px;
+    background: rgba(15, 23, 42, .5);
+    font: inherit;
+    font-size: .82rem;
+    font-weight: 600;
+    line-height: 1.15;
+    color: var(--ink-soft);
+    cursor: pointer;
+    overflow: hidden;
+    transition: color .2s, border-color .2s, background-color .2s;
+  }
+
+  .demo__case > span {
+    position: relative;
+  }
+
+  .demo__case:hover {
+    border-color: var(--demo-line-strong);
+    color: #fff;
+  }
+
+  .demo__case[aria-pressed="true"] {
+    border-color: rgba(94, 234, 212, .6);
+    background: rgba(45, 212, 191, .12);
+    color: #fff;
+  }
+
+  /* The case that plays next fills up while the one on show holds its last picture. */
+  .demo__case::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: rgba(45, 212, 191, .2);
+    transform: scaleX(0);
+    transform-origin: left;
+  }
+
+  /* With scripts one case shows at a time; without, the first of each tab. */
+  .demo__stage {
+    display: grid;
+    min-width: 0;
+  }
+
+  .demo__scene {
+    display: flex;
+    flex-direction: column;
+    gap: clamp(.65rem, 2.4cqi, .9rem);
+    min-width: 0;
+    transition: opacity .18s;
+  }
+
+  .demo__scene.is-resetting {
+    opacity: 0;
+  }
+
+  .js .demo__scene:not(.is-current),
+  html:not(.js) .demo__scene:not(:first-child) {
     display: none;
   }
 
   /* ---- the conversation -------------------------------------------------------- */
   .demo__talk {
     display: grid;
-    gap: clamp(.6rem, 2.2cqi, .8rem);
+    gap: .55rem;
+    min-width: 0;
+  }
+
+  .demo__log {
+    display: flex;
+    flex-direction: column;
+    gap: clamp(.5rem, 2cqi, .7rem);
+    min-width: 0;
+  }
+
+  /* Played, the conversation keeps one height: a message that arrives pushes the earlier ones up, as in any chat.
+     The height is set before the script answers, so that nothing moves on the page when it does. */
+  @media (prefers-reduced-motion: no-preference) {
+    .js .demo__log {
+      height: 9.5rem;
+      overflow-y: auto;
+      overscroll-behavior: contain;
+      scrollbar-width: none;
+      -webkit-mask-image: linear-gradient(180deg, transparent, #000 .7rem);
+      mask-image: linear-gradient(180deg, transparent, #000 .7rem);
+    }
+
+    .js .demo__log::-webkit-scrollbar {
+      display: none;
+    }
+  }
+
+  .demo__log > :first-child {
+    margin-top: auto;
+  }
+
+  /* A message that was not said yet takes no room in the conversation. */
+  .js .demo.is-ready .demo__log > [data-step]:not(.is-on) {
+    display: none;
+  }
+
+  /* The messages that follow the first answer come from the same voice: no face, same margin. */
+  .demo__row--next {
+    padding-left: calc(2.25rem + .6rem);
+  }
+
+  .demo .demo__bubble--no {
+    border-color: rgba(248, 113, 113, .5);
+    background: rgba(248, 113, 113, .09);
+  }
+
+  .demo .demo__bubble--ok {
+    border-color: rgba(74, 222, 128, .5);
+    background: rgba(34, 197, 94, .1);
+  }
+
+  .demo__flag {
+    font-weight: 750;
+  }
+
+  .demo__bubble--no .demo__flag {
+    color: var(--demo-no);
+  }
+
+  .demo__bubble--ok .demo__flag {
+    color: var(--demo-ok);
+  }
+
+  /* The message field: the request is typed here, then sent. It is a picture of a field, not one. */
+  .demo__composer {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    min-height: 44px;
+    padding: .3rem .35rem .3rem .9rem;
+    border: 1px solid var(--demo-line);
+    border-radius: 14px;
+    background: rgba(4, 9, 18, .6);
+  }
+
+  html:not(.js) .demo__composer {
+    display: none;
+  }
+
+  .demo__field {
+    display: grid;
+    flex: 1;
+    align-items: center;
+    min-width: 0;
+    font-size: .92rem;
+    line-height: 1.35;
+  }
+
+  .demo__field > * {
+    grid-area: 1 / 1;
+    min-width: 0;
+  }
+
+  .demo__placeholder {
+    color: var(--muted);
+  }
+
+  .demo__typed {
+    visibility: hidden;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    color: var(--ink);
+  }
+
+  .demo__key {
+    position: relative;
+  }
+
+  .demo__send {
+    display: grid;
+    place-items: center;
+    flex: none;
+    width: 2.1rem;
+    height: 2.1rem;
+    border-radius: 10px;
+    background: linear-gradient(140deg, #5eead4, #38bdf8);
+    color: #04121c;
+    font-size: 1rem;
+  }
+
+  .demo__send .demo__icon {
+    stroke-width: 2.4;
   }
 
   .demo__row {
@@ -439,16 +956,29 @@ const lastStep = 6;
     color: var(--ink-soft);
   }
 
+  /* The Poesis mark, as the face of whoever answers: the helix of the logo on the colours of the brand. */
   .demo__avatar--poesis {
-    border-radius: 11px;
-    border-color: var(--demo-line-strong);
-    background: rgba(45, 212, 191, .1);
+    position: relative;
+    border: 0;
+    border-radius: 12px;
+    background: linear-gradient(140deg, #5eead4, #38bdf8);
+    box-shadow: 0 0 0 1px rgba(255, 255, 255, .22) inset, 0 6px 18px -6px rgba(45, 212, 191, .75);
+  }
+
+  .demo__avatar--poesis::after {
+    content: "";
+    position: absolute;
+    inset: -1px;
+    border: 2px solid #5eead4;
+    border-radius: 13px;
+    opacity: 0;
+    pointer-events: none;
   }
 
   .demo__avatar img {
     display: block;
-    width: 22px;
-    height: 22px;
+    width: 26px;
+    height: 26px;
   }
 
   .demo__said {
@@ -457,12 +987,35 @@ const lastStep = 6;
     min-width: 0;
   }
 
+  .demo__said--you {
+    justify-items: end;
+  }
+
   .demo .demo__who {
     font-size: .75rem;
     font-weight: 700;
     letter-spacing: .12em;
     text-transform: uppercase;
     color: var(--flow-ink);
+  }
+
+  .demo .demo__said--you .demo__who {
+    color: var(--muted);
+  }
+
+  /* An agent of the organization answers under its own name, as written in its repository. */
+  .demo .demo__who--agent {
+    font-family: var(--font-mono);
+    font-size: .78rem;
+    letter-spacing: 0;
+    text-transform: none;
+    overflow-wrap: anywhere;
+  }
+
+  .demo__who--agent > span {
+    font-family: var(--font-sans);
+    font-weight: 600;
+    color: var(--muted);
   }
 
   .demo .demo__bubble {
@@ -497,117 +1050,7 @@ const lastStep = 6;
     background: var(--flow-ink);
   }
 
-  /* ---- organizations: three steps, then the result ----------------------------- */
-  .demo__flow {
-    display: grid;
-    gap: .5rem;
-  }
-
-  .demo__card {
-    position: relative;
-    display: grid;
-    grid-template-columns: auto minmax(0, 1fr) auto;
-    align-items: center;
-    gap: .7rem;
-    min-height: 3.25rem;
-    padding: .55rem .75rem;
-    border: 1px solid var(--demo-line);
-    border-radius: 14px;
-    background: rgba(15, 23, 42, .62);
-  }
-
-  .demo__card-icon {
-    display: grid;
-    place-items: center;
-    color: var(--flow-ink);
-    font-size: 1.15rem;
-  }
-
-  .demo__card-text {
-    display: grid;
-    gap: .05rem .6rem;
-    min-width: 0;
-  }
-
-  .demo__card-text b {
-    font-weight: 650;
-    color: #fff;
-  }
-
-  .demo__card-text > span {
-    font-size: .82rem;
-    color: var(--ink-soft);
-  }
-
-  .demo__checks {
-    display: flex;
-    flex-wrap: wrap;
-    gap: .1rem .6rem;
-  }
-
-  .demo__check {
-    display: inline-flex;
-    align-items: center;
-    gap: .25rem;
-    white-space: nowrap;
-  }
-
-  .demo__check .demo__icon {
-    width: .85em;
-    height: .85em;
-    stroke-width: 2.6;
-    color: var(--demo-ok);
-  }
-
-  .demo__swap {
-    display: grid;
-  }
-
-  .demo__swap > * {
-    grid-area: 1 / 1;
-  }
-
-  .demo__swap-from {
-    opacity: 0;
-    color: var(--gov);
-  }
-
-  .demo__badge,
-  .demo__result-mark {
-    display: grid;
-    place-items: center;
-    flex: none;
-    width: 1.45rem;
-    height: 1.45rem;
-    border-radius: 50%;
-    background: var(--demo-ok);
-    color: #052e16;
-    font-size: .8rem;
-  }
-
-  .demo__badge .demo__icon,
-  .demo__result-mark .demo__icon {
-    stroke-width: 3;
-  }
-
-  .demo .demo__result {
-    position: relative;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: .65rem;
-    min-height: 3.1rem;
-    padding: .55rem .9rem;
-    border: 1px solid rgba(74, 222, 128, .45);
-    border-radius: 14px;
-    background: linear-gradient(90deg, rgba(34, 197, 94, .13), rgba(45, 212, 191, .1));
-    font-weight: 650;
-    color: #fff;
-    text-align: center;
-    overflow: hidden;
-  }
-
-  /* ---- developers: four steps and the file or command each one is about -------- */
+  /* ---- the steps of a case, and the file, command or people each one is about ---- */
   .demo__build {
     display: grid;
     gap: .6rem;
@@ -692,6 +1135,13 @@ const lastStep = 6;
     transform: none;
   }
 
+  /* A step that ends on a refusal says so: a cross, in the colour of a refusal. */
+  .demo__chip--refused.is-done .demo__chip-mark {
+    border-color: var(--demo-no);
+    background: var(--demo-no);
+    color: #2a0a0a;
+  }
+
   .demo__chip[aria-current="step"] {
     border-color: rgba(94, 234, 212, .6);
     background: rgba(45, 212, 191, .1);
@@ -723,6 +1173,12 @@ const lastStep = 6;
     font-weight: 600;
     letter-spacing: .02em;
     color: var(--muted);
+  }
+
+  /* The name of a window is often a path: it breaks where it must. */
+  .demo__view-name {
+    min-width: 0;
+    overflow-wrap: anywhere;
   }
 
   .demo__view-title > span[aria-hidden] {
@@ -761,6 +1217,7 @@ const lastStep = 6;
     background: none;
     font: inherit;
     color: inherit;
+    white-space: pre-wrap;
     overflow-wrap: anywhere;
   }
 
@@ -769,8 +1226,145 @@ const lastStep = 6;
     user-select: none;
   }
 
-  .demo__line--note {
-    color: #94a3b8;
+  /* A sentence about what the window shows. */
+  .demo__line--say {
+    font-family: var(--font-sans);
+    font-size: .8rem;
+    line-height: 1.4;
+    color: #a9b8cc;
+  }
+
+  /* The question of a gate is the one line a person has to answer. */
+  .demo__view[data-view="6"] .demo__line--say:first-child {
+    font-size: .88rem;
+    font-weight: 600;
+    color: #fff;
+  }
+
+  /* The harness says no: the word, then the rule that refuses. */
+  .demo__line--refused {
+    align-items: center;
+    gap: .35rem .6rem;
+    padding: .45rem .6rem;
+    border: 1px solid rgba(248, 113, 113, .45);
+    border-radius: 10px;
+    background: rgba(248, 113, 113, .09);
+    color: #fecaca;
+  }
+
+  .demo__no {
+    display: inline-flex;
+    align-items: center;
+    gap: .3rem;
+    font-family: var(--font-sans);
+    font-size: .8rem;
+    font-weight: 700;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+    color: var(--demo-no);
+  }
+
+  .demo__no .demo__icon {
+    width: 1em;
+    height: 1em;
+    stroke-width: 3;
+  }
+
+  /* What the refusal led to, once remedied. */
+  .demo__line--resolved {
+    align-items: center;
+    gap: .2rem .6rem;
+    padding: .45rem .6rem;
+    border: 1px solid rgba(74, 222, 128, .45);
+    border-radius: 10px;
+    background: rgba(34, 197, 94, .1);
+    font-family: var(--font-sans);
+    font-size: .8rem;
+    color: #dcfce7;
+  }
+
+  .demo__yes {
+    display: inline-flex;
+    align-items: center;
+    gap: .3rem;
+    font-size: .8rem;
+    font-weight: 700;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+    color: var(--demo-ok);
+  }
+
+  .demo__yes .demo__icon {
+    width: 1em;
+    height: 1em;
+    stroke-width: 3;
+  }
+
+  /* The experts of a challenge panel, each with its packet written. */
+  .demo__line--roster {
+    gap: .3rem;
+  }
+
+  .demo__seat {
+    display: inline-flex;
+    align-items: center;
+    gap: .3rem;
+    padding: .2rem .5rem .2rem .4rem;
+    border: 1px solid var(--demo-line);
+    border-radius: 999px;
+    background: rgba(148, 163, 184, .08);
+    font-size: .75rem;
+    line-height: 1.3;
+  }
+
+  .demo__seat .demo__icon {
+    width: .85em;
+    height: .85em;
+    stroke-width: 2.8;
+    color: var(--demo-ok);
+  }
+
+  /* The answers of a gate: the one this case plays, and the others a person can give. */
+  .demo__line--choice {
+    gap: .35rem;
+    padding-block: .1rem;
+    font-family: var(--font-sans);
+  }
+
+  .demo__answer {
+    display: inline-flex;
+    align-items: center;
+    gap: .3rem;
+    padding: .25rem .65rem;
+    border: 1px solid var(--demo-line);
+    border-radius: 9px;
+    font-size: .8rem;
+    font-weight: 600;
+    line-height: 1.3;
+    color: var(--muted);
+  }
+
+  .demo__answer.is-chosen {
+    position: relative;
+    color: #fff;
+  }
+
+  /* Its green ground is a layer of its own, so that it can arrive by opacity alone. */
+  .demo__answer.is-chosen::before {
+    content: "";
+    position: absolute;
+    inset: -1px;
+    border: 1px solid rgba(74, 222, 128, .65);
+    border-radius: inherit;
+    background: rgba(34, 197, 94, .16);
+    pointer-events: none;
+  }
+
+  .demo__answer .demo__icon {
+    width: .9em;
+    height: .9em;
+    stroke-width: 3;
+    color: var(--demo-ok);
   }
 
   .demo__tag {
@@ -787,7 +1381,13 @@ const lastStep = 6;
     transition: opacity .28s, visibility 0s .28s;
   }
 
-  .js .demo__panel.is-active .demo__views > .demo__view.is-current {
+  /* A case that leaves takes its window with it at once: nothing of it fades over the next one. */
+  .js .demo__scene:not(.is-current) .demo__view,
+  .js .demo__panel:not(.is-active) .demo__view {
+    transition: none;
+  }
+
+  .js .demo__panel.is-active .demo__scene.is-current .demo__views > .demo__view.is-current {
     opacity: 1;
     visibility: visible;
     transition: opacity .28s;
@@ -982,7 +1582,36 @@ const lastStep = 6;
     transform: scale(1.3);
   }
 
-  /* A narrow panel: the bubbles take the width they can. */
+  /* A narrow panel: the bubbles take the width they can, and the name of a tab stands on two lines. */
+  @container (max-width: 27.99rem) {
+    .demo__tabs {
+      border-radius: 18px;
+    }
+
+    .demo__tab {
+      border-radius: 14px;
+      padding-block: .4rem;
+    }
+
+    .demo__tab > .demo__icon {
+      display: none;
+    }
+
+    .demo__tab-name {
+      display: grid;
+      justify-items: center;
+      gap: .05rem;
+    }
+
+    .demo__tab-name b {
+      font-size: 1.02rem;
+    }
+
+    .demo__tab-name > span {
+      font-size: .76rem;
+    }
+  }
+
   @container (max-width: 23.99rem) {
     .demo__row--you {
       padding-left: 5%;
@@ -996,65 +1625,46 @@ const lastStep = 6;
       width: 2rem;
       height: 2rem;
     }
-  }
 
-  /* ---- room to spare: the steps side by side ------------------------------------ */
-  @container (min-width: 35rem) {
-    .demo__flow {
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 1.6rem;
+    .demo__avatar img {
+      width: 22px;
+      height: 22px;
     }
 
-    .demo__card {
-      grid-template-columns: minmax(0, 1fr);
-      align-content: start;
-      align-items: start;
-      gap: .45rem;
-      padding: .8rem .85rem .85rem;
+    .demo__row--next {
+      padding-left: calc(2rem + .6rem);
     }
 
-    .demo__card-icon {
-      justify-self: start;
-      font-size: 1.3rem;
+    @media (prefers-reduced-motion: no-preference) {
+      .js .demo__log {
+        height: 13.5rem;
+      }
     }
 
-    .demo__badge {
-      position: absolute;
-      top: -.5rem;
-      right: -.5rem;
-      box-shadow: 0 0 0 3px #0b1322;
-    }
-
-    /* the arrow from one step to the next */
-    .demo__card + .demo__card::before {
-      content: "";
-      position: absolute;
-      top: 50%;
-      left: -1.6rem;
-      width: 1.6rem;
-      height: 1px;
-      margin-left: 0;
-      background: linear-gradient(90deg, transparent 12%, rgba(148, 197, 222, .6) 12% 88%, transparent 88%);
-    }
-
-    .demo__card + .demo__card::after {
-      content: "";
-      position: absolute;
-      top: calc(50% - 3px);
-      left: -.62rem;
-      width: 6px;
-      height: 6px;
-      border-top: 1px solid rgba(148, 197, 222, .8);
-      border-right: 1px solid rgba(148, 197, 222, .8);
-      transform: rotate(45deg);
-    }
-
-    .demo__checks {
-      gap: .05rem .5rem;
+    .demo__case {
+      padding-inline: .5rem;
     }
   }
 
-  /* A little narrower still leaves room for the steps beside their file. */
+  /* The narrowest panels: four cases on two rows of two, never three and one. */
+  @container (max-width: 18.99rem) {
+    .demo__cases {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+
+  /* The cases of a tab keep one footprint, so that playing them in turn moves nothing on the page. */
+  .js .demo__stage > .demo__scene {
+    grid-area: 1 / 1;
+  }
+
+  .js .demo__stage > .demo__scene:not(.is-current) {
+    display: flex;
+    visibility: hidden;
+  }
+
+  /* ---- room to spare: the steps beside their window ----------------------------- */
   @container (min-width: 27rem) {
     .demo__build {
       grid-template-columns: minmax(0, .82fr) minmax(0, 1fr);
@@ -1066,7 +1676,57 @@ const lastStep = 6;
       height: 100%;
     }
 
-    /* Both scenarios keep the same footprint, so changing tab moves nothing on the page. */
+    /* With a mouse the steps can be a little lower; a finger keeps its 44 px. */
+    @media (hover: hover) and (pointer: fine) {
+      .demo__chip {
+        min-height: 40px;
+        padding-block: .2rem;
+      }
+    }
+
+    /* The choice and the cases share one place, so that choosing moves nothing on the page. */
+    .demo__sides {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      height: 100%;
+    }
+
+    .demo__intro {
+      grid-template-rows: auto minmax(0, 1fr);
+    }
+
+    .demo .demo__side-map {
+      display: grid;
+    }
+
+    .demo .demo__side-cases {
+      margin-top: 0;
+    }
+
+    .js .demo__body > * {
+      grid-area: 1 / 1;
+    }
+
+    .js .demo[data-intro]:not(.is-chosen) .demo__main {
+      display: grid;
+    }
+
+    /* Once a side is chosen the choice keeps its place, out of sight, so that the panel keeps its height. */
+    .js .demo[data-intro].is-chosen .demo__intro {
+      display: grid;
+      visibility: hidden;
+    }
+
+    .js .demo[data-intro]:not(.is-chosen) .demo__main,
+    .js .demo[data-intro]:not(.is-chosen) .demo__main * {
+      visibility: hidden !important;
+    }
+
+    .demo__side {
+      gap: .75rem;
+      padding: .85rem;
+    }
+
+    /* Both tabs keep the same footprint too, so changing tab moves nothing on the page. */
     .js .demo__panels {
       gap: 0;
     }
@@ -1085,6 +1745,12 @@ const lastStep = 6;
     }
   }
 
+  @container (min-width: 35rem) {
+    .demo__case {
+      font-size: .88rem;
+    }
+  }
+
   /* ---- played: each part arrives in turn --------------------------------------- */
   /* Before the script answers, the parts wait hidden; if it never does, they show. */
   @media (prefers-reduced-motion: no-preference) {
@@ -1100,18 +1766,97 @@ const lastStep = 6;
       animation: demo-in .55s var(--demo-ease) both;
     }
 
-    /* the answer: three dots, then the words */
+    /* the choice: the two sides arrive one after the other, then their cases */
+    .js .demo[data-intro]:not(.is-chosen) .demo__side {
+      animation: demo-in .6s var(--demo-ease) .1s both;
+    }
+
+    .js .demo[data-intro]:not(.is-chosen) .demo__side + .demo__side {
+      animation-delay: .24s;
+    }
+
+    .js .demo[data-intro]:not(.is-chosen) .demo__avatar--poesis img {
+      animation: demo-helix .8s var(--demo-ease) both;
+    }
+
+    .js .demo[data-intro]:not(.is-chosen) .demo__side-map li {
+      animation: demo-in .4s var(--demo-ease) both;
+      animation-delay: calc(.55s + var(--i) * .13s);
+    }
+
+    /* the request is typed in the message field, key by key, with the caret after the last key */
+    /* Only in the case on show: a visible child would show through a hidden case. */
+    .demo.is-live .demo__panel.is-active .demo__scene.is-current .demo__typed {
+      visibility: visible;
+    }
+
+    .demo.is-live .demo__key {
+      opacity: 0;
+    }
+
+    .demo.is-live .is-typing .demo__key {
+      animation: demo-word .01s linear both;
+      animation-delay: calc(.25s + var(--i) * 26ms);
+    }
+
+    .demo.is-live .demo__key::after {
+      content: "";
+      position: absolute;
+      top: .12em;
+      left: 100%;
+      width: 2px;
+      height: 1.1em;
+      border-radius: 1px;
+      background: #5eead4;
+      opacity: 0;
+    }
+
+    .demo.is-live .is-typing .demo__key::after {
+      animation: demo-caret 26ms linear both;
+      animation-delay: calc(.25s + var(--i) * 26ms);
+    }
+
+    .demo.is-live .is-typing .demo__key:last-child::after {
+      animation-duration: .32s;
+    }
+
+    /* then it is sent: the field empties, the button answers, the message joins the conversation */
+    .demo.is-live .is-typing .demo__typed {
+      animation: demo-sent .22s ease-in var(--type, 2s) both;
+    }
+
+    .demo.is-live .is-typing .demo__placeholder {
+      animation: demo-word .3s ease-out calc(var(--type, 2s) + .25s) both;
+    }
+
+    .demo.is-live .is-typing .demo__send {
+      animation: demo-press .32s var(--demo-ease) var(--type, 2s);
+    }
+
+    .demo.is-live .demo__row--you.is-on {
+      animation-delay: var(--type, 2s);
+    }
+
+    /* the answer: the Poesis mark wakes, three dots, then the words, written one after the other */
+    .demo.is-live .is-on .demo__avatar--poesis img {
+      animation: demo-helix .7s var(--demo-ease) both;
+    }
+
+    .demo.is-live .is-on .demo__avatar--poesis::after {
+      animation: demo-ring .95s ease-out .1s both;
+    }
+
     .demo.is-live .demo__dots {
       display: inline-flex;
       opacity: 0;
     }
 
     .demo.is-live .is-on .demo__dots {
-      animation: demo-dots .8s linear both;
+      animation: demo-dots .7s linear both;
     }
 
     .demo.is-live .is-on .demo__dots i {
-      animation: demo-dot .8s ease-in-out both;
+      animation: demo-dot .7s ease-in-out both;
     }
 
     .demo.is-live .is-on .demo__dots i:nth-child(2) {
@@ -1122,70 +1867,18 @@ const lastStep = 6;
       animation-delay: .24s;
     }
 
-    .demo.is-live .demo__word {
+    .demo.is-live .demo__word,
+    .demo.is-live .demo__flag {
       opacity: 0;
+    }
+
+    .demo.is-live .is-on .demo__flag {
+      animation: demo-pop .3s var(--demo-ease) .7s both;
     }
 
     .demo.is-live .is-on .demo__word {
-      animation: demo-word .3s ease-out both;
-      animation-delay: calc(.8s + var(--i) * 60ms);
-    }
-
-    /* each step, then its tick */
-    .demo.is-live .demo__badge,
-    .demo.is-live .demo__result-mark {
-      opacity: 0;
-    }
-
-    .demo.is-live .is-on .demo__badge {
-      animation: demo-pop .45s var(--demo-ease) .55s both;
-    }
-
-    .demo.is-live .demo__check .demo__icon {
-      opacity: 0;
-    }
-
-    .demo.is-live .is-on .demo__check .demo__icon {
-      animation: demo-pop .35s var(--demo-ease) both;
-      animation-delay: calc(.45s + var(--i) * .38s);
-    }
-
-    .demo.is-live .demo__card--checks.is-on .demo__badge {
-      animation-delay: 1.65s;
-    }
-
-    .demo.is-live .is-on .demo__swap-from {
-      animation: demo-swap-from 1.2s ease both;
-    }
-
-    .demo.is-live .demo__swap-to {
-      opacity: 0;
-    }
-
-    .demo.is-live .is-on .demo__swap-to {
-      animation: demo-word .35s ease-out 1.05s both;
-    }
-
-    .demo.is-live .demo__card--approval.is-on .demo__badge {
-      animation-delay: 1.25s;
-    }
-
-    /* the result: it settles, and a light passes over it once */
-    .demo.is-live .demo__result.is-on .demo__result-mark {
-      animation: demo-pop .5s var(--demo-ease) .3s both;
-    }
-
-    .demo.is-live .demo__result::after {
-      content: "";
-      position: absolute;
-      inset: 0;
-      background: linear-gradient(100deg, transparent 30%, rgba(187, 247, 208, .22) 50%, transparent 70%);
-      transform: translateX(-100%);
-      pointer-events: none;
-    }
-
-    .demo.is-live .demo__result.is-on::after {
-      animation: demo-sheen 1.1s ease-out .45s both;
+      animation: demo-word .25s ease-out both;
+      animation-delay: calc(.75s + var(--i) * 55ms);
     }
 
     /* the lines of a file or a command, one after the other */
@@ -1198,19 +1891,83 @@ const lastStep = 6;
       animation-delay: calc(.25s + var(--i) * .2s);
     }
 
+    /* a refusal lands: it arrives, then shakes its head once */
+    .demo.is-live .demo__view.is-current .demo__line--refused {
+      animation: demo-in .35s var(--demo-ease) .25s both, demo-nope .45s ease-in-out .65s;
+    }
+
+    .demo.is-live .demo__view.is-current .demo__line--refused ~ .demo__line {
+      animation-delay: 1.25s;
+    }
+
+    /* the experts of a panel take their seat one by one, each with its packet written */
+    .demo.is-live .demo__view .demo__seat,
+    .demo.is-live .demo__view .demo__seat .demo__icon {
+      opacity: 0;
+    }
+
+    .demo.is-live .demo__view.is-current .demo__seat {
+      animation: demo-in .3s var(--demo-ease) both;
+      animation-delay: calc(.3s + var(--j) * .2s);
+    }
+
+    .demo.is-live .demo__view.is-current .demo__seat .demo__icon {
+      animation: demo-pop .3s var(--demo-ease) both;
+      animation-delay: calc(.55s + var(--j) * .2s);
+    }
+
+    .demo.is-live .demo__view.is-current .demo__line--roster ~ .demo__line {
+      animation-delay: 1.7s;
+    }
+
+    /* a gate: the question, the answers, then the one a person gives, then what records it */
+    .demo.is-live .demo__view .demo__answer.is-chosen::before,
+    .demo.is-live .demo__view .demo__answer .demo__icon {
+      opacity: 0;
+    }
+
+    .demo.is-live .demo__view.is-current .demo__answer.is-chosen::before {
+      animation: demo-word .3s ease-out 1.25s both;
+    }
+
+    .demo.is-live .demo__view.is-current .demo__answer .demo__icon {
+      animation: demo-pop .35s var(--demo-ease) 1.3s both;
+    }
+
+    .demo.is-live .demo__view.is-current .demo__line--choice ~ .demo__line {
+      animation-delay: 1.85s;
+    }
+
+    /* between two cases: the next one fills up */
+    .demo.is-live .demo__case.is-next::before {
+      animation: demo-fill 5.2s linear both;
+    }
+
     /* held: by the visitor, or while the panel is off screen */
     .demo.is-paused *,
+    .demo.is-paused *::before,
     .demo.is-paused *::after,
     .demo.is-held *,
+    .demo.is-held *::before,
     .demo.is-held *::after {
       animation-play-state: paused !important;
     }
 
     /* shown at once: a step chosen by hand never replays its entrance */
     .demo.is-instant *,
+    .demo.is-instant *::before,
     .demo.is-instant *::after {
       animation-duration: .01s !important;
       animation-delay: 0s !important;
+    }
+  }
+
+  /* Reduced motion: states change at once, without a fade. */
+  @media (prefers-reduced-motion: reduce) {
+    .demo *,
+    .demo *::before,
+    .demo *::after {
+      transition: none !important;
     }
   }
 
@@ -1239,13 +1996,40 @@ const lastStep = 6;
     to { opacity: 1; transform: none; }
   }
 
-  @keyframes demo-swap-from {
-    0%, 70% { opacity: 1; }
+  @keyframes demo-caret {
+    0% { opacity: 0; }
+    1%, 99% { opacity: 1; }
     100% { opacity: 0; }
   }
 
-  @keyframes demo-sheen {
-    from { transform: translateX(-100%); }
-    to { transform: translateX(100%); }
+  @keyframes demo-sent {
+    from { opacity: 1; transform: none; }
+    to { opacity: 0; transform: translateY(-6px); }
+  }
+
+  @keyframes demo-press {
+    0%, 100% { transform: none; }
+    45% { transform: scale(.86); }
+  }
+
+  @keyframes demo-nope {
+    0%, 100% { transform: none; }
+    25% { transform: translateX(-5px); }
+    60% { transform: translateX(4px); }
+  }
+
+  @keyframes demo-helix {
+    from { opacity: .4; transform: rotate(-70deg) scale(.6); }
+    to { opacity: 1; transform: none; }
+  }
+
+  @keyframes demo-ring {
+    from { opacity: .9; transform: none; }
+    to { opacity: 0; transform: scale(1.45); }
+  }
+
+  @keyframes demo-fill {
+    from { transform: scaleX(0); }
+    to { transform: scaleX(1); }
   }
 </style>

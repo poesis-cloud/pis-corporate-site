@@ -15,7 +15,8 @@ import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { parse } from 'parse5';
 import { developerCta, siteNavigation, navigationCta, footerNavigation, legalNavigation } from '../src/data/site-navigation.ts';
 import { archivePaths, archivePrefixes, knowledgeContext, knowledgePrefixes, platformOverviewPath, thesisPath } from '../src/data/knowledge.ts';
-import { cliVersionNote, harness, installCommands, knownLimits, latestPreRelease, marketplace, maturity, maturityLabel, organization, organizationCatalog, preReleases, safLinks, safProducts, supportedHost, verifiedOn } from '../src/data/saf.ts';
+import { cliVersionNote, harness, installCommands, knownLimits, latestPreRelease, marketplace, maturity, maturityLabel, orchestrators, organization, organizationCatalog, preReleases, safLinks, safProducts, supportedHost, verifiedOn } from '../src/data/saf.ts';
+import { build, demoTabs, run } from '../src/data/demo-scenarios.ts';
 import { homeFaq, howItWorksFaq, pilotFaq, transformationFaq, faqLd } from '../src/data/faq.ts';
 import { caseStudies, fictionalNotice, illustrativeExample, publicationChecklist, publishedCaseStudies, shownExample, validateCaseStudies } from '../src/data/case-studies.ts';
 import { briefMailto, buildPayload, composeBrief, contactFields, interestOptions, interpretResponse, MAILTO_LIMIT } from '../src/scripts/contact-brief.ts';
@@ -321,9 +322,10 @@ builtTest('the home page sells the transformation in its title, in six short sec
   assert.deepEqual(sections.map((node) => attr(node, 'id') ?? 'hero'), ['hero', 'change', 'grow', 'paths', 'governed', 'evidence']);
   for (const section of sections) assert.ok(hasAttr(section, 'aria-labelledby'), attr(section, 'id'));
   const copy = clean(text(main));
-  // Short: a few hundred words. The two demonstrations count here, and each answer counts twice (once for screen readers, once word by word).
-  const words = copy.split(' ').length;
-  assert.ok(words >= 300 && words <= 680, `${words} words`);
+  // Short: a few hundred words outside the demonstration, which shows one case at a time and is held by its own test.
+  const outsideDemo = (node) => hasAttr(node, 'data-demo') ? '' : node.nodeName === '#text' ? node.value : (node.childNodes ?? []).map(outsideDemo).join('');
+  const words = clean(outsideDemo(main)).split(' ').length;
+  assert.ok(words >= 300 && words <= 560, `${words} words`);
   // The service is what is sold: the earlier platform positioning, a booking that does not exist and a community that does not exist are not on the page.
   for (const phrase of ['Organizational Intelligence Platform', 'OIP', 'Run a Pilot', 'Partnership', 'Book a', 'community', 'Apache', 'SaaS']) assert.ok(!copy.includes(phrase), phrase);
   // Nothing that moves from one pre-release to the next, and nothing no check can back.
@@ -358,7 +360,7 @@ builtTest('the home page sells the transformation in its title, in six short sec
   assert.ok(clean(text(evidence)).includes('No case is published yet.'));
   for (const href of ['/case-studies/', safLinks.repositories, safLinks.limitations, safLinks.docs, '/contact/', `mailto:${contactEmail}`]) assert.equal(elements(evidence, (node) => attr(node, 'href') === href).length, 1, href);
   assert.equal(clean(text(elements(evidence, (node) => attr(node, 'href') === '/contact/')[0])), CONTACT_ACTION);
-  // The page prints no block of commands: the two lines of the developer demonstration are its only ones.
+  // The page prints no block of commands: the lines of the demonstration are its only ones.
   assert.equal(elements(main, (node) => node.tagName === 'pre').length, 0);
   // Every link of the page leads somewhere: no empty or placeholder target.
   for (const link of elements(main, (node) => node.tagName === 'a')) assert.match(attr(link, 'href') ?? '', /^(\/[a-z-]+\/(#[a-z-]+)?|https:\/\/[^\s]+|mailto:[^\s]+)$/, clean(text(link)));
@@ -370,53 +372,145 @@ builtTest('the home page sells the transformation in its title, in six short sec
   assert.ok(html.includes("location.replace('/knowledge/platform/#' + hash)"));
 });
 
-builtTest('the hero holds two scripted demonstrations, in real words, and shows only what SAF documents', () => {
+builtTest('the hero holds two scripted demonstrations, Build and Run, each with several cases, and shows only what SAF documents', () => {
   const hero = elements(built('/'), (node) => node.tagName === 'section' && hasClass(node, 'masthead'))[0];
   const demo = elements(hero, (node) => hasAttr(node, 'data-demo'))[0];
-  // Two tabs, wired as tabs, the organizations first.
+  // Two tabs, wired as tabs, named as Clément worded them on 22 November 2026: a verb each, never an audience.
   const tabs = elements(demo, (node) => attr(node, 'role') === 'tab');
-  assert.deepEqual(tabs.map((node) => clean(text(node))), ['For organizations', 'For developers']);
+  assert.deepEqual(tabs.map((node) => clean(text(node))), ['Build agentic organizations', 'Run agentic organizations']);
+  assert.doesNotMatch(clean(text(demo)), /For (organizations|developers)/);
   assert.deepEqual(tabs.map((node) => [attr(node, 'aria-selected'), attr(node, 'tabindex'), node.tagName, attr(node, 'type')]), [['true', '0', 'button', 'button'], ['false', '-1', 'button', 'button']]);
   assert.equal(attr(elements(demo, (node) => attr(node, 'role') === 'tablist')[0], 'aria-label'), 'Choose a demonstration');
   const panels = elements(demo, (node) => attr(node, 'role') === 'tabpanel');
   assert.deepEqual(panels.map((node) => attr(node, 'id')), tabs.map((node) => attr(node, 'aria-controls')));
   assert.deepEqual(panels.map((node) => attr(node, 'aria-labelledby')), tabs.map((node) => attr(node, 'id')));
-  const [organizations, developers] = panels;
-  const step = (panel, number) => elements(panel, (node) => attr(node, 'data-step') === String(number));
+  const step = (scene, number) => elements(scene, (node) => attr(node, 'data-step') === String(number));
+  const codes = (node) => elements(node, (child) => child.tagName === 'code').map((child) => clean(text(child)));
 
-  // For organizations: a request, an answer, three steps, a result, one action.
-  assert.ok(clean(text(step(organizations, 1)[0])).endsWith('Help us structure our release approval workflow.'));
-  assert.ok(clean(text(step(organizations, 2)[0])).includes('I mapped the workflow, drafted a governed artifact, and prepared it for review.'));
-  assert.deepEqual([3, 4, 5].map((number) => clean(text(first(step(organizations, number)[0], 'b')))), ['Artifact drafted', 'Harness checks', 'Human approval']);
-  assert.deepEqual(elements(step(organizations, 4)[0], (node) => hasClass(node, 'demo__check')).map((node) => clean(text(node))), ['Rules', 'Schema', 'Traceability']);
-  assert.ok(clean(text(step(organizations, 5)[0])).includes('Reviewed and accepted'));
-  assert.equal(clean(text(step(organizations, 6)[0])), 'Committed to governed workspace');
-  assert.deepEqual(elements(organizations, (node) => node.tagName === 'a').map((node) => [clean(text(node)), attr(node, 'href')]), [[CONTACT_ACTION, '/contact/']]);
+  // On the home page a visitor chooses first: the two sides next to each other, each with its sentence, its outline and its cases.
+  assert.ok(hasAttr(demo, 'data-intro'));
+  const intro = elements(demo, (node) => hasAttr(node, 'data-demo-intro'))[0];
+  assert.equal(attr(intro, 'role'), 'group');
+  // First, in two short lines, what Poesis is about: the problem, then the answer.
+  assert.equal(clean(text(elements(demo, (node) => attr(node, 'id') === attr(intro, 'aria-labelledby'))[0])), 'AI agents on their own write what no one checks. Poesis gives them roles, rules and a person who decides.');
+  const sides = elements(intro, (node) => hasClass(node, 'demo__side'));
+  assert.equal(sides.length, 2);
+  for (const [index, tab] of demoTabs.entries()) {
+    const starts = elements(sides[index], (node) => node.tagName === 'button' && attr(node, 'type') === 'button' && attr(node, 'data-start') === tab.key);
+    // One button for the side, then one for each of its cases, named with the person who asks.
+    assert.deepEqual(starts.map((node) => [clean(text(node)), attr(node, 'data-start-case') ?? null]), [[`${tab.verb} ${tab.rest}`, null], ...tab.cases.map((item) => [`${item.label} ${item.asker}`, item.key])]);
+    assert.equal(clean(text(elements(sides[index], (node) => hasClass(node, 'demo__side-text'))[0])), tab.pitch);
+    // Who it speaks to: several profiles, never "developers" or "organizations" as a whole.
+    assert.equal(clean(text(elements(sides[index], (node) => hasClass(node, 'demo__side-for'))[0])), `For ${tab.audience}`);
+    assert.ok(tab.audience.split(/,| and /).filter((part) => part.trim()).length >= 4, tab.audience);
+    assert.deepEqual(elements(elements(sides[index], (node) => hasClass(node, 'demo__side-map'))[0], (node) => node.tagName === 'li').map((node) => clean(text(node))), tab.outline.map((entry) => `${entry.code ?? ''}${entry.say}`));
+  }
+  // The outline of Build names folders that exist in saf-agentic-organization; the outline of Run is the loop of its usage model.
+  assert.deepEqual(build.outline.map((entry) => entry.code), ['agents/', 'workflows/', 'artifacts/', 'conf/']);
+  assert.deepEqual(run.outline.map((entry) => entry.say), ['Your concern', 'Draft', 'Challenge', 'Revise', 'Your decision']);
 
-  // For developers: another request, another answer, four steps, each with a file or a command that exists.
-  assert.ok(clean(text(step(developers, 1)[0])).endsWith('Help me set up a governed agentic organization.'));
-  assert.ok(clean(text(step(developers, 2)[0])).includes('Let’s configure an organization with declared agents, workflows and governance rules.'));
-  const chips = elements(developers, (node) => hasAttr(node, 'data-chip'));
-  assert.deepEqual(chips.map((node) => clean(text(node)).replace(/^\d+\s*/, '')), ['Install SAF harness', 'Declare organization components', 'Validate with the harness', 'Review artifacts in Git']);
-  assert.deepEqual(chips.map((node) => [node.tagName, attr(node, 'type'), attr(node, 'data-chip')]), [['button', 'button', '3'], ['button', 'button', '4'], ['button', 'button', '5'], ['button', 'button', '6']]);
-  const views = elements(developers, (node) => hasAttr(node, 'data-view'));
-  assert.deepEqual(views.map((node) => attr(node, 'id')), chips.map((node) => attr(node, 'aria-controls')));
-  const lines = (view) => elements(view, (node) => node.tagName === 'code').map((node) => clean(text(node)));
-  // The preview-channel commands of the Quickstart, word for word; the copy button carries all three.
-  assert.deepEqual(lines(views[0]), installCommands.slice(0, 2));
-  assert.equal(attr(elements(developers, (node) => hasAttr(node, 'data-demo-copy'))[0], 'data-demo-copy'), installCommands.join('\n'));
+  // Each tab speaks to several profiles: four cases, each asked by a different person, the first one on show.
+  assert.deepEqual(demoTabs.map((tab) => tab.key), ['build', 'run']);
+  for (const [index, tab] of demoTabs.entries()) {
+    const panel = panels[index];
+    assert.equal(tab.cases.length, 4, tab.key);
+    assert.equal(new Set(tab.cases.map((item) => item.asker)).size, 4, `${tab.key}: four different people ask`);
+    const buttons = elements(panel, (node) => hasAttr(node, 'data-case'));
+    assert.deepEqual(buttons.map((node) => clean(text(node))), tab.cases.map((item) => item.label));
+    assert.deepEqual(buttons.map((node) => [node.tagName, attr(node, 'type'), attr(node, 'aria-pressed')]), tab.cases.map((_, place) => ['button', 'button', String(place === 0)]));
+    const scenes = elements(panel, (node) => hasAttr(node, 'data-scene'));
+    assert.deepEqual(scenes.map((node) => attr(node, 'id')), buttons.map((node) => attr(node, 'aria-controls')));
+    assert.deepEqual(scenes.map((node) => hasClass(node, 'is-current')), [true, false, false, false]);
+    for (const [place, item] of tab.cases.entries()) {
+      const scene = scenes[place];
+      // The same shape everywhere: a request, an answer, then four steps, each with its window.
+      assert.ok(clean(text(step(scene, 1)[0])).includes(`${item.asker} asks: ${item.ask}`), item.key);
+      assert.ok(clean(text(step(scene, 2)[0])).includes(item.reply), item.key);
+      // It is a chat: the one who answers writes one message at each step, in the conversation, and the request is typed in a picture of a message field.
+      const log = elements(scene, (node) => hasAttr(node, 'data-log'))[0];
+      assert.deepEqual(elements(log, (node) => hasAttr(node, 'data-step')).map((node) => attr(node, 'data-step')), ['1', '2', '3', '4', '5', '6']);
+      assert.deepEqual([3, 4, 5, 6].map((number) => clean(text(elements(log, (node) => attr(node, 'data-step') === String(number))[0]))), item.steps.map((entry) => entry.tell));
+      const composer = elements(scene, (node) => hasClass(node, 'demo__composer'))[0];
+      assert.equal(attr(composer, 'aria-hidden'), 'true');
+      assert.equal(attr(elements(composer, (node) => hasAttr(node, 'data-type'))[0], 'data-type'), item.ask);
+      assert.equal(clean(text(composer)), tab.placeholder);
+      const chips = elements(scene, (node) => hasAttr(node, 'data-chip'));
+      assert.deepEqual(chips.map((node) => clean(text(node)).replace(/^\d+\s*/, '')), item.steps.map((entry) => entry.title));
+      assert.deepEqual(chips.map((node) => [node.tagName, attr(node, 'type'), attr(node, 'data-chip')]), [['button', 'button', '3'], ['button', 'button', '4'], ['button', 'button', '5'], ['button', 'button', '6']]);
+      const views = elements(scene, (node) => hasAttr(node, 'data-view'));
+      assert.deepEqual(views.map((node) => attr(node, 'id')), chips.map((node) => attr(node, 'aria-controls')));
+      for (const view of views) assert.ok(elements(view, (node) => hasClass(node, 'demo__line')).length <= 5, `${item.key}: a window stays short`);
+    }
+  }
+  const [buildPanel, runPanel] = panels;
+  const scene = (panel, key) => elements(panel, (node) => attr(node, 'data-scene') === key)[0];
+  const viewsOf = (panel, key) => elements(scene(panel, key), (node) => hasAttr(node, 'data-view'));
+
+  // Build is not for developers only: rules, roles and workflows come first, the install last.
+  assert.deepEqual(build.cases.map((item) => [item.label, item.asker]), [['Rules', 'Risk and compliance lead'], ['Roles', 'Operations lead'], ['Workflows', 'Process owner'], ['Install', 'Developer']]);
+  // The install case: the preview-channel commands of the Quickstart, word for word; the copy button carries all three.
+  const install = viewsOf(buildPanel, 'install');
+  assert.deepEqual(codes(install[0]), installCommands.slice(0, 2));
+  assert.equal(attr(elements(buildPanel, (node) => hasAttr(node, 'data-demo-copy'))[0], 'data-demo-copy'), installCommands.join('\n'));
   // Files of saf-agentic-organization, its `make verify` target, and the artifact patterns of its workspace configuration.
-  assert.deepEqual(lines(views[1]), ['agents/release-manager.agent.md', 'workflows/art/release-on-demand.workflow.conf.yaml', 'artifacts/art/release.artifact.schema.json', 'conf/access-control-list.conf.yaml']);
-  assert.equal(lines(views[2])[0], 'make verify');
-  assert.deepEqual(lines(views[3]), ['<release-slug>.release.md', '<decision-slug>.gate-decision.md']);
-  assert.deepEqual(elements(developers, (node) => node.tagName === 'a').map((node) => [clean(text(node)), attr(node, 'href')]), [['Explore SAF on GitHub', safLinks.repositories], ['Read the docs', safLinks.docs], ['Contribute', harness.contributing]]);
+  assert.deepEqual(codes(install[1]), ['agents/release-manager.agent.md', 'workflows/art/release-on-demand.workflow.conf.yaml', 'artifacts/art/release.artifact.schema.json', 'conf/access-control-list.conf.yaml']);
+  assert.equal(codes(install[2])[0], 'make verify');
+  assert.deepEqual(codes(install[3]), ['<release-slug>.release.md', '<decision-slug>.gate-decision.md']);
+  // The other Build cases quote lines of files that exist in the repository, each named in the title of its window.
+  assert.deepEqual(codes(viewsOf(buildPanel, 'roles')[0]), ['## Mission', '## You own', '## You never', '## How you judge']);
+  assert.deepEqual(codes(viewsOf(buildPanel, 'workflows')[0]), ['slug: feature-refinement', 'orchestrator: release-train-engineer']);
+  // Each side opens on a refusal and its remedy. Build: an expert may write challenges only, so its write to a Feature is denied, and it writes a finding instead.
+  const rules = viewsOf(buildPanel, 'rules');
+  assert.deepEqual(codes(rules[0]).map((line) => line.trim()), ['- slug: security-expert', 'privileges:', '- artifact: challenge']);
+  assert.equal(clean(text(elements(rules[1], (node) => hasClass(node, 'demo__line--refused'))[0])), 'Refuseddenied');
+  assert.deepEqual(codes(rules[2]), ['<workflow-slug>-security-expert.challenge.md']);
+  assert.deepEqual(elements(scene(buildPanel, 'rules'), (node) => hasClass(node, 'demo__chip--refused')).map((node) => attr(node, 'data-chip')), ['4']);
+  assert.deepEqual(elements(buildPanel, (node) => node.tagName === 'a').map((node) => [clean(text(node)), attr(node, 'href')]), [['Explore SAF on GitHub', safLinks.repositories], ['Read the docs', safLinks.docs], ['Contribute', harness.contributing]]);
+
+  // Run follows the usage model of the organization: you talk to the orchestrator of your layer, by its real name.
+  assert.deepEqual(run.cases.map((item) => [item.label, item.responder]), [['A refusal', 'value-management-officer'], ['Product', 'release-train-engineer'], ['Architecture', 'release-train-engineer'], ['Code', 'scrum-master']]);
+  for (const item of run.cases) {
+    assert.ok(orchestrators.includes(item.responder), item.responder);
+    // Every case ends on a person's decision.
+    assert.equal(item.steps[3].window, 'Human gate');
+    // Draft, challenge, revise, then a person decides: the loop of every workflow, in that order.
+    if (item.key !== 'refusal') assert.deepEqual(item.steps.map((entry) => entry.title), ['The owner drafts', 'Experts challenge', 'The owner revises', 'You decide']);
+  }
+  // Run opens on a refusal too: the rule of epic-transition by its slug, what is missing and the workflow that produces it, then the decision.
+  const refusal = viewsOf(runPanel, 'refusal');
+  assert.equal(clean(text(elements(refusal[0], (node) => hasClass(node, 'demo__line--refused'))[0])), 'Refusedapproved-epic-has-a-go-business-case');
+  assert.deepEqual(codes(refusal[1]), ['lean-business-case']);
+  assert.deepEqual(codes(refusal[2]), ['enterprise-architect', 'financial-controller', 'security-expert', 'data-protection-officer', 'legal-counsel']);
+  assert.deepEqual(elements(refusal[3], (node) => hasClass(node, 'demo__answer')).map((node) => clean(text(node)).replace(' (the answer played here)', '')), ['Go', 'No-go']);
+  assert.deepEqual(elements(scene(runPanel, 'refusal'), (node) => hasClass(node, 'demo__chip--refused')).map((node) => attr(node, 'data-chip')), ['3']);
+  // Each refusal ends on its resolution, said in the conversation and shown in the last window.
+  for (const [panel, key] of [[buildPanel, 'rules'], [runPanel, 'refusal']]) {
+    const said = (number) => elements(elements(scene(panel, key), (node) => hasAttr(node, 'data-log'))[0], (node) => attr(node, 'data-step') === String(number))[0];
+    assert.ok(clean(text(said(6))).startsWith('Resolved. '), key);
+    assert.equal(elements(said(6), (node) => hasClass(node, 'demo__bubble--ok')).length, 1, key);
+    assert.ok(clean(text(elements(viewsOf(panel, key)[3], (node) => hasClass(node, 'demo__line--resolved'))[0])).startsWith('Resolved'), key);
+  }
+  assert.ok(clean(text(elements(elements(scene(runPanel, 'refusal'), (node) => hasAttr(node, 'data-log'))[0], (node) => attr(node, 'data-step') === '3')[0])).startsWith('Refused. '));
+  // A refusal is never worked around: the words say what the orchestrator does instead.
+  assert.ok(clean(text(refusal[1])).includes('It never works around a check.'));
+  // The Product case is the example of the usage model: its request, its workflow, its six experts, its question.
+  const product = viewsOf(runPanel, 'product');
+  assert.ok(clean(text(step(scene(runPanel, 'product'), 1)[0])).endsWith('We need customers to be able to export their invoices as PDF.'));
+  assert.ok(clean(text(step(scene(runPanel, 'product'), 2)[0])).includes('I propose the workflow feature-refinement.'));
+  assert.deepEqual(codes(product[1]), ['system-architect', 'software-engineer', 'quality-engineer', 'security-expert', 'ux-designer', 'data-protection-officer']);
+  assert.ok(clean(text(product[3])).includes('Is this Feature ready for PI Planning?'));
+  assert.deepEqual(elements(product[3], (node) => hasClass(node, 'demo__answer')).map((node) => clean(text(node)).replace(' (the answer played here)', '')), ['Accept', 'Concerns', 'Reject']);
+  assert.deepEqual(codes(product[3]), ['feature-transition']);
+  // Code is never merged by the organization: the case says so, and the person merges.
+  assert.ok(clean(text(viewsOf(runPanel, 'code')[3])).includes('The organization never merges code.'));
+  assert.deepEqual(elements(runPanel, (node) => node.tagName === 'a').map((node) => [clean(text(node)), attr(node, 'href')]), [[CONTACT_ACTION, '/contact/'], ['Read the usage model', safLinks.usageModel]]);
 
   // Said for what it is, and controlled: pause or play, next step, replay. The style sheet shows the controls only when it can play.
   assert.ok(clean(text(elements(demo, (node) => hasClass(node, 'demo__note'))[0])).startsWith('Illustrative demo.'));
   const controls = elements(demo, (node) => hasClass(node, 'demo__controls'))[0];
   assert.deepEqual(elements(controls, (node) => node.tagName === 'button').map((node) => attr(node, 'aria-label')), ['Pause the demonstration', 'Show the next step', 'Replay the demonstration']);
   assert.equal(elements(demo, (node) => attr(node, 'role') === 'status' && attr(node, 'aria-live') === 'polite').length, 1);
-  // Built in the page: no film, no canvas, nothing fetched but the logo. The drawings are silent for screen readers.
+  // Built in the page: no film, no canvas, nothing fetched but the logo, which is the face of whoever answers. The drawings are silent for screen readers.
   assert.equal(elements(hero, (node) => ['video', 'picture', 'source', 'canvas', 'iframe', 'input', 'textarea'].includes(node.tagName)).length, 0);
   assert.deepEqual([...new Set(elements(hero, (node) => node.tagName === 'img').map((node) => attr(node, 'src')))], ['/poesis-logo.png']);
   for (const drawing of elements(hero, (node) => node.tagName === 'svg')) assert.equal(attr(drawing, 'aria-hidden'), 'true');
@@ -428,13 +522,20 @@ builtTest('the hero holds two scripted demonstrations, in real words, and shows 
   assert.match(styles, /\.demo \.demo__controls,\s*\.demo \.demo__copy\s*\{\s*display:\s*none/);
   assert.match(styles, /\.js \.demo\.is-live \.demo__controls\s*\{\s*visibility:\s*visible/);
   assert.match(styles, /\.demo\s*\{[^}]*container-type:\s*inline-size/);
-  assert.match(styles, /@container\s*\(min-width:\s*35rem\)/);
-  assert.doesNotMatch(styles, /\.scene__|scene-step-|hero-diagram|hero-chat|hero-seed/);
+  assert.match(styles, /@container\s*\(min-width:\s*27rem\)/);
+  // Without scripts, the first case of each tab shows complete, and the buttons that need a script are not offered.
+  assert.match(styles, /html:not\(\.js\) \.demo__tabs,\s*html:not\(\.js\) \.demo__cases\s*\{\s*display:\s*none/);
+  assert.match(styles, /html:not\(\.js\) \.demo__scene:not\(:first-child\)\s*\{\s*display:\s*none/);
+  // The choice needs the script: it shows only with it, and the cases wait out of sight until a side is chosen.
+  assert.match(styles, /\.demo__intro\s*\{[^}]*display:\s*none/);
+  assert.match(styles, /\.js \.demo\[data-intro\]:not\(\.is-chosen\) \.demo__intro\s*\{\s*display:\s*grid/);
+  assert.match(styles, /\.js \.demo\[data-intro\]:not\(\.is-chosen\) \.demo__main\s*\{\s*display:\s*none/);
+  assert.doesNotMatch(styles, /\.scene__|scene-step-|hero-diagram|hero-chat|hero-seed|demo__flow|demo__card/);
   // The words promise nothing SAF does not ship, and name no model or provider.
   const words = clean(text(demo));
   for (const claim of ['autonomous', 'guarantee', 'unchecked', 'Claude', 'GPT', 'self-', 'approved by', 'compliant', 'certified']) assert.ok(!words.toLowerCase().includes(claim.toLowerCase()), claim);
-  // Light: the whole home page, both demonstrations included, stays a small document.
-  assert.ok(statSync(here('../dist/index.html')).size < 75_000);
+  // Light: the whole home page, the eight cases included, stays a small document (about 15 KB once compressed).
+  assert.ok(statSync(here('../dist/index.html')).size < 110_000);
 });
 
 builtTest('every page carries the same short menu and the call to action, and none carries the old groups', () => {

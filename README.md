@@ -208,35 +208,53 @@ status badge (`test:usage`, "built catalog cards…").
 flow. Workspace checks (`CHECK_WORKSPACE_PORTFOLIO=1`) need the sibling strategy and
 documentation repositories.
 
-## Hero and its two demonstrations
+## Hero and its demonstration
 
 The home page opens on `.masthead` (`src/pages/index.astro`, `src/styles/site.css`): the promise
 and two actions on one side, `src/components/DemoChat.astro` on the other. The block is not
 called `.hero`: that class belongs to the Knowledge pages (`global.css`) and carries an animated
 aurora that halved the frame rate when it applied here by accident.
 
-`DemoChat` is one panel with two tabs, "For organizations" and "For developers". Each is a
-scripted conversation followed by the steps of one governed workflow. It is a demonstration and
-says so ("Illustrative demo"): nothing calls a model, Git or a backend. The developer scenario
-prints only what the SAF repositories document: the preview-channel install commands of
-`src/data/saf.ts`, file names of `saf-agentic-organization`, its `make verify` target and the
-artifact patterns of its `conf/workspace.conf.yaml`. Check them again when `saf.ts` is refreshed.
+`DemoChat` is one panel with two sides, "Build agentic organizations" and "Run agentic
+organizations" (Clément's wording of 22 November 2026: a verb each, never an audience). Each side
+speaks to several profiles, so each holds four cases asked by four different people. It is a
+demonstration and says so ("Illustrative demo"): nothing calls a model, Git or a backend.
 
-- `src/scripts/demo-chat.ts` only decides which steps are shown; every word is in the page.
-- Scripts on and motion accepted: it plays once when it comes on screen, waits while off screen,
-  and offers pause or play, next step and replay. Changing tab starts the other scenario.
-- Reduced motion: the complete picture at once, no controls, tabs still working.
-- No scripts: both scenarios, complete, one under the other.
-- Only `opacity` and `transform` are animated, and the panel keeps its size while it plays.
+- **A choice first.** On the home page (`intro`) the panel opens on two lines that say what
+  Poesis is about, then the two sides next to each other: one sentence, who it speaks to, an
+  outline, and its cases. Nothing plays before the visitor picks a side or a case.
+- **Then a chat.** The request is typed in a message field and sent; the one who answers writes
+  a short message at each step, and earlier messages scroll up. Under the conversation, four
+  steps, each with a window on the file, the command or the people it is about.
+- **A refusal and its resolution open each side.** Build, Rules: an expert's write to a Feature
+  is denied, so it writes a finding, which the owner answers. Run, "A refusal": an Epic cannot be
+  ready without a Lean Business Case recommending go; the orchestrator names what is missing and
+  the workflow that produces it; the case is written and challenged; the person decides.
+- The cases live in `src/data/demo-scenarios.ts`, with the source of every line at the top of the
+  file. Check them again when `src/data/saf.ts` is refreshed: file names, challenge panels, rule
+  names and gate wording move between pre-releases.
+- `src/scripts/demo-chat.ts` decides which steps are shown, cuts the request into keys and the
+  answers into words to animate them, and keeps the conversation on its last message. Every word
+  is in the page.
+- Scripts on and motion accepted: it plays when on screen and waits while off screen. The cases
+  of a side follow one another once, and the last one stays on show. Pause or play, next step
+  and replay are offered; a case or a step chosen by hand stops the sequence.
+- Reduced motion: the complete picture at once, the whole conversation readable, no controls;
+  the choice, tabs, cases and steps still work.
+- No scripts: the first case of each side, complete, one under the other.
+- Only `opacity` and `transform` are animated, and the panel keeps its size from the first
+  paint: the choice and the cases share one footprint.
+- The Poesis mark (`/poesis-logo.png`) is the face of whoever answers.
 - It lays itself out from its own width (container queries), so it can be placed on another
-  page: `<DemoChat id="…" initial="developers" source="…" />`.
+  page: `<DemoChat id="…" initial="run" initialCase="code" source="…" />`.
 
-The same panel appears beside the introductions of `/transformation/` (organizations selected)
-and `/developers/` (developers selected). Both tabs remain available on each page. The text
-comes first on small screens; the demonstration sits beside it from 1024 px. Each placement
-has its own element IDs and measurement source.
+The same panel appears beside the introductions of `/transformation/` (Run) and `/developers/`
+(Build, on its Install case), without the choice: the page already says which side it is. Both
+tabs remain available. The text comes first on small screens; the demonstration sits beside it
+from 1024 px. Each placement has its own element IDs and measurement source.
 
-Captures: `docs/review/2026-11-22-hero-demo/` and `docs/review/2026-11-22-page-demos/`.
+Captures: `docs/review/2026-11-23-build-run/` (current), and the earlier
+`docs/review/2026-11-22-hero-demo/` and `docs/review/2026-11-22-page-demos/`.
 
 The former hero film is no longer shipped. Its source stays in `scripts/hero-film/`, with its
 geometry in `src/data/hero-diagram.json`.
